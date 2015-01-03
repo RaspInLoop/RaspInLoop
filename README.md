@@ -1,4 +1,5 @@
-fmi
+RaspInLoop-fmi
 ===
 
-Put Raspberry Pi (with pi4j) in the simulation loop.
+Put Raspberry Pi in the simulation loop, using pi4j java library and Fonctional Mockup Interface !
+
