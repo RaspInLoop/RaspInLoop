@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.raspinloop.fmi.plugin.feature_1.0.0.qualifier.jar" id="org.raspinloop.fmi.plugin.feature" version="1.0.0.qualifier" os="win32" arch="x86_64">
+      <category name="RIL-FMI"/>
+   </feature>
+   <category-def name="RIL-FMI" label="RIL-FMI">
+      <description>
+         RaspInLoop Fonctional Mockup Interface Simulation
+      </description>
+   </category-def>
+</site>

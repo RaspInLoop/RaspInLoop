@@ -1,0 +1,13 @@
+    <project>  
+     <modelVersion>4.0.0</modelVersion>  
+     <parent>  
+      <groupId>org.raspinloop.fmi</groupId>  
+      <artifactId>plugin.parent</artifactId>  
+      <version>1.0.0-SNAPSHOT</version>  
+      <relativePath>../plugin.parent/pom.xml</relativePath>  
+     </parent>  
+     <groupId>org.raspinloop.fmi</groupId>  
+     <artifactId>plugin.updatesite</artifactId>  
+     <version>1.0.0-SNAPSHOT</version>  
+     <packaging>eclipse-repository</packaging>  
+    </project>  

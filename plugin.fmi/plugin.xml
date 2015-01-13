@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.raspinloop.fmi.plugin.launcher.FmiLauncher"
+            id="org.raspinloop.fmi.plugin.launchConfigurationType1"
+            modes="run, debug"
+            name="RIL-Simulate"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    	<launchConfigurationTypeImage
+        icon="icon/ril-16.gif"
+        configTypeID="org.raspinloop.fmi.plugin.launchConfigurationType1"
+        id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage">
+    	</launchConfigurationTypeImage>
+	</extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.raspinloop.fmi.plugin.configuration.LauncgConfigTabGroup"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroup1"
+            type="org.raspinloop.fmi.plugin.launchConfigurationType1">
+      </launchConfigurationTabGroup>
+   </extension>   
+</plugin>
