@@ -13,7 +13,7 @@
    </extension>
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     	<launchConfigurationTypeImage
-        icon="icon/ril-16.gif"
+        icon="icons/ril-16.gif"
         configTypeID="org.raspinloop.fmi.plugin.launchConfigurationType1"
         id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage">
     	</launchConfigurationTypeImage>

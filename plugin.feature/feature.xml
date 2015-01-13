@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.raspinloop.fmi.plugin.feature"
-      label="Feature"
+      label="RaspInLoop-Funtional Mockup Interface Simulation"
       version="1.0.0.qualifier"
       provider-name="raspinloop">
 
@@ -19,6 +19,8 @@
 
    <plugin
          id="org.raspinloop.fmi.plugin.fmi"
+         os="win32"
+         arch="x86_64"
          download-size="0"
          install-size="0"
          version="0.0.0"
