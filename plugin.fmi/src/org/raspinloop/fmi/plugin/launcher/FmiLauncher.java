@@ -44,7 +44,7 @@ public class FmiLauncher extends JavaLaunchDelegate {
 				getPath("target/dependency/pi4j-example-0.0.5.jar"),
 				getPath("target/dependency/pi4j-gpio-extension-0.0.5.jar"),
 				getPath("target/dependency/pi4j-service-0.0.5.jar"),
-				getPath("target/dependency/rilFmiLauncher-0.0.1-SNAPSHOT.jar"),
+				getPath("target/dependency/rilFmiLauncher-1.0.0-SNAPSHOT.jar"),
 				getPath("target/dependency/slf4j-api-1.5.8.jar"),
 				getPath("target/dependency/slf4j-log4j12-1.7.9.jar") );
 	}
