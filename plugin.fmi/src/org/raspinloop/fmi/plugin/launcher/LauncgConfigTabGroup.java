@@ -1,4 +1,4 @@
-package org.raspinloop.fmi.plugin.configuration;
+package org.raspinloop.fmi.plugin.launcher;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
@@ -7,7 +7,6 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
 import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
-import org.raspinloop.fmi.plugin.launcher.RilfmiMainTab;
 
 public class LauncgConfigTabGroup extends AbstractLaunchConfigurationTabGroup {
 

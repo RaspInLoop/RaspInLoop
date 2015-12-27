@@ -13,7 +13,11 @@
 	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-core-0.0.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-service-0.0.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/libthrift-0.9.2.jar"/>
-	<classpathentry kind="lib" path="target/dependency/slf4j-api-1.5.8.jar"/>
-	<classpathentry kind="lib" path="target/dependency/slf4j-log4j12-1.7.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/reflections-0.9.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/gson-2.5.jar" sourcepath="C:/Users/Fred/Documents/Libs/gson-gson-parent-2.5"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/annotations-2.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/guava-15.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/javassist-3.19.0-GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-launcher-2.0.0-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -22,6 +22,9 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
 import org.eclipse.jdt.internal.debug.ui.IJavaDebugHelpContextIds;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
+import org.eclipse.jdt.internal.debug.ui.actions.ControlAccessibleListener;
+import org.eclipse.jdt.internal.debug.ui.jres.JREMessages;
+import org.eclipse.jdt.internal.debug.ui.jres.JREsPreferencePage;
 import org.eclipse.jdt.internal.debug.ui.launcher.DebugTypeSelectionDialog;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.internal.debug.ui.launcher.MainMethodSearchEngine;
@@ -29,11 +32,23 @@ import org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.raspinloop.fmi.plugin.preferences.RilManageHardwarePage;
 
 public class RilfmiMainTab extends SharedJavaMainTab {
 
@@ -58,7 +73,11 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	private Button fSearchExternalJarsCheckButton;
 	private Button fConsiderInheritedMainButton;
 	private Button fStopInMainCheckButton;
-
+	
+	private Button fgetFMUButton;
+	private Button fManageHardwareButton;
+	private Combo fHardwareCombo;
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
 	 */
@@ -69,7 +88,52 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		createVerticalSpacer(comp, 1);
 		createMainTypeEditor(comp, LauncherMessages.JavaMainTab_Main_cla_ss__4);
 		setControl(comp);
+		createHardwareTypeEditor(comp, "Hardware definition:");
+		
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
+	}
+
+	/**
+	 * Creates the widgets for specifying a main type.
+	 * 
+	 * @param parent the parent composite
+	 */
+	protected void createHardwareTypeEditor(Composite parent, String text) {
+		Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL); 
+		fHardwareCombo = SWTFactory.createCombo(group, SWT.DROP_DOWN | SWT.READ_ONLY, 1, null);
+		fHardwareCombo.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				updateLaunchConfigurationDialog();
+			}
+		});
+		ControlAccessibleListener.addListener(fHardwareCombo, group.getText());
+		
+		fManageHardwareButton = createPushButton(group, "Configure Hardware...", null); 
+		fManageHardwareButton.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event event) {
+				showPrefPage(RilManageHardwarePage.ID); 
+			}
+		});
+		
+		fgetFMUButton = createPushButton(group, "Get FMU file... ", null); 
+		fgetFMUButton.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+			public void widgetSelected(SelectionEvent e) {
+				getFMUButtonSelected();
+			}
+		});
+		
+		
+	}
+	
+	protected void showPrefPage(String pageId) {
+		PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open();		
+	}
+
+	protected void getFMUButtonSelected() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**
@@ -168,7 +232,10 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		updateStopInMainFromConfig(config);
 		updateInheritedMainsFromConfig(config);
 		updateExternalJars(config);
+		updateHardwareDefinition(config);
 	}	
+
+
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#isValid(org.eclipse.debug.core.ILaunchConfiguration)
@@ -291,5 +358,9 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		fStopInMainCheckButton.setSelection(stop);
 	}
 	
+	private void updateHardwareDefinition(ILaunchConfiguration config) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

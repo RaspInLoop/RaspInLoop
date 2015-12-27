@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.raspinloop.fmi.Hardware">
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulatorProperties"
+            editorClass="org.raspinloop.pi4j.io.gpio.DefaultConfigPage"
+            simulatorClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulator">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.gpio.SimulatedStepperMotorProperties"
+            editorClass="org.raspinloop.pi4j.io.gpio.SimulatedStepperMotorPropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.gpio.SimulatedStepperMotor">
+      </Hardware>
+   </extension>
+
+</plugin>

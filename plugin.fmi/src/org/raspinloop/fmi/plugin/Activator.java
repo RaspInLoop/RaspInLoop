@@ -1,8 +1,10 @@
 package org.raspinloop.fmi.plugin;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+
 
 /**
  * The activator class controls the plug-in life cycle
@@ -58,4 +60,20 @@ public class Activator extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
+	
+	public void log(String msg) {
+	      log(msg, null);
+	   }
+	
+	public void log(String msg, Exception e) {
+	      getLog().log(new Status(Status.INFO, PLUGIN_ID, org.eclipse.core.runtime.Status.OK, msg, e));
+	   }
+	
+	public void logError(String msg) {
+	      logError(msg, null);
+	   }
+	
+	public void logError(String msg, Exception e) {
+	      getLog().log(new Status(Status.ERROR, PLUGIN_ID, org.eclipse.core.runtime.Status.OK, msg, e));
+	   }
 }
