@@ -45,6 +45,7 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		    }
 		    return super.getText(element);
 		  }
+
 	}
 
 	public class AvaillablePinProvider implements IStructuredContentProvider {

@@ -16,6 +16,7 @@ import org.raspinloop.config.PinImpl;
 import org.raspinloop.config.SPIComponent;
 import org.raspinloop.config.UARTComponent;
 
+
 public class RaspiGpioSimulatorProperties implements BoardHardware {
 
 	public static final int NB_PIN = 21;
@@ -27,7 +28,7 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	
 	BoardHardwareDelegate boardHardwareDelegate = new BoardHardwareDelegate();
 	private String name = DISPLAY_NAME;
-	
+
 	static Pin[] pins = new Pin[NB_PIN];
 	static {
 	for (int i = 0; i < pins.length; i++) {
@@ -181,6 +182,5 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	public Collection<Pin> getSupportedPin() {
 		return new HashSet<Pin>(Arrays.asList(pins));
 	}
-
 
 }

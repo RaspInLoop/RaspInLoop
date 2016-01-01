@@ -8,7 +8,6 @@ import java.util.LinkedList;
 
 public  class  BoardHardwareDelegate implements BoardHardware {
 	
-
 	@Override
 	public String getType() {		
 		throw new RuntimeException("getType not implemented by BoardHardwareDelegate");

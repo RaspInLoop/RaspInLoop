@@ -2,14 +2,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.raspinloop.fmi</groupId>
   <artifactId>plugin.agregator</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>  
   <module>plugin.parent</module> 
   <module>plugin.fmi</module> 
   <module>plugin.feature</module>
   <module>plugin.updatesite</module>
-  <module>plugin.HardwareSimulated</module>
+  <module>plugin.hardwareSimulated</module>
   <module>plugin.config</module>
   </modules>  
 </project>

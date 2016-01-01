@@ -22,7 +22,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="org.raspinloop.fmi.plugin.launcher.LauncgConfigTabGroup"
+            class="org.raspinloop.fmi.plugin.launcher.LaunchConfigTabGroup"
             id="org.raspinloop.fmi.plugin.launchConfigurationTabGroup1"
             type="org.raspinloop.fmi.plugin.launchConfigurationType1">
       </launchConfigurationTabGroup>

@@ -19,6 +19,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 import org.raspinloop.config.BoardHardware;
+import org.raspinloop.config.GsonConfig;
 import org.raspinloop.config.HardwareConfig;
 import org.raspinloop.fmi.plugin.Activator;
 
@@ -45,7 +46,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 	@Override
 	public void init(IWorkbench workbench) {
 		setDescription("Add, edit or remove simulated hardware platform");
-		preferences = ConfigurationScope.INSTANCE.getNode("rg.raspinloop.fmi.preferences.configuredhardware");
+		preferences = ConfigurationScope.INSTANCE.getNode("org.raspinloop.fmi.preferences.configuredhardware");
 	}
 
 	@Override
@@ -64,8 +65,8 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		// 1, 300);
 		SWTFactory.createVerticalSpacer(parent, 1);
 
-		
-		ArrayList<HardwareConfig> list = HardwareUtils.buildHardwareListImplementing(BoardHardware.class);
+		PluggedHardwareEnumerator enumerator = new PluggedHardwareEnumerator();
+		ArrayList<HardwareConfig> list = enumerator.buildListImplementing(BoardHardware.class);
 		rilHwBlock = new RilHarwareListBlock(null, list );
 		rilHwBlock.setEditAfterAdd(true);
 		rilHwBlock.createControl(parent);
@@ -87,7 +88,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 			String bytes = preferences.get(hwName, "");
 			if (bytes.trim().length() != 0) {
 				try {
-				GsonConfig conf = new GsonConfig();
+				GsonConfig conf = new GsonConfig(enumerator);
 				HardwareConfig hw = conf.read(bytes);
 				if (hw != null)
 					hws.add(hw);
@@ -134,7 +135,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		@Override
 		public void addOrRemoveHW(HardwareConfig hw) {
 			try {
-				GsonConfig conf = new GsonConfig();
+				GsonConfig conf = new GsonConfig(new PluggedHardwareEnumerator());
 				if (hw instanceof BoardHardware) {
 					preferences.put(hw.getName(), conf.write((BoardHardware) hw));
 					preferences.put("HwList", getHwNameList(rilHwBlock));
@@ -153,7 +154,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		@Override
 		public void addOrRemoveHW(HardwareConfig hw) {
 			try {
-				GsonConfig conf = new GsonConfig();
+				GsonConfig conf = new GsonConfig(new PluggedHardwareEnumerator());
 				if (hw instanceof BoardHardware) {
 					preferences.put(hw.getName(), conf.write((BoardHardware) hw));
 					preferences.put("HwList", getHwNameList(rilHwBlock));

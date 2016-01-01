@@ -7,11 +7,22 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareEnumerator;
 import org.raspinloop.fmi.plugin.Activator;
 
-public class HardwareUtils {
+public class PluggedHardwareEnumerator implements HardwareEnumerator{
 
-	public static ArrayList<HardwareConfig> buildHardwareListImplementing(Class<? extends HardwareConfig	> class1) {
+	public static PluggedHardwareEnumerator INSTANCE(){
+		if (INSTANCE == null)
+			INSTANCE = new PluggedHardwareEnumerator();
+		return INSTANCE;
+	}
+	
+	static private PluggedHardwareEnumerator INSTANCE;
+
+	protected PluggedHardwareEnumerator() {};
+	@Override
+	public ArrayList<HardwareConfig> buildListImplementing(Class<? extends HardwareConfig	> class1) {
 		ArrayList<HardwareConfig> list = new ArrayList<HardwareConfig>();
 		IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(PreferenceConstants.HARDWARE_EXTENSION_POINT_ID);
 		IConfigurationElement[] infos= extensionPoint.getConfigurationElements();
@@ -26,4 +37,5 @@ public class HardwareUtils {
 		}
 		return list;
 	}
+
 }

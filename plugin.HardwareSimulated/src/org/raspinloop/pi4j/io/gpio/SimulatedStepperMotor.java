@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.raspinloop.config.AlreadyUsedPin;
-import org.raspinloop.config.HwWithProperties;
+import org.raspinloop.fmi.hwemulation.HardwareBuilder;
 import org.raspinloop.fmi.hwemulation.HwEmulation;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Real;
@@ -16,8 +16,7 @@ import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Real;
 import com.pi4j.component.Component;
 import com.pi4j.component.ComponentBase;
 
-public class SimulatedStepperMotor extends ComponentBase implements Component, HwEmulation, HwWithProperties {	
-
+public class SimulatedStepperMotor extends ComponentBase implements Component, HwEmulation {	
 	
 
 	final static Logger logger = Logger.getLogger(SimulatedStepperMotor.class);
@@ -31,13 +30,12 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 	
 	private int baseref;
 
-
-	@Override
-	public void setProperties(Object properties) {
-		if (properties instanceof SimulatedStepperMotorProperties)
-		properties = (SimulatedStepperMotorProperties)properties;
+	public SimulatedStepperMotor(HardwareBuilder builder){
+		if (builder.getProperties() instanceof SimulatedStepperMotorProperties)
+			properties = (SimulatedStepperMotorProperties)builder.getProperties();
+		baseref = builder.getBaseReference();
 	}
-	
+
 	private SimulatedStepperMotorProperties properties;
 	
 	private Double getVar(Integer ref) {
@@ -56,17 +54,7 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 			return null;
 		}
 	}
-	
-	/**
-	 * Register component in simulated board. baseref is provided to offset all internal ref. 
-	 * 
-	 * @param baseref: the offset to apply to all variable references
-	 * @return the number of var used in this component.
-	 */	
-	public int registerBaseRef(int baseref){
-		this.baseref = baseref;		
-		return NB_VAR;
-	}
+
 
 	public SimulatedStepperMotor() {
 		this.properties = new SimulatedStepperMotorProperties();			

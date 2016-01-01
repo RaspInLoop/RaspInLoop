@@ -11,11 +11,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.raspinloop.config.BoardExtentionHardware;
-import org.raspinloop.config.HwWithProperties;
+import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
+import org.raspinloop.fmi.hwemulation.HardwareBuilder;
+import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
 import org.raspinloop.fmi.hwemulation.HwEmulation;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 
-import com.pi4j.io.gpio.GpioProvider;
 import com.pi4j.io.gpio.GpioProviderBase;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinEdge;
@@ -23,10 +25,8 @@ import com.pi4j.io.gpio.PinMode;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
-public class RaspiGpioSimulator extends GpioProviderBase implements 
-HwEmulation, GpioProvider, HwWithProperties {
-	
-	
+public class RaspiGpioSimulator extends GpioProviderBase implements GpioProviderHwEmulation {
+
 	static public final String GUID = "{5571c639-6438-4eee-839e-ff8442e3bbbc}";
 
 	final static Logger logger = Logger.getLogger(RaspiGpioSimulator.class);
@@ -35,14 +35,19 @@ HwEmulation, GpioProvider, HwWithProperties {
 
 	private RaspiGpioSimulatorProperties properties = new RaspiGpioSimulatorProperties();
 
+	private HardwareBuilderFactory builderFactory;
 
-	@Override
-	public void setProperties(Object properties) {
-		if (properties instanceof RaspiGpioSimulatorProperties)
-			this.properties = (RaspiGpioSimulatorProperties)properties;
-	}	
+	private Map<HardwareConfig, HwEmulation> classCache = new HashMap<HardwareConfig, HwEmulation>();
+
 	
-	public RaspiGpioSimulator() {
+	// currently, we reserve all refs from 0 to 40 for pin (I/O)
+	// other component will be base after this range (even if they use pin)
+	private int nextAvailableBase = RaspiPin.GPIO_20.getAddress() + 20;
+
+	public RaspiGpioSimulator(HardwareBuilder builder) {
+		this.builderFactory = builder.getBuilderFactory();
+		if (builder.getProperties() instanceof RaspiGpioSimulatorProperties)
+			this.properties = (RaspiGpioSimulatorProperties) builder.getProperties();
 	}
 
 	@Override
@@ -55,16 +60,12 @@ HwEmulation, GpioProvider, HwWithProperties {
 		return (pin.getProvider() == properties.getSimulatedProviderName());
 	}
 
-
-
-	
 	@Override
 	public void setMode(Pin pin, PinMode mode) {
 		super.setMode(pin, mode);
 		// if this is an input pin, then configure edge detection
 		if (PinMode.allInputs().contains(mode)) {
-			System.out.println("-- set setEdgeDetection [" + pin + "] to  ["
-					+ PinEdge.BOTH + "]");
+			System.out.println("-- set setEdgeDetection [" + pin + "] to  [" + PinEdge.BOTH + "]");
 			edgeDetectionCache.put(pin, PinEdge.BOTH);
 		}
 	}
@@ -72,15 +73,13 @@ HwEmulation, GpioProvider, HwWithProperties {
 	@Override
 	public void setValue(Pin pin, double value) {
 		super.setValue(pin, value);
-		throw new RuntimeException(
-				"This GPIO provider does not support analog pins.");
+		throw new RuntimeException("This GPIO provider does not support analog pins.");
 	}
 
 	@Override
 	public double getValue(Pin pin) {
 		super.getValue(pin);
-		throw new RuntimeException(
-				"This GPIO provider does not support analog pins.");
+		throw new RuntimeException("This GPIO provider does not support analog pins.");
 	}
 
 	@Override
@@ -91,41 +90,49 @@ HwEmulation, GpioProvider, HwWithProperties {
 	@Override
 	public boolean enterInitialize() {
 		boolean result = true;
-		for (BoardExtentionHardware simulatedComponent : properties.getComponents())
-			if (simulatedComponent instanceof HwEmulation)
-				result &= ((HwEmulation)simulatedComponent).enterInitialize();
-		return result;		
+		for (BoardExtentionHardware comp : properties.getComponents()){
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null)
+				result &= emulationComp.enterInitialize();
+		}
+		return result;
 	}
 
 	@Override
 	public boolean exitInitialize() {
 		boolean result = true;
-		for (BoardExtentionHardware simulatedComponent : properties.getComponents()) 
-			if (simulatedComponent instanceof HwEmulation)
-				result &= ((HwEmulation)simulatedComponent).exitInitialize();
-		return result;	
+		for (BoardExtentionHardware comp : properties.getComponents()){
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null)
+				result &= emulationComp.exitInitialize();
+		}
+		return result;
 	}
 
 	@Override
 	public void terminate() {
-		for (BoardExtentionHardware simulatedComponent : properties.getComponents()) 
-			if (simulatedComponent instanceof HwEmulation)
-				((HwEmulation)simulatedComponent).terminate();
+		for (BoardExtentionHardware comp : properties.getComponents()) {
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null)
+				emulationComp.terminate();
+		}
 		shutdown();
 	}
 
 	@Override
 	public void reset() {
-		for (BoardExtentionHardware simulatedComponent : properties.getComponents()) 
-			if (simulatedComponent instanceof HwEmulation)
-				((HwEmulation)simulatedComponent).reset();
+		for (BoardExtentionHardware comp : properties.getComponents()) {
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null)
+				emulationComp.reset();
+		}
 		shutdown();
 	}
 
 	@Override
 	public List<Double> getReal(List<Integer> refs) {
 		// NO check in pin: there is no pin with real value
-		
+
 		List<Double> result = new ArrayList<Double>(refs.size());
 		for (Integer ref : refs) {
 			// TODO: we should group refs by component in order to make only one
@@ -169,17 +176,17 @@ HwEmulation, GpioProvider, HwWithProperties {
 	public boolean setReal(Map<Integer, Double> ref_values) {
 		// NO check in pin: there is no pin with real value
 		for (Entry<Integer, Double> ref_value : ref_values.entrySet()) {
-			// TODO: we should group ref_value by component in order to make only one call
+			// TODO: we should group ref_value by component in order to make
+			// only one call
 			HwEmulation comp = getSimulatedCompUsingRef(ref_value.getKey());
 			if (comp != null) {
 				HashMap<Integer, Double> map = new HashMap<>(1);
 				map.put(ref_value.getKey(), ref_value.getValue());
 				comp.setReal(map);
 			} else {
-				logger.warn("PIN[ref:" + ref_value.getKey()
-						+ "] not used in application");
+				logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
 				return false;
-			}		
+			}
 		}
 		return true;
 	}
@@ -188,17 +195,17 @@ HwEmulation, GpioProvider, HwWithProperties {
 	public boolean setInteger(Map<Integer, Integer> ref_values) {
 		// NO check in pin: there is no pin with integer value
 		for (Entry<Integer, Integer> ref_value : ref_values.entrySet()) {
-			// TODO: we should group ref_value by component in order to make only one call
+			// TODO: we should group ref_value by component in order to make
+			// only one call
 			HwEmulation comp = getSimulatedCompUsingRef(ref_value.getKey());
 			if (comp != null) {
 				HashMap<Integer, Integer> map = new HashMap<>(1);
 				map.put(ref_value.getKey(), ref_value.getValue());
 				comp.setInteger(map);
 			} else {
-				logger.warn("PIN[ref:" + ref_value.getKey()
-						+ "] not used in application");
+				logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
 				return false;
-			}		
+			}
 		}
 		return true;
 	}
@@ -213,11 +220,11 @@ HwEmulation, GpioProvider, HwWithProperties {
 			if (pin != null)
 				result.add(super.getState(pin) == PinState.HIGH);
 			else {
-				// TODO: we should group refs by component in order to make only one call
+				// TODO: we should group refs by component in order to make only
+				// one call
 				HwEmulation comp = getSimulatedCompUsingRef(ref);
 				if (comp != null) {
-					List<Boolean> compResult = comp.getBoolean(Arrays
-							.asList(ref));
+					List<Boolean> compResult = comp.getBoolean(Arrays.asList(ref));
 					for (Boolean boolean1 : compResult) {
 						result.add(boolean1);
 					}
@@ -236,14 +243,11 @@ HwEmulation, GpioProvider, HwWithProperties {
 		for (Entry<Integer, Boolean> ref_value : ref_values.entrySet()) {
 			Pin pin = getPin(ref_value.getKey());
 			if (pin != null) {
-				PinState state = ref_value.getValue().equals(Boolean.TRUE) ? PinState.HIGH
-						: PinState.LOW;
+				PinState state = ref_value.getValue().equals(Boolean.TRUE) ? PinState.HIGH : PinState.LOW;
 				if (getMode(pin) == PinMode.DIGITAL_OUTPUT)
 					super.setState(pin, state);
-				else if (getMode(pin) == PinMode.DIGITAL_INPUT
-						&& getPinCache(pin).getState() != state) {
-					if (edgeDetectionCache.get(pin) == null
-							|| edgeDetectionCache.get(pin) == PinEdge.BOTH
+				else if (getMode(pin) == PinMode.DIGITAL_INPUT && getPinCache(pin).getState() != state) {
+					if (edgeDetectionCache.get(pin) == null || edgeDetectionCache.get(pin) == PinEdge.BOTH
 							|| (edgeDetectionCache.get(pin) == PinEdge.RISING && state == PinState.HIGH)
 							|| (edgeDetectionCache.get(pin) == PinEdge.FALLING && state == PinState.LOW))
 						dispatchPinDigitalStateChangeEvent(pin, state);
@@ -251,15 +255,15 @@ HwEmulation, GpioProvider, HwWithProperties {
 					getPinCache(pin).setState(state);
 				}
 			} else {
-				// TODO: we should group ref_value by component in order to make only one call
+				// TODO: we should group ref_value by component in order to make
+				// only one call
 				HwEmulation comp = getSimulatedCompUsingRef(ref_value.getKey());
 				if (comp != null) {
 					HashMap<Integer, Boolean> map = new HashMap<>(1);
 					map.put(ref_value.getKey(), ref_value.getValue());
 					comp.setBoolean(map);
 				} else {
-					logger.warn("PIN[ref:" + ref_value.getKey()
-							+ "] not used in application");
+					logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
 					return false;
 				}
 			}
@@ -281,8 +285,7 @@ HwEmulation, GpioProvider, HwWithProperties {
 		//
 		for (Pin pin : super.cache.keySet()) {
 			if (ref > RaspiPin.GPIO_20.getAddress()) { // input pin
-				if (ref.equals(RaspiPin.GPIO_20.getAddress() + 1
-						+ pin.getAddress()))
+				if (ref.equals(RaspiPin.GPIO_20.getAddress() + 1 + pin.getAddress()))
 					return pin;
 			} else { // Output pin
 				if (ref.equals(pin.getAddress()))
@@ -299,34 +302,46 @@ HwEmulation, GpioProvider, HwWithProperties {
 
 	// TODO: use a utility class to handle those pin/modelVariable handling code
 
-	
-
 	@Override
 	public List<Fmi2ScalarVariable> getModelVariables() {
 		LinkedList<Fmi2ScalarVariable> list = new LinkedList<Fmi2ScalarVariable>();
 		for (org.raspinloop.config.Pin pin : properties.getInputPins()) {
-			list.add(createBooleanInput(pin.getName(),
-					"Input signal related to pin " + pin.getName(),
-					getInputReference(pin)));
+			list.add(createBooleanInput(pin.getName(), "Input signal related to pin " + pin.getName(), getInputReference(pin)));
 		}
 
 		for (org.raspinloop.config.Pin pin : properties.getOutputPins()) {
-			list.add(createBooleanOutput(pin.getName(),
-					"Output signal related to pin " + pin.getName(),
-					getOutputReference(pin)));
+			list.add(createBooleanOutput(pin.getName(), "Output signal related to pin " + pin.getName(), getOutputReference(pin)));
 		}
 
 		for (BoardExtentionHardware comp : properties.getComponents()) {
-			if (comp instanceof HwEmulation)
-				list.addAll(((HwEmulation)comp).getModelVariables());
+
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null)
+				list.addAll(emulationComp.getModelVariables());
 		}
 
 		return list;
 	}
-	
-	private Fmi2ScalarVariable createBooleanOutput(String name, String descritpion, long ref){
+
+	private HwEmulation getEmulationInstance(BoardExtentionHardware comp) {
+		if (classCache.containsKey(comp))
+			return classCache.get(comp);
+
+		HwEmulation hardware;
+		try {
+			hardware = builderFactory.createBuilder(comp).setBaseReference(nextAvailableBase ).build();
+			nextAvailableBase+=hardware.getModelVariables().size();
+		} catch (Exception e) {
+			logger.error("Cannot build class for board extension named " + comp.getName() + " reason:" + e.getMessage());
+			return null;
+		}
+		classCache.put(comp, hardware);
+		return hardware;
+	}
+
+	private Fmi2ScalarVariable createBooleanOutput(String name, String descritpion, long ref) {
 		Fmi2ScalarVariable sc = new Fmi2ScalarVariable();
-		org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Boolean scb = new Fmi2ScalarVariable.Boolean();	
+		org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Boolean scb = new Fmi2ScalarVariable.Boolean();
 		sc.setBoolean(scb);
 		sc.setName(name);
 		sc.setValueReference(ref);
@@ -335,10 +350,10 @@ HwEmulation, GpioProvider, HwWithProperties {
 		sc.setVariability("continuous");
 		return sc;
 	}
-	
-	private Fmi2ScalarVariable createBooleanInput(String name, String descritpion, long ref){
+
+	private Fmi2ScalarVariable createBooleanInput(String name, String descritpion, long ref) {
 		Fmi2ScalarVariable sc = new Fmi2ScalarVariable();
-		org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Boolean scb = new Fmi2ScalarVariable.Boolean();	
+		org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Boolean scb = new Fmi2ScalarVariable.Boolean();
 		sc.setBoolean(scb);
 		sc.setName(name);
 		sc.setValueReference(ref);
@@ -358,10 +373,11 @@ HwEmulation, GpioProvider, HwWithProperties {
 
 	private HwEmulation getSimulatedCompUsingRef(long ref) {
 		for (BoardExtentionHardware comp : properties.getComponents()) {
-			if (comp instanceof HwEmulation) {
-				for (Fmi2ScalarVariable modelVariable : ((HwEmulation) comp).getModelVariables()) {
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp != null) {
+				for (Fmi2ScalarVariable modelVariable : emulationComp.getModelVariables()) {
 					if (modelVariable.getValueReference() == ref)
-						return (HwEmulation) comp;
+						return emulationComp;
 				}
 			}
 		}

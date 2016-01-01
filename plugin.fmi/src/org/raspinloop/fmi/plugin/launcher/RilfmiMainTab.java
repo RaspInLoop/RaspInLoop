@@ -1,6 +1,8 @@
 package org.raspinloop.fmi.plugin.launcher;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -8,6 +10,7 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
@@ -21,35 +24,45 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
 import org.eclipse.jdt.internal.debug.ui.IJavaDebugHelpContextIds;
-import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
-import org.eclipse.jdt.internal.debug.ui.actions.ControlAccessibleListener;
-import org.eclipse.jdt.internal.debug.ui.jres.JREMessages;
-import org.eclipse.jdt.internal.debug.ui.jres.JREsPreferencePage;
 import org.eclipse.jdt.internal.debug.ui.launcher.DebugTypeSelectionDialog;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.internal.debug.ui.launcher.MainMethodSearchEngine;
 import org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.statushandlers.StatusManager;
+import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
+import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
+import org.raspinloop.fmi.hwemulation.HwEmulation;
+import org.raspinloop.fmi.internal.fmu.FMU;
+import org.raspinloop.fmi.plugin.Activator;
+import org.raspinloop.fmi.plugin.configuration.HardwareContentProvider;
+import org.raspinloop.fmi.plugin.configuration.HardwareLabelProvider;
 import org.raspinloop.fmi.plugin.preferences.RilManageHardwarePage;
 
+@SuppressWarnings("restriction")
 public class RilfmiMainTab extends SharedJavaMainTab {
 
 	/**
@@ -61,104 +74,164 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	 */
 	public static final String ATTR_INCLUDE_EXTERNAL_JARS = IJavaDebugUIConstants.PLUGIN_ID + ".INCLUDE_EXTERNAL_JARS"; //$NON-NLS-1$
 	/**
-	 * Boolean launch configuration attribute indicating whether types inheriting
-	 * a main method should be considered when searching for a main type.
-	 * Default value is <code>false</code>.
+	 * Boolean launch configuration attribute indicating whether types
+	 * inheriting a main method should be considered when searching for a main
+	 * type. Default value is <code>false</code>.
 	 * 
 	 * @since 3.0
 	 */
 	public static final String ATTR_CONSIDER_INHERITED_MAIN = IJavaDebugUIConstants.PLUGIN_ID + ".CONSIDER_INHERITED_MAIN"; //$NON-NLS-1$	
-	
+
+	public static final String ATTR_HARDWARE_CONFIG = IJavaDebugUIConstants.PLUGIN_ID + ".HARDWARE_CONFIG"; //$NON-NLS-1$	
+
 	// UI widgets
 	private Button fSearchExternalJarsCheckButton;
 	private Button fConsiderInheritedMainButton;
 	private Button fStopInMainCheckButton;
-	
+
 	private Button fgetFMUButton;
 	private Button fManageHardwareButton;
-	private Combo fHardwareCombo;
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse.swt.widgets.Composite)
+	private ComboViewer fHardwareCombo;
+	private Collection<HardwareConfig> hardwares;
+	private Composite compositeParent;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.debug.ui.ILaunchConfigurationTab#createControl(org.eclipse
+	 * .swt.widgets.Composite)
 	 */
 	public void createControl(Composite parent) {
+		compositeParent = parent;
 		Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
-		((GridLayout)comp.getLayout()).verticalSpacing = 0;
+		((GridLayout) comp.getLayout()).verticalSpacing = 0;
 		createProjectEditor(comp);
 		createVerticalSpacer(comp, 1);
 		createMainTypeEditor(comp, LauncherMessages.JavaMainTab_Main_cla_ss__4);
 		setControl(comp);
 		createHardwareTypeEditor(comp, "Hardware definition:");
-		
+
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
 	}
 
 	/**
 	 * Creates the widgets for specifying a main type.
 	 * 
-	 * @param parent the parent composite
+	 * @param parent
+	 *            the parent composite
 	 */
 	protected void createHardwareTypeEditor(Composite parent, String text) {
-		Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL); 
-		fHardwareCombo = SWTFactory.createCombo(group, SWT.DROP_DOWN | SWT.READ_ONLY, 1, null);
-		fHardwareCombo.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
+		Group group = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL);
+		fHardwareCombo = createComboViewer(group, SWT.DROP_DOWN | SWT.READ_ONLY, 1);
+		fHardwareCombo.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
 				updateLaunchConfigurationDialog();
 			}
 		});
-		ControlAccessibleListener.addListener(fHardwareCombo, group.getText());
-		
-		fManageHardwareButton = createPushButton(group, "Configure Hardware...", null); 
+		fHardwareCombo.setContentProvider(new HardwareContentProvider());
+		fHardwareCombo.setLabelProvider(new HardwareLabelProvider());
+
+		fManageHardwareButton = createPushButton(group, "Configure Hardware...", null);
 		fManageHardwareButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
-				showPrefPage(RilManageHardwarePage.ID); 
+				showPrefPage(RilManageHardwarePage.ID);
 			}
 		});
-		
-		fgetFMUButton = createPushButton(group, "Get FMU file... ", null); 
+
+		fgetFMUButton = createPushButton(group, "Get FMU file... ", null);
 		fgetFMUButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
+
 			public void widgetSelected(SelectionEvent e) {
 				getFMUButtonSelected();
 			}
 		});
-		
-		
+
 	}
-	
+
+	private ComboViewer createComboViewer(Group parent, int style, int hspan) {
+		ComboViewer c = new ComboViewer(parent, style);
+		c.getCombo().setFont(parent.getFont());
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = hspan;
+		c.getCombo().setLayoutData(gd);
+
+		// Some platforms open up combos in bad sizes without this, see bug
+		// 245569
+		c.getCombo().setVisibleItemCount(30);
+		c.getCombo().select(0);
+		return c;
+	}
+
 	protected void showPrefPage(String pageId) {
-		PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open();		
+		if (PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open() == SWT.OK) {
+			hardwares = HardwareConfiguration.buildList();
+			fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
+		}
 	}
 
 	protected void getFMUButtonSelected() {
-		// TODO Auto-generated method stub
-		
+		try {
+			HardwareConfig hwProperties = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+			if (hwProperties != null) {
+				HardwareBuilderFactory hbf = new PluggedClassBuilderFactory();
+				HwEmulation emulationImplementation = hbf.createBuilder(hwProperties).build();
+				if (emulationImplementation instanceof GpioProviderHwEmulation) {
+					FileDialog dialog = new FileDialog(compositeParent.getShell(), SWT.SAVE);
+					dialog.setFilterNames(new String[] { "FMU Files", "All Files (*.*)" });
+					dialog.setFilterExtensions(new String[] { "*.fmu", "*.*" }); // Windows
+					// wild
+					// cards
+					dialog.setFilterPath("c:\\"); // Windows path
+					dialog.setFileName(hwProperties.getName() + ".fmu");
+					String fileName = dialog.open();
+					if (fileName != null && !fileName.isEmpty()) {
+						File file = new File(fileName);
+						if (file.exists()) {
+							if (!MessageDialog.openQuestion(compositeParent.getShell(), "Overwrite", "File already exist!\n Do you want to overwrite it ?")) {
+								return;
+							}
+							file.delete();
+						}
+						FMU.generate(file, (GpioProviderHwEmulation) emulationImplementation);
+					}
+
+				}
+			}
+		} catch (Exception e) {
+			IStatus status = new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage());
+			StatusManager.getManager().handle(status, StatusManager.LOG | StatusManager.SHOW);
+		}
 	}
 
 	/**
 	 * @see org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab#createMainTypeExtensions(org.eclipse.swt.widgets.Composite)
 	 */
+
 	@Override
 	protected void createMainTypeExtensions(Composite parent) {
 		fSearchExternalJarsCheckButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_E_xt__jars_6, null, false, 2);
 		fSearchExternalJarsCheckButton.addSelectionListener(getDefaultListener());
-		
+
 		fConsiderInheritedMainButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_22, null, false, 2);
 		fConsiderInheritedMainButton.addSelectionListener(getDefaultListener());
-		
+
 		fStopInMainCheckButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_St_op_in_main_1, null, false, 1);
 		fStopInMainCheckButton.addSelectionListener(getDefaultListener());
 	}
 
-	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#getName()
 	 */
 	public String getName() {
 		return LauncherMessages.JavaMainTab__Main_19;
 	}
-	
+
 	/**
 	 * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#getId()
 	 * 
@@ -168,7 +241,7 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	public String getId() {
 		return "org.eclipse.jdt.debug.ui.javaMainTab"; //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * Show a dialog that lists all main types
 	 */
@@ -181,15 +254,16 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 			if (model != null) {
 				try {
 					elements = model.getJavaProjects();
+				} catch (JavaModelException e) {
+					Activator.getDefault().log("", e);
+					;
 				}
-				catch (JavaModelException e) {JDIDebugUIPlugin.log(e);}
 			}
-		}
-		else {
-			elements = new IJavaElement[]{project};
+		} else {
+			elements = new IJavaElement[] { project };
 		}
 		if (elements == null) {
-			elements = new IJavaElement[]{};
+			elements = new IJavaElement[] {};
 		}
 		int constraints = IJavaSearchScope.SOURCES;
 		constraints |= IJavaSearchScope.APPLICATION_LIBRARIES;
@@ -201,29 +275,31 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		IType[] types = null;
 		try {
 			types = engine.searchMainMethods(getLaunchConfigurationDialog(), searchScope, fConsiderInheritedMainButton.getSelection());
-		}
-		catch (InvocationTargetException e) {
+		} catch (InvocationTargetException e) {
+			setErrorMessage(e.getMessage());
+			return;
+		} catch (InterruptedException e) {
 			setErrorMessage(e.getMessage());
 			return;
 		}
-		catch (InterruptedException e) {
-			setErrorMessage(e.getMessage());
-			return;
-		}
-		DebugTypeSelectionDialog mmsd = new DebugTypeSelectionDialog(getShell(), types, LauncherMessages.JavaMainTab_Choose_Main_Type_11); 
+		DebugTypeSelectionDialog mmsd = new DebugTypeSelectionDialog(getShell(), types, LauncherMessages.JavaMainTab_Choose_Main_Type_11);
 		if (mmsd.open() == Window.CANCEL) {
 			return;
 		}
-		Object[] results = mmsd.getResult();	
-		IType type = (IType)results[0];
+		Object[] results = mmsd.getResult();
+		IType type = (IType) results[0];
 		if (type != null) {
 			fMainText.setText(type.getFullyQualifiedName());
 			fProjText.setText(type.getJavaProject().getElementName());
 		}
-	}	
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab#initializeFrom(org.eclipse.debug.core.ILaunchConfiguration)
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab#initializeFrom
+	 * (org.eclipse.debug.core.ILaunchConfiguration)
 	 */
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
@@ -233,12 +309,14 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		updateInheritedMainsFromConfig(config);
 		updateExternalJars(config);
 		updateHardwareDefinition(config);
-	}	
+	}
 
-
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab#isValid(org.eclipse.debug.core.ILaunchConfiguration)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.debug.ui.AbstractLaunchConfigurationTab#isValid(org.eclipse
+	 * .debug.core.ILaunchConfiguration)
 	 */
 	@Override
 	public boolean isValid(ILaunchConfiguration config) {
@@ -249,118 +327,155 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 			IWorkspace workspace = ResourcesPlugin.getWorkspace();
 			IStatus status = workspace.validateName(name, IResource.PROJECT);
 			if (status.isOK()) {
-				IProject project= ResourcesPlugin.getWorkspace().getRoot().getProject(name);
+				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
 				if (!project.exists()) {
-					setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_20, new String[] {name})); 
+					setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_20, new String[] { name }));
 					return false;
 				}
 				if (!project.isOpen()) {
-					setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_21, new String[] {name})); 
+					setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_21, new String[] { name }));
 					return false;
 				}
-			}
-			else {
-				setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_19, new String[]{status.getMessage()})); 
+			} else {
+				setErrorMessage(NLS.bind(LauncherMessages.JavaMainTab_19, new String[] { status.getMessage() }));
 				return false;
 			}
 		}
 		name = fMainText.getText().trim();
 		if (name.length() == 0) {
-			setErrorMessage(LauncherMessages.JavaMainTab_Main_type_not_specified_16); 
+			setErrorMessage(LauncherMessages.JavaMainTab_Main_type_not_specified_16);
+			return false;
+		}
+		HardwareConfig hardware = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+		if (hardware == null) {
+			setErrorMessage("You have to select an Hardware Definition");
 			return false;
 		}
 		return true;
 	}
-			
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.debug.ui.ILaunchConfigurationTab#performApply(org.eclipse
+	 * .debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, fMainText.getText().trim());
+		HardwareConfig hardware = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+		if (hardware != null) {
+			config.setAttribute(ATTR_HARDWARE_CONFIG, hardware.getName());
+		}
 		mapResources(config);
-		
-		// attribute added in 2.1, so null must be used instead of false for backwards compatibility
+
+		// attribute added in 2.1, so null must be used instead of false for
+		// backwards compatibility
 		if (fStopInMainCheckButton.getSelection()) {
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, true);
+		} else {
+			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, (String) null);
 		}
-		else {
-			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, (String)null);
-		}
-		
-		// attribute added in 2.1, so null must be used instead of false for backwards compatibility
+
+		// attribute added in 2.1, so null must be used instead of false for
+		// backwards compatibility
 		if (fSearchExternalJarsCheckButton.getSelection()) {
 			config.setAttribute(ATTR_INCLUDE_EXTERNAL_JARS, true);
+		} else {
+			config.setAttribute(ATTR_INCLUDE_EXTERNAL_JARS, (String) null);
 		}
-		else {
-			config.setAttribute(ATTR_INCLUDE_EXTERNAL_JARS, (String)null);
-		}
-		
-		// attribute added in 3.0, so null must be used instead of false for backwards compatibility
+
+		// attribute added in 3.0, so null must be used instead of false for
+		// backwards compatibility
 		if (fConsiderInheritedMainButton.getSelection()) {
 			config.setAttribute(ATTR_CONSIDER_INHERITED_MAIN, true);
-		}
-		else {
-			config.setAttribute(ATTR_CONSIDER_INHERITED_MAIN, (String)null);
+		} else {
+			config.setAttribute(ATTR_CONSIDER_INHERITED_MAIN, (String) null);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.debug.core.ILaunchConfigurationWorkingCopy)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.debug.ui.ILaunchConfigurationTab#setDefaults(org.eclipse.
+	 * debug.core.ILaunchConfigurationWorkingCopy)
 	 */
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 		IJavaElement javaElement = getContext();
 		if (javaElement != null) {
 			initializeJavaProject(javaElement, config);
-		}
-		else {
+		} else {
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
 		}
 		initializeMainTypeAndName(javaElement, config);
 	}
-	
+
 	/**
 	 * updates the external jars attribute from the specified launch config
-	 * @param config the config to load from
+	 * 
+	 * @param config
+	 *            the config to load from
 	 */
 	private void updateExternalJars(ILaunchConfiguration config) {
 		boolean search = false;
 		try {
 			search = config.getAttribute(ATTR_INCLUDE_EXTERNAL_JARS, false);
+		} catch (CoreException e) {
+			Activator.getDefault().log("Cannot update External Jar", e);
+			;
 		}
-		catch (CoreException e) {JDIDebugUIPlugin.log(e);}
 		fSearchExternalJarsCheckButton.setSelection(search);
 	}
 
 	/**
 	 * update the inherited mains attribute from the specified launch config
-	 * @param config the config to load from
+	 * 
+	 * @param config
+	 *            the config to load from
 	 */
 	private void updateInheritedMainsFromConfig(ILaunchConfiguration config) {
 		boolean inherit = false;
 		try {
 			inherit = config.getAttribute(ATTR_CONSIDER_INHERITED_MAIN, false);
+		} catch (CoreException e) {
+			Activator.getDefault().log("Cannot update Inherited", e);
+			;
 		}
-		catch (CoreException e) {JDIDebugUIPlugin.log(e);}
 		fConsiderInheritedMainButton.setSelection(inherit);
 	}
 
 	/**
 	 * updates the stop in main attribute from the specified launch config
-	 * @param config the config to load the stop in main attribute from
+	 * 
+	 * @param config
+	 *            the config to load the stop in main attribute from
 	 */
 	private void updateStopInMainFromConfig(ILaunchConfiguration config) {
 		boolean stop = false;
 		try {
 			stop = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
+		} catch (CoreException e) {
+			Activator.getDefault().log("Cannot update Stop in main", e);
+			;
 		}
-		catch (CoreException e) {JDIDebugUIPlugin.log(e);}
 		fStopInMainCheckButton.setSelection(stop);
 	}
-	
-	private void updateHardwareDefinition(ILaunchConfiguration config) {
-		// TODO Auto-generated method stub
-		
-	}
 
+	private void updateHardwareDefinition(ILaunchConfiguration config) {
+		hardwares = HardwareConfiguration.buildList();
+		fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
+		try {
+			String selectedHardwareName = config.getAttribute(ATTR_HARDWARE_CONFIG, "");
+			for (HardwareConfig hardwareConfig : hardwares) {
+				if (selectedHardwareName.equals(hardwareConfig.getName())) {
+					final ISelection selection = new StructuredSelection(hardwareConfig);
+					fHardwareCombo.setSelection(selection);
+				}
+			}
+		} catch (CoreException e) {
+			Activator.getDefault().log("Cannot set selected hardware: ", e);
+		}
+	}
 }

@@ -1,25 +1,9 @@
-package org.raspinloop.fmi.plugin.preferences;
+package org.raspinloop.config;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.raspinloop.config.BoardExtentionHardware;
-import org.raspinloop.config.BoardHardware;
-import org.raspinloop.config.BoardHardwareDelegate;
-import org.raspinloop.config.HardwareConfig;
-import org.raspinloop.config.I2CComponent;
-import org.raspinloop.config.I2CParent;
-import org.raspinloop.config.Pin;
-import org.raspinloop.config.PinImpl;
-import org.raspinloop.config.SPIComponent;
-import org.raspinloop.config.SPIParent;
-import org.raspinloop.config.UARTComponent;
-import org.raspinloop.config.UARTParent;
+import org.eclipse.core.runtime.Platform;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -31,8 +15,9 @@ import com.google.gson.typeadapters.RuntimeTypeAdapterFactory;
 public class GsonConfig {
 
 	
-	final static Logger logger = Logger.getLogger(GsonConfig.class);
 
+	private static final boolean DEBUG_JSON = "true".equalsIgnoreCase(Platform.getDebugOption(
+	         "org.raspinloop.config/debug/json"));
 	private Gson gsonExt;
 
 	public class PreventLoop implements ExclusionStrategy {
@@ -48,34 +33,25 @@ public class GsonConfig {
             		(UARTComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"))||
             		(I2CComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"))||
             		(SPIComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"));
-        	logger.debug(f.getDeclaringClass().getSimpleName()+" - "+f.getName()+ (skip?"-":"+"));
+        	if (DEBUG_JSON)
+        		System.out.println(f.getDeclaringClass().getSimpleName()+" - "+f.getName()+ (skip?"-":"+"));
         	return skip;
         }
 
     }
 	
-	public GsonConfig() {
-
-		Logger.getRootLogger().setLevel(Level.OFF);
-		ConsoleAppender console = new ConsoleAppender(); //create appender
-		  //configure the appender
-		  String PATTERN = "%d [%p|%c{1}] %m%n";
-		  console.setLayout(new PatternLayout(PATTERN)); 
-		  console.setThreshold(Level.FATAL);
-		  console.activateOptions();
-		  //add appender to any Logger (here is root)
-		  Logger.getRootLogger().addAppender(console);
+	public GsonConfig(HardwareEnumerator enumerator) {		
 		
 		GsonBuilder builder = new GsonBuilder();
 
-		ArrayList<HardwareConfig> boards = HardwareUtils.buildHardwareListImplementing(BoardHardware.class);
+		Collection<HardwareConfig> boards = enumerator.buildListImplementing(BoardHardware.class);
 		boards.add(new BoardHardwareDelegate());
 		builder = registerImpl(boards, builder, BoardHardware.class);
 	
-		builder = registerImpl(HardwareUtils.buildHardwareListImplementing(BoardExtentionHardware.class), builder, BoardExtentionHardware.class);
-		builder = registerImpl(HardwareUtils.buildHardwareListImplementing(UARTComponent.class), builder, UARTComponent.class);
-		builder = registerImpl(HardwareUtils.buildHardwareListImplementing(I2CComponent.class), builder, I2CComponent.class);
-		builder = registerImpl(HardwareUtils.buildHardwareListImplementing(SPIComponent.class), builder, SPIComponent.class);
+		builder = registerImpl(enumerator.buildListImplementing(BoardExtentionHardware.class), builder, BoardExtentionHardware.class);
+		builder = registerImpl(enumerator.buildListImplementing(UARTComponent.class), builder, UARTComponent.class);
+		builder = registerImpl(enumerator.buildListImplementing(I2CComponent.class), builder, I2CComponent.class);
+		builder = registerImpl(enumerator.buildListImplementing(SPIComponent.class), builder, SPIComponent.class);
 		builder.registerTypeAdapter(Pin.class, new InstanceCreator<PinImpl>() {
 
 			public PinImpl createInstance(Type type) {
@@ -94,7 +70,8 @@ public class GsonConfig {
 
 		for (HardwareConfig obj : objects) {
 			if (type.isInstance(obj)) {
-				logger.debug("registering " + obj.getClass().getName() + " as impl of " + type.getName());
+				if (DEBUG_JSON)
+	        		System.out.println("registering " + obj.getClass().getName() + " as impl of " + type.getName());
 				typeFactory.registerSubtype((Class<? extends T>)obj.getClass(), obj.getClass().getName());
 			}
 		}
