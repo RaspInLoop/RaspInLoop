@@ -167,7 +167,7 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	}
 
 	protected void showPrefPage(String pageId) {
-		if (PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open() == SWT.OK) {
+		if (PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open() == Window.OK) {
 			hardwares = HardwareConfiguration.buildList();
 			fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
 		}

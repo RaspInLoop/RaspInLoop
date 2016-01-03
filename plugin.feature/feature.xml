@@ -100,20 +100,20 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <plugin
-         id="plugin.config"
+         id="org.raspinloop.fmi.plugin.config"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="plugin.fmi"
+         id="org.raspinloop.fmi.plugin.fmi"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="plugin.hardwareSimulated"
+         id="org.raspinloop.fmi.plugin.hardwareSimulated"
          download-size="0"
          install-size="0"
          version="0.0.0"

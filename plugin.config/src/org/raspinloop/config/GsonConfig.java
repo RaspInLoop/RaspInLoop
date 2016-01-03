@@ -3,8 +3,6 @@ package org.raspinloop.config;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-import org.eclipse.core.runtime.Platform;
-
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -16,8 +14,6 @@ public class GsonConfig {
 
 	
 
-	private static final boolean DEBUG_JSON = "true".equalsIgnoreCase(Platform.getDebugOption(
-	         "org.raspinloop.config/debug/json"));
 	private Gson gsonExt;
 
 	public class PreventLoop implements ExclusionStrategy {
@@ -33,8 +29,6 @@ public class GsonConfig {
             		(UARTComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"))||
             		(I2CComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"))||
             		(SPIComponent.class.isAssignableFrom(f.getDeclaringClass()) && f.getName().equals("parent"));
-        	if (DEBUG_JSON)
-        		System.out.println(f.getDeclaringClass().getSimpleName()+" - "+f.getName()+ (skip?"-":"+"));
         	return skip;
         }
 
@@ -45,7 +39,7 @@ public class GsonConfig {
 		GsonBuilder builder = new GsonBuilder();
 
 		Collection<HardwareConfig> boards = enumerator.buildListImplementing(BoardHardware.class);
-		boards.add(new BoardHardwareDelegate());
+		//boards.add(new BoardHardwareDelegate());
 		builder = registerImpl(boards, builder, BoardHardware.class);
 	
 		builder = registerImpl(enumerator.buildListImplementing(BoardExtentionHardware.class), builder, BoardExtentionHardware.class);
@@ -70,8 +64,6 @@ public class GsonConfig {
 
 		for (HardwareConfig obj : objects) {
 			if (type.isInstance(obj)) {
-				if (DEBUG_JSON)
-	        		System.out.println("registering " + obj.getClass().getName() + " as impl of " + type.getName());
 				typeFactory.registerSubtype((Class<? extends T>)obj.getClass(), obj.getClass().getName());
 			}
 		}
