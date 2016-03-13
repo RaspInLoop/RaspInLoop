@@ -3,6 +3,7 @@ package org.raspinloop.fmi.plugin.launcher;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -39,6 +40,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -48,7 +51,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.statushandlers.StatusManager;
@@ -60,11 +65,19 @@ import org.raspinloop.fmi.internal.fmu.FMU;
 import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.configuration.HardwareContentProvider;
 import org.raspinloop.fmi.plugin.configuration.HardwareLabelProvider;
+import org.raspinloop.fmi.plugin.configuration.SimulationLabelProvider;
+import org.raspinloop.fmi.plugin.configuration.SimulationType;
+import org.raspinloop.fmi.plugin.configuration.SimulationTypeContentProvider;
+import org.raspinloop.fmi.plugin.configuration.TimeUnitContentProvider;
+import org.raspinloop.fmi.plugin.configuration.TimeUnitLabelProvider;
 import org.raspinloop.fmi.plugin.preferences.RilManageHardwarePage;
 
 @SuppressWarnings("restriction")
 public class RilfmiMainTab extends SharedJavaMainTab {
 
+	
+
+	private static final TimeUnit[] AVAILABLE_TIME_UNIT = new TimeUnit[]{TimeUnit.MICROSECONDS, TimeUnit.MILLISECONDS, TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS, TimeUnit.DAYS};
 	/**
 	 * Boolean launch configuration attribute indicating that external jars (on
 	 * the runtime classpath) should be searched when looking for a main type.
@@ -82,18 +95,32 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	 */
 	public static final String ATTR_CONSIDER_INHERITED_MAIN = IJavaDebugUIConstants.PLUGIN_ID + ".CONSIDER_INHERITED_MAIN"; //$NON-NLS-1$	
 
-	public static final String ATTR_HARDWARE_CONFIG = IJavaDebugUIConstants.PLUGIN_ID + ".HARDWARE_CONFIG"; //$NON-NLS-1$	
+	public static final String ATTR_HARDWARE_CONFIG = IJavaDebugUIConstants.PLUGIN_ID + ".HARDWARE_CONFIG"; //$NON-NLS-1$
+	public static final String ATTR_SIMULATION_TYPE= IJavaDebugUIConstants.PLUGIN_ID + ".SIMULATION_TYPE"; //$NON-NLS-1$
+	public static final String ATTR_STANDALONE_TIME_INCREMENT= IJavaDebugUIConstants.PLUGIN_ID + ".STANDALONE_TIME_INCREMENT"; //$NON-NLS-1$
+	public static final String ATTR_STANDALONE_TIME_INCREMENT_UNIT= IJavaDebugUIConstants.PLUGIN_ID + ".STANDALONE_TIME_INCREMENT_UNIT"; //$NON-NLS-1$
+	public static final String ATTR_STANDALONE_TIME_RATIO= IJavaDebugUIConstants.PLUGIN_ID + ".STANDALONE_TIME_RATIO"; //$NON-NLS-1$
+	public static final String ATTR_STANDALONE_END_TIME= IJavaDebugUIConstants.PLUGIN_ID + ".ATTR_STANDALONE_END_TIME"; //$NON-NLS-1$
+	public static final String ATTR_STANDALONE_END_TIME_UNIT= IJavaDebugUIConstants.PLUGIN_ID + ".ATTR_STANDALONE_END_TIME_UNIT"; //$NON-NLS-1$
 
 	// UI widgets
 	private Button fSearchExternalJarsCheckButton;
 	private Button fConsiderInheritedMainButton;
-	private Button fStopInMainCheckButton;
 
 	private Button fgetFMUButton;
 	private Button fManageHardwareButton;
 	private ComboViewer fHardwareCombo;
 	private Collection<HardwareConfig> hardwares;
 	private Composite compositeParent;
+	private ComboViewer fSimulationCombo;
+	private Spinner fStandAloneTimeIncrement;
+	private Spinner fStandAloneTimeRatio;
+	private Spinner fStandAloneEndTime;
+	private Label lStandAloneTimeIncrement;
+	private Label lStandAloneTimeRatio;
+	private Label lStandAloneEndTime;
+	private ComboViewer fStandAloneTimeIncrementCombo;
+	private ComboViewer fStandAloneEndTimeCombo;
 
 	/*
 	 * (non-Javadoc)
@@ -110,13 +137,14 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		createVerticalSpacer(comp, 1);
 		createMainTypeEditor(comp, LauncherMessages.JavaMainTab_Main_cla_ss__4);
 		setControl(comp);
-		createHardwareTypeEditor(comp, "Hardware definition:");
+		createHardwareTypeEditor(comp, "Hardware Definition:");
+		createSimulationTypeEditor(comp, "Simulation Mode:");
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaDebugHelpContextIds.LAUNCH_CONFIGURATION_DIALOG_MAIN_TAB);
 	}
 
 	/**
-	 * Creates the widgets for specifying a main type.
+	 * Creates the widgets for specifying The hardware to use
 	 * 
 	 * @param parent
 	 *            the parent composite
@@ -139,8 +167,32 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 				showPrefPage(RilManageHardwarePage.ID);
 			}
 		});
+	
+	}
+	
+	/**
+	 * Creates the widgets for specifying The Kind of simulation
+	 * 
+	 * @param parent
+	 *            the parent composite
+	 */
+	protected void createSimulationTypeEditor(Composite parent, String text) {
+		Group group = SWTFactory.createGroup(parent, text,3, 1, GridData.FILL_HORIZONTAL);
+		fSimulationCombo = createComboViewer(group, SWT.DROP_DOWN | SWT.READ_ONLY, 3);
+		fSimulationCombo.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				displaySimulationType();
+				updateLaunchConfigurationDialog();
+			}
+		});
+		fSimulationCombo.setContentProvider(new SimulationTypeContentProvider());
+		fSimulationCombo.setLabelProvider(new SimulationLabelProvider());
 
 		fgetFMUButton = createPushButton(group, "Get FMU file... ", null);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 3;
+		fgetFMUButton.setLayoutData(gd);
 		fgetFMUButton.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
@@ -149,9 +201,82 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 				getFMUButtonSelected();
 			}
 		});
-
+		
+		lStandAloneTimeIncrement = addLabel(group, "Time Increment: ");
+		fStandAloneTimeIncrement = new Spinner(group, SWT.NONE);
+		fStandAloneTimeIncrement.setMinimum(0);
+		fStandAloneTimeIncrement.setMaximum(1000);
+		fStandAloneTimeIncrement.setIncrement(1);
+		fStandAloneTimeIncrement.setSelection(1);
+		fStandAloneTimeIncrement.addModifyListener(new ModifyListener() {			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				updateLaunchConfigurationDialog();
+			}
+		});
+		
+		fStandAloneTimeIncrementCombo = createComboViewer(group, SWT.DROP_DOWN | SWT.READ_ONLY, 1);
+		fStandAloneTimeIncrementCombo.setContentProvider(new TimeUnitContentProvider());
+		fStandAloneTimeIncrementCombo.setLabelProvider(new TimeUnitLabelProvider());
+		fStandAloneTimeIncrementCombo.setInput(AVAILABLE_TIME_UNIT);
+		fStandAloneTimeIncrementCombo.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				updateLaunchConfigurationDialog();
+			}
+		});
+		
+		lStandAloneEndTime = addLabel(group, "End Time:");
+		fStandAloneEndTime = new Spinner(group, SWT.NONE);
+		fStandAloneEndTime.setMinimum(0);
+		fStandAloneEndTime.setMaximum(100000);
+		fStandAloneEndTime.setIncrement(1);
+		fStandAloneEndTime.setSelection(1);	
+		fStandAloneEndTime.addModifyListener(new ModifyListener() {			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				updateLaunchConfigurationDialog();
+			}
+		});
+		
+		fStandAloneEndTimeCombo = createComboViewer(group, SWT.DROP_DOWN | SWT.READ_ONLY, 1);
+		fStandAloneEndTimeCombo.setContentProvider(new TimeUnitContentProvider());
+		fStandAloneEndTimeCombo.setLabelProvider(new TimeUnitLabelProvider());
+		fStandAloneEndTimeCombo.setInput(AVAILABLE_TIME_UNIT);
+		fStandAloneEndTimeCombo.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				updateLaunchConfigurationDialog();
+			}
+		});
+		
+		lStandAloneTimeRatio = addLabel(group, "Time Ratio (%):");
+		fStandAloneTimeRatio = new Spinner(group, SWT.NONE);
+		fStandAloneTimeRatio.setDigits(3);
+		fStandAloneTimeRatio.setMinimum(0);
+		fStandAloneTimeRatio.setMaximum(100000);
+		fStandAloneTimeRatio.setIncrement(1000);
+		fStandAloneTimeRatio.setSelection(1000);
+		fStandAloneTimeRatio.addModifyListener(new ModifyListener() {			
+			@Override
+			public void modifyText(ModifyEvent e) {
+				updateLaunchConfigurationDialog();
+			}
+		});
 	}
 
+	
+	private Label addLabel(Composite composite, String text) {
+		Label l = new Label(composite, SWT.NONE);
+		l.setFont(composite.getFont());
+		l.setText(text);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.grabExcessHorizontalSpace = false;
+		gd.verticalAlignment = SWT.BEGINNING;
+		l.setLayoutData(gd);
+		return l;
+	}
+	
 	private ComboViewer createComboViewer(Group parent, int style, int hspan) {
 		ComboViewer c = new ComboViewer(parent, style);
 		c.getCombo().setFont(parent.getFont());
@@ -171,6 +296,7 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 			hardwares = HardwareConfiguration.buildList();
 			fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
 		}
+		fSimulationCombo.setInput(SimulationType.values());
 	}
 
 	protected void getFMUButtonSelected() {
@@ -218,9 +344,6 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 
 		fConsiderInheritedMainButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_22, null, false, 2);
 		fConsiderInheritedMainButton.addSelectionListener(getDefaultListener());
-
-		fStopInMainCheckButton = SWTFactory.createCheckButton(parent, LauncherMessages.JavaMainTab_St_op_in_main_1, null, false, 1);
-		fStopInMainCheckButton.addSelectionListener(getDefaultListener());
 	}
 
 	/*
@@ -305,7 +428,6 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	public void initializeFrom(ILaunchConfiguration config) {
 		super.initializeFrom(config);
 		updateMainTypeFromConfig(config);
-		updateStopInMainFromConfig(config);
 		updateInheritedMainsFromConfig(config);
 		updateExternalJars(config);
 		updateHardwareDefinition(config);
@@ -369,14 +491,29 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 			config.setAttribute(ATTR_HARDWARE_CONFIG, hardware.getName());
 		}
 		mapResources(config);
-
+		
 		// attribute added in 2.1, so null must be used instead of false for
 		// backwards compatibility
-		if (fStopInMainCheckButton.getSelection()) {
-			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, true);
-		} else {
-			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, (String) null);
+		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, (String) null);
+		
+		config.setAttribute(ATTR_SIMULATION_TYPE, ((SimulationType)((IStructuredSelection)fSimulationCombo.getSelection()).getFirstElement()).toString());
+		config.setAttribute(ATTR_STANDALONE_END_TIME,new Integer(fStandAloneEndTime.getSelection()).toString());
+		config.setAttribute(ATTR_STANDALONE_TIME_INCREMENT,new Integer(fStandAloneTimeIncrement.getSelection()).toString());
+		ISelection endTimeUnitSelection = fStandAloneEndTimeCombo.getSelection();
+		if (endTimeUnitSelection instanceof IStructuredSelection){
+			Object endTimeUnitSelectedElement = ((IStructuredSelection)endTimeUnitSelection).getFirstElement();
+			if (endTimeUnitSelectedElement instanceof TimeUnit)
+		    config.setAttribute(ATTR_STANDALONE_END_TIME_UNIT,((TimeUnit)endTimeUnitSelectedElement).toString());
 		}
+		
+		ISelection timeIncrementUnitSelection = fStandAloneTimeIncrementCombo.getSelection();
+		if (timeIncrementUnitSelection instanceof IStructuredSelection){
+			Object  timeIncrementUnitSelectedElement = ((IStructuredSelection)timeIncrementUnitSelection).getFirstElement();
+			if (timeIncrementUnitSelectedElement instanceof TimeUnit)
+		    config.setAttribute(ATTR_STANDALONE_TIME_INCREMENT_UNIT,((TimeUnit)timeIncrementUnitSelectedElement).toString());
+		}
+				
+		config.setAttribute(ATTR_STANDALONE_TIME_RATIO,new Double(fStandAloneTimeRatio.getSelection()/1000.0).toString());
 
 		// attribute added in 2.1, so null must be used instead of false for
 		// backwards compatibility
@@ -446,23 +583,6 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		fConsiderInheritedMainButton.setSelection(inherit);
 	}
 
-	/**
-	 * updates the stop in main attribute from the specified launch config
-	 * 
-	 * @param config
-	 *            the config to load the stop in main attribute from
-	 */
-	private void updateStopInMainFromConfig(ILaunchConfiguration config) {
-		boolean stop = false;
-		try {
-			stop = config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
-		} catch (CoreException e) {
-			Activator.getDefault().log("Cannot update Stop in main", e);
-			;
-		}
-		fStopInMainCheckButton.setSelection(stop);
-	}
-
 	private void updateHardwareDefinition(ILaunchConfiguration config) {
 		hardwares = HardwareConfiguration.buildList();
 		fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
@@ -474,8 +594,58 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 					fHardwareCombo.setSelection(selection);
 				}
 			}
+			fSimulationCombo.setInput(SimulationType.values());
+			String selectedSimulationTypeStr = config.getAttribute(ATTR_SIMULATION_TYPE, "FMU");
+			SimulationType selectedSimulationType = SimulationType.valueOf(selectedSimulationTypeStr);
+			final ISelection selection = new StructuredSelection(selectedSimulationType);			
+			fSimulationCombo.setSelection(selection);
+			displaySimulationType();
+			
+			
+			String standAloneTimeIncrement = config.getAttribute(ATTR_STANDALONE_TIME_INCREMENT, "1");
+			try{
+			fStandAloneTimeIncrement.setSelection(Integer.parseInt(standAloneTimeIncrement));
+			} catch (NumberFormatException e){
+				fStandAloneTimeIncrement.setSelection(1);
+			}
+			
+			TimeUnit standAloneTimeIncrementUnit = TimeUnit.valueOf(config.getAttribute(ATTR_STANDALONE_TIME_INCREMENT_UNIT, TimeUnit.SECONDS.toString()));
+			final ISelection timeIncrementUnitSelection = new StructuredSelection(standAloneTimeIncrementUnit);
+			fStandAloneTimeIncrementCombo.setSelection(timeIncrementUnitSelection);
+			
+			String standAloneTimeRatio = config.getAttribute(ATTR_STANDALONE_TIME_RATIO, "1");
+			fStandAloneTimeRatio.setSelection(new Double(Double.parseDouble(standAloneTimeRatio)*1000.0).intValue());	
+			
+			String standAloneEndTime = config.getAttribute(ATTR_STANDALONE_END_TIME, "60");
+			try{
+			fStandAloneEndTime.setSelection(Integer.parseInt(standAloneEndTime));
+			} catch (NumberFormatException e){
+				fStandAloneEndTime.setSelection(60);
+			}
+			
+			TimeUnit standAloneEndTimeUnit = TimeUnit.valueOf(config.getAttribute(ATTR_STANDALONE_END_TIME_UNIT, TimeUnit.SECONDS.toString()));
+			final ISelection standAloneEndTimeUnitSelection = new StructuredSelection(standAloneEndTimeUnit);
+			fStandAloneEndTimeCombo.setSelection(standAloneEndTimeUnitSelection);
+			
+			
 		} catch (CoreException e) {
 			Activator.getDefault().log("Cannot set selected hardware: ", e);
-		}
+		}			
 	}
+	
+	protected void displaySimulationType() {
+		SimulationType selectedSimulationType = (SimulationType)((IStructuredSelection) fSimulationCombo.getSelection()).getFirstElement();
+
+		fStandAloneTimeIncrement.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		lStandAloneTimeIncrement.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		fStandAloneTimeIncrementCombo.getCombo().setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		fStandAloneTimeRatio.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		lStandAloneTimeRatio.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		fStandAloneEndTime.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		lStandAloneEndTime.setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+		fStandAloneEndTimeCombo.getCombo().setVisible(SimulationType.STAND_ALONE == selectedSimulationType);
+
+		fgetFMUButton.setVisible(SimulationType.FMU == selectedSimulationType);
+	}
+
 }

@@ -27,7 +27,7 @@ import com.pi4j.io.gpio.RaspiPin;
 
 public class RaspiGpioSimulator extends GpioProviderBase implements GpioProviderHwEmulation {
 
-	static public final String GUID = "{5571c639-6438-4eee-839e-ff8442e3bbbc}";
+	static public final String GUID = RaspiGpioSimulatorProperties.GUID;
 
 	final static Logger logger = Logger.getLogger(RaspiGpioSimulator.class);
 

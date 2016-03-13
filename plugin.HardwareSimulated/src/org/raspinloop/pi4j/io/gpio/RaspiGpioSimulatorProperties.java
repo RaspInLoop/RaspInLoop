@@ -22,11 +22,11 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	public static final int NB_PIN = 21;
 	public static final String TYPE = "raspberryPiGpioSimulator";
 	public static final String DISPLAY_NAME = "RaspberryPi GPIO Simulator";
-
 	public static final String SIMULATED_PROVIDER_NAME = "RaspberryPi GPIO Provider";
 
+	public static final String GUID = "{5571c639-6438-4eee-839e-ff8442e3bbbc}"; 
 	
-	BoardHardwareDelegate boardHardwareDelegate = new BoardHardwareDelegate();
+	BoardHardwareDelegate boardHardwareDelegate = new BoardHardwareDelegate(GUID);
 	private String name = DISPLAY_NAME;
 
 	static Pin[] pins = new Pin[NB_PIN];
@@ -181,6 +181,12 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	@Override
 	public Collection<Pin> getSupportedPin() {
 		return new HashSet<Pin>(Arrays.asList(pins));
+	}
+
+
+	@Override
+	public String getGuid() {
+		return boardHardwareDelegate.getGuid();
 	}
 
 }

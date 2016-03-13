@@ -39,7 +39,14 @@ public class GsonConfig {
 		GsonBuilder builder = new GsonBuilder();
 
 		Collection<HardwareConfig> boards = enumerator.buildListImplementing(BoardHardware.class);
-		//boards.add(new BoardHardwareDelegate());
+		boolean delegateExisting = false;
+		for (HardwareConfig hardwareConfig : boards) {
+			if (hardwareConfig instanceof BoardHardwareDelegate){
+				delegateExisting  = true;
+			}
+		}
+		if (!delegateExisting)
+			boards.add(new BoardHardwareDelegate());
 		builder = registerImpl(boards, builder, BoardHardware.class);
 	
 		builder = registerImpl(enumerator.buildListImplementing(BoardExtentionHardware.class), builder, BoardExtentionHardware.class);

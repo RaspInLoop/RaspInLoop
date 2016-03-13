@@ -4,8 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="icons"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/aspectjrt-1.8.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/aspectjweaver-1.8.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/httpclient-4.2.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/httpcore-4.2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/commons-logging-1.1.1.jar"/>
@@ -20,5 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="target/dependency/javassist-3.19.0-GA.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-launcher-2.0.0-SNAPSHOT.jar" sourcepath="/pi4j-launcher"/>
 	<classpathentry kind="lib" path="target/dependency/gson-2.5.jar"/>
+	<classpathentry kind="lib" path="target/dependency/aspectjrt-1.8.2.jar"/>
+	<classpathentry kind="lib" path="target/dependency/aspectjweaver-1.8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

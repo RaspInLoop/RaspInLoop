@@ -8,6 +8,17 @@ import java.util.LinkedList;
 
 public  class  BoardHardwareDelegate implements BoardHardware {
 	
+	
+	private String guid;
+
+	public BoardHardwareDelegate() {
+		this.setGuid(guid);
+	}
+	
+	public BoardHardwareDelegate(String guid) {
+		this.setGuid(guid);
+	}
+
 	@Override
 	public String getType() {		
 		throw new RuntimeException("getType not implemented by BoardHardwareDelegate");
@@ -175,5 +186,13 @@ public  class  BoardHardwareDelegate implements BoardHardware {
 	@Override
 	public Collection<Pin> getSupportedPin() {
 		return Collections.EMPTY_LIST;
+	}
+
+	public String getGuid() {
+		return guid;
+	}
+
+	public void setGuid(String guid) {
+		this.guid = guid;
 	}
 }

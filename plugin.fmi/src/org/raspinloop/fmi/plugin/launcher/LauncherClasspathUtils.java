@@ -18,6 +18,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.ManifestElement;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
+import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.preferences.PreferenceConstants;
 
 public class LauncherClasspathUtils {
@@ -48,9 +49,11 @@ public class LauncherClasspathUtils {
 		//add plug-ins and their dependencies
 		for (String pluginId : getExtenstionPluginIds()) {
 			try {
+				Activator.getDefault().log("found Extension: "+pluginId);
+				pluginsAndDependenciesIds.add(pluginId);
 				pluginsAndDependenciesIds.addAll( getDependencyPluginIds(pluginId));
 			} catch (Exception e) {
-				System.err.println("extention classPath skipped for "+ pluginId +" due to "+e.getMessage());
+				Activator.getDefault().logError("extention classPath skipped for "+ pluginId ,e);
 			}
 		}
 		
@@ -60,7 +63,7 @@ public class LauncherClasspathUtils {
 				extentionsClasspath.addAll(getClasspathPaths(pluginExtentionIds));
 			}
 			catch (Exception e){
-				System.err.println("extention classPath skipped for "+ pluginExtentionIds +" due to "+e.getMessage());
+				Activator.getDefault().logError("extention classPath skipped for "+ pluginExtentionIds ,e);
 			}
 		}
 		return extentionsClasspath;
@@ -68,7 +71,7 @@ public class LauncherClasspathUtils {
 	}
 
 	private static Collection<? extends String> getLauncherCP(ILaunchConfiguration configuration) {
-		return Arrays.asList(getFmiPath("target/dependency/aspectjrt-1.8.4.jar"), 
+		return Arrays.asList(getFmiPath("target/dependency/aspectjrt-1.8.2.jar"), 
 							 getFmiPath("target/dependency/commons-codec-1.6.jar"),
 							 getFmiPath("target/dependency/commons-logging-1.1.1.jar"), 
 							 getFmiPath("target/dependency/httpclient-4.2.5.jar"),
@@ -110,13 +113,13 @@ public class LauncherClasspathUtils {
 		try {
 			URL entry = bundle.getEntry(string);
 			if (entry == null) {
-				System.err.println("could not find : " + string);
+				Activator.getDefault().logError("could not find : " + string);
 				return "";
 			}
 
 			return new File(FileLocator.resolve(entry).getFile()).getAbsolutePath();
 		} catch (IOException e) {
-			System.err.println("could not find: " + string + ": " + e.getMessage());
+			Activator.getDefault().logError("could not find: " + string, e);
 			return "";
 		}
 	}
@@ -178,6 +181,7 @@ public class LauncherClasspathUtils {
 	    	for (ManifestElement element : elements) {
 				
 	          String value = element.getValue();
+	          Activator.getDefault().log("Extension: "+pluginID+ " requirement found: "+value);
 	          result.add(value);
 	        }
 	      }

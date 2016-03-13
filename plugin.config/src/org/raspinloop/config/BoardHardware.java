@@ -13,6 +13,8 @@ public interface BoardHardware extends HardwareConfig, I2CParent, UARTParent, SP
 	public abstract Collection<BoardExtentionHardware> getComponents();
 
 	String getType();
+	
+	public String getGuid();
 
 	public abstract Collection<Pin> getSupportedPin();
 
