@@ -292,11 +292,14 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 	}
 
 	protected void showPrefPage(String pageId) {
+		SimulationType currentSimulationType= (SimulationType)((IStructuredSelection)fSimulationCombo.getSelection()).getFirstElement();
 		if (PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open() == Window.OK) {
 			hardwares = HardwareConfiguration.buildList();
 			fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
 		}
 		fSimulationCombo.setInput(SimulationType.values());
+		final ISelection selection = new StructuredSelection(currentSimulationType);			
+		fSimulationCombo.setSelection(selection);
 	}
 
 	protected void getFMUButtonSelected() {
@@ -594,12 +597,7 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 					fHardwareCombo.setSelection(selection);
 				}
 			}
-			fSimulationCombo.setInput(SimulationType.values());
-			String selectedSimulationTypeStr = config.getAttribute(ATTR_SIMULATION_TYPE, "FMU");
-			SimulationType selectedSimulationType = SimulationType.valueOf(selectedSimulationTypeStr);
-			final ISelection selection = new StructuredSelection(selectedSimulationType);			
-			fSimulationCombo.setSelection(selection);
-			displaySimulationType();
+			setSimulationMode(config);
 			
 			
 			String standAloneTimeIncrement = config.getAttribute(ATTR_STANDALONE_TIME_INCREMENT, "1");
@@ -631,6 +629,15 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 		} catch (CoreException e) {
 			Activator.getDefault().log("Cannot set selected hardware: ", e);
 		}			
+	}
+
+	private void setSimulationMode(ILaunchConfiguration config) throws CoreException {
+		fSimulationCombo.setInput(SimulationType.values());
+		String selectedSimulationTypeStr = config.getAttribute(ATTR_SIMULATION_TYPE, "FMU");
+		SimulationType selectedSimulationType = SimulationType.valueOf(selectedSimulationTypeStr);
+		final ISelection selection = new StructuredSelection(selectedSimulationType);			
+		fSimulationCombo.setSelection(selection);
+		displaySimulationType();
 	}
 	
 	protected void displaySimulationType() {

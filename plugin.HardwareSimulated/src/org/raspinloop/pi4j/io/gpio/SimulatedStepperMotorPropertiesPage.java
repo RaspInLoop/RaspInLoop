@@ -31,7 +31,6 @@ import org.raspinloop.config.Pin;
 import org.raspinloop.config.PinState;
 import org.raspinloop.fmi.plugin.Images;
 import org.raspinloop.fmi.plugin.preferences.extension.AbstractHWConfigPage;
-import org.raspinloop.pi4j.io.gpio.SimulatedStepperMotorProperties.StepSequence;
 
 
 public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
@@ -90,7 +89,6 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 	private Spinner fHWInitialPosition;
 	private Combo fHWOnState;
 	private ComboViewer [] fHWPins = new ComboViewer [4];
-	private Combo fHWStepSequence;
 
 	public SimulatedStepperMotorPropertiesPage() {
 		super("Simulated StepperMotor configuration");
@@ -138,10 +136,6 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		fHWOnState = new Combo(composite, SWT.READ_ONLY);
 		fHWOnState.setItems(new String[] { PinState.HIGH.toString(), PinState.LOW.toString() });
 
-		addLabel(composite, "Step Sequence");
-		fHWStepSequence = new Combo(composite, SWT.READ_ONLY);
-		fHWStepSequence.setItems(new String[] { SimulatedStepperMotorProperties.StepSequence.SINGLE_STEP.toString(),
-				SimulatedStepperMotorProperties.StepSequence.DOUBLE_STEP.toString(), SimulatedStepperMotorProperties.StepSequence.HALF_STEP.toString() });
 		addLabel(composite, "Connected Pin");
 		ArrayList<Pin> usablePins = new ArrayList<Pin>(fHW.getParentComponent().getUnUsedPins());
 		usablePins.addAll(fHW.getUsedPins());
@@ -200,8 +194,6 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		fHWStepsPerRotation.setSelection(fHW.getStepsPerRotation());
 		fHWInitialPosition.setSelection((int) Math.round(fHW.getInitalPosition() * 10));
 		fHWOnState.setText(fHW.getOnState().toString());
-		fHWStepSequence.setText(fHW.getStepSequence().toString());
-
 		nameChanged(fHWName.getText());
 	}
 
@@ -223,7 +215,6 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		else
 			fHW.setOffState(PinState.HIGH);
 		fHW.setStepsPerRotation(fHWStepsPerRotation.getSelection());
-		fHW.setStepSequence(StepSequence.valueOf(fHWStepSequence.getText()));
 	}	
 
 	/*

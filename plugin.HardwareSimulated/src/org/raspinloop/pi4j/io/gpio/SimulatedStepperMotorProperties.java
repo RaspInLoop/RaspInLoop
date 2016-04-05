@@ -22,8 +22,7 @@ public class SimulatedStepperMotorProperties implements BoardExtentionHardware {
 	public enum StepSequence {
 		SINGLE_STEP , HALF_STEP , DOUBLE_STEP;
 	}
-	private StepSequence stepSequence = StepSequence.SINGLE_STEP;
-	
+
 	private org.raspinloop.config.PinState onState = PinState.HIGH;		
 	private org.raspinloop.config.PinState offState = PinState.LOW;		
 	
@@ -84,14 +83,6 @@ public class SimulatedStepperMotorProperties implements BoardExtentionHardware {
 	private double pullinTorque = 0;			//relative ref 9
 	private double Accuracy = 0;				//relative ref 10
 	*/
-	
-	public StepSequence getStepSequence(){
-		return stepSequence;
-	}
-	
-	public void setStepSequence(StepSequence sequence){
-		stepSequence= sequence;
-	}
 	
 	public org.raspinloop.config.PinState getOnState() {
 		return onState;
