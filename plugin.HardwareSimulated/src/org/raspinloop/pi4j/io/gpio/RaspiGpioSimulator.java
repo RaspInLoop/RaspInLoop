@@ -185,7 +185,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 				comp.setReal(map);
 			} else {
 				logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
-				return false;
+				return true;
 			}
 		}
 		return true;
@@ -204,7 +204,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 				comp.setInteger(map);
 			} else {
 				logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
-				return false;
+				return true;
 			}
 		}
 		return true;
@@ -264,7 +264,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 					comp.setBoolean(map);
 				} else {
 					logger.warn("PIN[ref:" + ref_value.getKey() + "] not used in application");
-					return false;
+					return true;
 				}
 			}
 		}
