@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.log4j.Logger;
 import org.raspinloop.config.BoardExtentionHardware;
 import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.fmi.hwemulation.GpioCompHwEmulation;
 import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
 import org.raspinloop.fmi.hwemulation.HardwareBuilder;
 import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
@@ -55,6 +56,9 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 		return properties.getType();
 	}
 
+	
+	
+	
 	@Override
 	public boolean hasPin(Pin pin) {
 		return (pin.getProvider() == properties.getSimulatedProviderName());
@@ -80,6 +84,35 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	public double getValue(Pin pin) {
 		super.getValue(pin);
 		throw new RuntimeException("This GPIO provider does not support analog pins.");
+	}
+	
+	@Override
+	public void setState(Pin pin, PinState state) {
+		super.setState(pin, state);
+		
+		for (BoardExtentionHardware comp : properties.getComponents()) {			
+				HwEmulation emulationComp = getEmulationInstance(comp);
+					if (emulationComp instanceof GpioCompHwEmulation) {
+						GpioCompHwEmulation compHwE = ((GpioCompHwEmulation)emulationComp);
+						if (compHwE.usePin(pin))
+							compHwE.setState(pin, state);
+					}
+		}
+	}
+	
+	@Override
+	public PinState getState(Pin pin) {
+
+		for (BoardExtentionHardware comp : properties.getComponents()) {
+			HwEmulation emulationComp = getEmulationInstance(comp);
+			if (emulationComp instanceof GpioCompHwEmulation) {
+				GpioCompHwEmulation compHwE = ((GpioCompHwEmulation) emulationComp);
+				if (compHwE.usePin(pin))
+					return compHwE.getState(pin);
+			}
+		}
+		return super.getState(pin);
+
 	}
 
 	@Override

@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface BoardExtentionHardware extends HardwareConfig{
 
-	public void setParent(BoardHardware sd);
+	public BoardExtentionHardware setParent(BoardHardware sd);
 	
 	public BoardHardware getParentComponent();
 

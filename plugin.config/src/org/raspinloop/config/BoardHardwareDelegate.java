@@ -40,7 +40,7 @@ public  class  BoardHardwareDelegate implements BoardHardware {
 	}	
 	
 	@Override
-	public void setName(String string) {
+	public BoardHardwareDelegate setName(String string) {
 		throw new RuntimeException("getImplementationClassName not implemented by BoardHardwareDelegate");
 	}
 	

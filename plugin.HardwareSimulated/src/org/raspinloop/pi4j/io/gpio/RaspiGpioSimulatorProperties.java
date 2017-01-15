@@ -10,6 +10,7 @@ import org.raspinloop.config.AlreadyUsedPin;
 import org.raspinloop.config.BoardExtentionHardware;
 import org.raspinloop.config.BoardHardware;
 import org.raspinloop.config.BoardHardwareDelegate;
+import org.raspinloop.config.HardwareConfig;
 import org.raspinloop.config.I2CComponent;
 import org.raspinloop.config.Pin;
 import org.raspinloop.config.PinImpl;
@@ -51,8 +52,9 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	}
 
 	@Override
-	public void setName(String string) {
+	public HardwareConfig setName(String string) {
 		this.name = string;
+		return this;
 	}
 
 	@Override

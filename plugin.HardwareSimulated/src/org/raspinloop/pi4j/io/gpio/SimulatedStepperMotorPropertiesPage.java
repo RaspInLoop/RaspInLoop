@@ -89,6 +89,8 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 	private Spinner fHWInitialPosition;
 	private Combo fHWOnState;
 	private ComboViewer [] fHWPins = new ComboViewer [4];
+	private Spinner fHWHoldingTorque;
+	private Spinner fHWRotorIntertia;
 
 	public SimulatedStepperMotorPropertiesPage() {
 		super("Simulated StepperMotor configuration");
@@ -132,6 +134,14 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		fHWInitialPosition.setIncrement(1);
 		fHWInitialPosition.setSelection(72);
 
+		addLabel(composite, "Holding Torque (N.m)");
+		fHWHoldingTorque = new Spinner(composite, SWT.NONE);
+		fHWHoldingTorque.setDigits(2);
+		fHWHoldingTorque.setMinimum(0);
+		fHWHoldingTorque.setMaximum(10000);
+		fHWHoldingTorque.setIncrement(1);
+		fHWHoldingTorque.setSelection(44);
+					
 		addLabel(composite, "ON state");
 		fHWOnState = new Combo(composite, SWT.READ_ONLY);
 		fHWOnState.setItems(new String[] { PinState.HIGH.toString(), PinState.LOW.toString() });
@@ -155,7 +165,6 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 			hWPin.setInput(usablePins);
 			fHWPins[i] = hWPin;
 		}
-
 		
 		// add the listeners now to prevent them from monkeying with initialized
 		// settings
@@ -165,6 +174,8 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 			}
 		});
 
+		
+		
 		Dialog.applyDialogFont(composite);
 		setControl(composite);
 		initializeFields();
@@ -194,6 +205,7 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		fHWStepsPerRotation.setSelection(fHW.getStepsPerRotation());
 		fHWInitialPosition.setSelection((int) Math.round(fHW.getInitalPosition() * 10));
 		fHWOnState.setText(fHW.getOnState().toString());
+		fHWHoldingTorque.setSelection((int) Math.round(fHW.getHoldingTorque()*100));
 		nameChanged(fHWName.getText());
 	}
 
@@ -209,6 +221,7 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 		fHW.setPins(pins2);			
 
 		fHW.setInitalPosition(fHWInitialPosition.getSelection() / 10.0);
+		fHW.setHoldingTorque(fHWHoldingTorque.getSelection() / 10.0);
 		fHW.setOnState(PinState.valueOf(fHWOnState.getText()));
 		if (fHW.getOnState().equals(PinState.HIGH))
 			fHW.setOffState(PinState.LOW);

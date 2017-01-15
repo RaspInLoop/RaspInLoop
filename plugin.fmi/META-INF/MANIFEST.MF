@@ -39,5 +39,6 @@ Export-Package: org.raspinloop.fmi,
  org.raspinloop.fmi.hwemulation,
  org.raspinloop.fmi.modeldescription,
  org.raspinloop.fmi.plugin,
+ org.raspinloop.fmi.plugin.launcher,
  org.raspinloop.fmi.plugin.preferences,
  org.raspinloop.fmi.plugin.preferences.extension

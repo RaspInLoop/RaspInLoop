@@ -12,7 +12,7 @@ public interface HardwareConfig {
 	 * 
 	 * @param the name of this instance of hardware simulator
 	 */
-	void setName(String string);
+	HardwareConfig setName(String string);
 	/**
 	 * 
 	 * @return the name of this kind of hardware simulator

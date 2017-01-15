@@ -2,78 +2,137 @@ package org.raspinloop.pi4j.io.gpio;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.raspinloop.config.AlreadyUsedPin;
+import org.raspinloop.fmi.hwemulation.GpioCompHwEmulation;
 import org.raspinloop.fmi.hwemulation.HardwareBuilder;
-import org.raspinloop.fmi.hwemulation.HwEmulation;
+import org.raspinloop.fmi.internal.timeemulation.SimulatedTime;
+import org.raspinloop.fmi.internal.timeemulation.SimulatedTimeListerner;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Real;
 
-import com.pi4j.component.Component;
 import com.pi4j.component.ComponentBase;
+import com.pi4j.io.gpio.GpioProviderPinCache;
+import com.pi4j.io.gpio.Pin;
+import com.pi4j.io.gpio.PinMode;
+import com.pi4j.io.gpio.PinState;
+import com.pi4j.io.gpio.impl.PinImpl;
 
-public class SimulatedStepperMotor extends ComponentBase implements Component, HwEmulation {	
-	
+public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEmulation, SimulatedTimeListerner {
 
-	final static Logger logger = Logger.getLogger(SimulatedStepperMotor.class);
-	
-	private double position; //relative ref 0
-	private double speed; //relative ref 1 
-	private double torque; //relative ref 2.  Input: opposite torque from the system on the shaft
-	//param
-		
-	static final int NB_VAR = 4; // too old fashion style, it smells like C code...  
+	final static Logger logger = Logger.getLogger(SimulatedStepperMotor.class);		 
+
+	private double position; // relative ref 0
+	private double resistantTorque; // relative ref 1. Input: opposite torque
+									// from the system on the shaft
+	// param
+	static final int NB_VAR = 2; // too old fashion style, it smells like C
+									// code...
+
 	
 	private int baseref;
+	protected final Map<org.raspinloop.config.Pin, GpioProviderPinCache> cachedPins = new ConcurrentHashMap<org.raspinloop.config.Pin, GpioProviderPinCache>();
 
-	public SimulatedStepperMotor(HardwareBuilder builder){
+	private PinState onState;
+	private PinState offState;
+
+	Map<Byte, Integer> single_step_sequence = createSingleStepSeq();
+	Map<Byte, Integer> double_step_sequence = createDoubleStepSeq();
+	Map<Byte, Integer> half_step_sequence = createHalfStepSeq();
+
+	public SimulatedStepperMotor(HardwareBuilder builder) {
+		SimulatedTime.INST.addRequestingTimeListener(this);
 		if (builder.getProperties() instanceof SimulatedStepperMotorProperties)
-			properties = (SimulatedStepperMotorProperties)builder.getProperties();
+			properties = (SimulatedStepperMotorProperties) builder.getProperties();
 		baseref = builder.getBaseReference();
+		int pinIdx = 0;
+		Iterator<org.raspinloop.config.Pin> it = properties.getUsedPins().iterator();
+		while (it.hasNext() && pinIdx++ < 4) {
+			org.raspinloop.config.Pin configuredPin = (org.raspinloop.config.Pin) it.next();
+			cachedPins.put(configuredPin, new GpioProviderPinCache(new PinImpl(configuredPin.getProvider(), configuredPin.getAddress(),
+					configuredPin.getName(), EnumSet.of(PinMode.DIGITAL_OUTPUT))));
+			if (properties.isAverageMode()) {
+				// only if in Average mode
+				SimulatedTime.INST.RegisterWaitingThreshold(SimulatedStepperMotor.class.getCanonicalName(), 100 * 1000000/*																										 */);
+			}
+		}
+		onState = properties.getOnState() == org.raspinloop.config.PinState.HIGH ? PinState.HIGH : PinState.LOW;
+		offState = properties.getOffState() == org.raspinloop.config.PinState.HIGH ? PinState.HIGH : PinState.LOW;
+	}
+
+	private Map<Byte, Integer> createHalfStepSeq() {
+		HashMap<Byte, Integer> sequence = new HashMap<Byte, Integer>(8);
+		sequence.put((byte) 0b0001, 0);
+		sequence.put((byte) 0b0011, 1);
+		sequence.put((byte) 0b0010, 2);
+		sequence.put((byte) 0b0110, 3);
+		sequence.put((byte) 0b0100, 4);
+		sequence.put((byte) 0b1100, 5);
+		sequence.put((byte) 0b1000, 6);
+		sequence.put((byte) 0b1001, 7);
+		return sequence;
+	}
+
+	private Map<Byte, Integer> createDoubleStepSeq() {
+		HashMap<Byte, Integer> sequence = new HashMap<Byte, Integer>(4);
+		sequence.put((byte) 0b0011, 0);
+		sequence.put((byte) 0b0110, 1);
+		sequence.put((byte) 0b1100, 2);
+		sequence.put((byte) 0b1001, 3);
+		return sequence;
+	}
+
+	private Map<Byte, Integer> createSingleStepSeq() {
+		HashMap<Byte, Integer> sequence = new HashMap<Byte, Integer>(4);
+		sequence.put((byte) 0b0001, 0);
+		sequence.put((byte) 0b0010, 1);
+		sequence.put((byte) 0b0100, 2);
+		sequence.put((byte) 0b1000, 3);
+		return sequence;
 	}
 
 	private SimulatedStepperMotorProperties properties;
-	
+
+	//will be used in step mode (opposite of average mode)
+	private Long previousChangeTime = 0L;
+
+	private byte previousBinaryState;
+
+	private double stepInc;
+
 	private Double getVar(Integer ref) {
 		switch (ref - baseref) {
 		case 0:
 			return position;
 		case 1:
-			return speed;
-		case 2:
-			return torque;
-		case 3:
-			return (double)properties.getStepsPerRotation();
-		case 4:
-			return  properties.getInitalPosition();
+			return resistantTorque;
 		default:
 			return null;
 		}
 	}
 
-
 	public SimulatedStepperMotor() {
-		this.properties = new SimulatedStepperMotorProperties();			
+		this.properties = new SimulatedStepperMotorProperties();
 	}
-	
+
 	public SimulatedStepperMotor(String name, org.raspinloop.config.PinState onState, org.raspinloop.config.PinState offState) throws AlreadyUsedPin {
-		setName( name);
+		setName(name);
 		properties.setOnState(onState);
 		properties.setOffState(offState);
 	}
-	
-	
-	public String getHWGuid() {
-		return null;
-	}
 
 	public boolean enterInitialize() {
-		position =  properties.getInitalPosition(); 
-		return false;
+		previousChangeTime = 0L;
+		position = properties.getInitalPosition();
+		return true;
 	}
 
 	public boolean exitInitialize() {
@@ -84,14 +143,15 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 	}
 
 	public void reset() {
+		previousChangeTime = 0L;
 	}
 
 	public List<Double> getReal(List<Integer> refs) {
 		List<Double> result = new ArrayList<Double>(refs.size());
-		for (Integer ref : refs) {			
+		for (Integer ref : refs) {
 			Double var = getVar(ref);
-			if (var != null) {				
-				result.add(var);				
+			if (var != null) {
+				result.add(var);
 			} else {
 				logger.warn("ref:" + ref + " not used in this stepper motor component");
 				result.add(0.0); // Invalid value defined for real ?
@@ -99,8 +159,6 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 		}
 		return result;
 	}
-
-	
 
 	public List<Integer> getInteger(List<Integer> refs) {
 		return Collections.emptyList();
@@ -111,9 +169,9 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 	}
 
 	public boolean setReal(Map<Integer, Double> ref_values) {
-		for (Entry<Integer, Double> entry : ref_values.entrySet()) {			
+		for (Entry<Integer, Double> entry : ref_values.entrySet()) {
 			Double var = getVar(entry.getKey());
-			if (var != null) {				
+			if (var != null) {
 				var = entry.getValue();
 			} else {
 				logger.warn("ref:" + entry.getKey() + " not used in this stepper motor component");
@@ -136,16 +194,14 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 
 	public List<Fmi2ScalarVariable> getModelVariables() {
 		ArrayList<Fmi2ScalarVariable> result = new ArrayList<Fmi2ScalarVariable>(NB_VAR);
-		result.add(createRealOutput(getType()+" position", "", baseref+0));
-		result.add(createRealOutput(getType()+" speed", "", baseref+1));
-		result.add(createRealInput(getType()+" torque", "", baseref+2));
+		result.add(createRealOutput(getType() + " position", "", baseref + 0));
+		result.add(createRealInput(getType() + " torque", "", baseref + 1));
 		return result;
 	}
-	
-	
-	private Fmi2ScalarVariable createRealOutput(String name, String descritpion, long ref){
+
+	private Fmi2ScalarVariable createRealOutput(String name, String descritpion, long ref) {
 		Fmi2ScalarVariable sc = new Fmi2ScalarVariable();
-		Real scr = new Fmi2ScalarVariable.Real();	
+		Real scr = new Fmi2ScalarVariable.Real();
 		sc.setReal(scr);
 		sc.setName(name);
 		sc.setValueReference(ref);
@@ -154,10 +210,10 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 		sc.setVariability("continuous");
 		return sc;
 	}
-	
-	private Fmi2ScalarVariable createRealInput(String name, String descritpion, long ref){
+
+	private Fmi2ScalarVariable createRealInput(String name, String descritpion, long ref) {
 		Fmi2ScalarVariable sc = new Fmi2ScalarVariable();
-		Real scr = new Fmi2ScalarVariable.Real();	
+		Real scr = new Fmi2ScalarVariable.Real();
 		sc.setReal(scr);
 		sc.setName(name);
 		sc.setValueReference(ref);
@@ -167,14 +223,177 @@ public class SimulatedStepperMotor extends ComponentBase implements Component, H
 		return sc;
 	}
 
-	//@Override
+	// @Override
 	public int registerBaseref(int baseref) {
 		this.baseref = baseref;
 		return NB_VAR;
-	}	
+	}
 
 	@Override
-	public String getType() {		
+	public String getType() {
 		return properties.getType();
 	}
+
+	@Override
+	public PinState getState(Pin pin) {
+		org.raspinloop.config.Pin raspConfigPin = getPin(pin);
+		if (raspConfigPin != null) {
+			return cachedPins.get(raspConfigPin).getState();
+		}
+		return PinState.LOW;
+	}
+
+	@Override
+	public void setState(Pin pin, PinState state) {
+		org.raspinloop.config.Pin raspConfigPin = getPin(pin);
+		if (raspConfigPin != null) {
+			cachedPins.get(raspConfigPin).setState(state);
+		}
+	}
+
+
+	@Override
+	public void onRequestingSleep(long requestedNanos) {
+		if (requestedNanos > 0)
+			doStep();
+	}
+	
+	private void doStep() {
+		Long currentTime = SimulatedTime.INST.getRequestingTime();
+		byte currentBinaryState = getBinaryState();
+		if (logger.isTraceEnabled())
+			logger.trace("Do Step : previous["+previousBinaryState+"] current["+currentBinaryState+"] @ "+currentTime);
+		if (single_step_sequence.containsKey(previousBinaryState) && single_step_sequence.containsKey(currentBinaryState)) {
+			// nominal torque and current
+			if (doStep(single_step_sequence.get(previousBinaryState), single_step_sequence.get(currentBinaryState), single_step_sequence.size())){
+				logger.info("Stepping in single_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+				previousBinaryState = currentBinaryState;
+				previousChangeTime = currentTime;			
+			}
+				
+		} else if ( double_step_sequence.containsKey(previousBinaryState) && double_step_sequence.containsKey(currentBinaryState)) {
+			// double torque and current
+			if (doStep(double_step_sequence.get(previousBinaryState), double_step_sequence.get(currentBinaryState), double_step_sequence.size())){
+				logger.info("Stepping in double_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+				previousBinaryState = currentBinaryState;
+				previousChangeTime = currentTime;			
+			}
+		} else if ( half_step_sequence.containsKey(previousBinaryState) && half_step_sequence.containsKey(currentBinaryState)) {
+			// double torque and current
+			if (doStep(half_step_sequence.get(previousBinaryState), half_step_sequence.get(currentBinaryState), half_step_sequence.size())){
+				logger.info("Stepping in half_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+				previousBinaryState = currentBinaryState;
+				previousChangeTime = currentTime;			
+			}
+		} else if (previousBinaryState == 0 ) {
+				
+			logger.info("Stepping from init" );
+			
+			if (single_step_sequence.containsKey(currentBinaryState)) {
+				// nominal torque and current
+				if (doStep(single_step_sequence.get(currentBinaryState-1), single_step_sequence.get(currentBinaryState), single_step_sequence.size())){
+					logger.info("Stepping in single_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+					previousBinaryState = currentBinaryState;
+					previousChangeTime = currentTime;			
+				}					
+			} else if ( double_step_sequence.containsKey(previousBinaryState) && double_step_sequence.containsKey(currentBinaryState)) {
+				// double torque and current
+				if (doStep(double_step_sequence.get(currentBinaryState-1), double_step_sequence.get(currentBinaryState), double_step_sequence.size())){
+					logger.info("Stepping in double_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+					previousBinaryState = currentBinaryState;
+					previousChangeTime = currentTime;			
+				}
+			} else if ( half_step_sequence.containsKey(previousBinaryState) && half_step_sequence.containsKey(currentBinaryState)) {
+				// double torque and current
+				if (doStep(half_step_sequence.get(currentBinaryState-1), half_step_sequence.get(currentBinaryState), half_step_sequence.size())){
+					logger.info("Stepping in half_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
+					previousBinaryState = currentBinaryState;
+					previousChangeTime = currentTime;			
+				}
+			}
+		}							
+	}
+
+	// rotate shaft according to index difference
+	private boolean doStep(Integer previousSeqIdx, Integer currentSeqIdx, int nbStep) {
+		
+		int theoricalCurrentIdxForward = previousSeqIdx+1;
+		if (theoricalCurrentIdxForward == nbStep)
+			theoricalCurrentIdxForward =0;
+		
+		int theoricalCurrentIdxReverse = previousSeqIdx-1;
+		if (theoricalCurrentIdxReverse < 0)
+			theoricalCurrentIdxReverse = nbStep-1;
+		
+		if (currentSeqIdx == theoricalCurrentIdxForward){
+			if (properties.getHoldingTorque()-resistantTorque > 0){
+				stepInc += 1;
+			}
+			else
+				logger.warn("Step lost: resitstant Torque: "+resistantTorque+ " holding torque: "+ properties.getHoldingTorque());
+			if (stepInc >= 1)
+			{
+				stepInc = 0;
+				position+=360.0/(double)properties.getStepsPerRotation();
+				logger.info("Stepping to "+position);
+				
+			}
+			return true;
+		}
+		else if (currentSeqIdx == theoricalCurrentIdxReverse){
+			if (properties.getHoldingTorque()+resistantTorque > 0){
+				stepInc -= 1;
+			}
+			else
+				logger.warn("Step lost: resitstant Torque: "+resistantTorque+ " holding torque: "+ properties.getHoldingTorque());
+			
+			if (stepInc <= -1)
+			{
+				stepInc = 0;
+				position-=360.0/properties.getStepsPerRotation();
+				logger.info("Stepping to "+position);
+			}
+			return true;
+			
+		}
+		return false;
+	}
+
+	private byte getBinaryState() {
+		int pinIdx = 0;
+		byte state = 0;
+		Iterator<org.raspinloop.config.Pin> it = properties.getUsedPins().iterator();
+		while (it.hasNext() && pinIdx++ < 4) {
+			org.raspinloop.config.Pin configuredPin = (org.raspinloop.config.Pin) it.next();
+			double nib = Math.pow(2, pinIdx-1);
+			if (cachedPins.get(configuredPin).getState() == onState) {
+				state ^= (int) nib;
+			}
+		}
+		return state;
+	}
+
+	@Override
+	public boolean usePin(Pin pin) {		
+		for (org.raspinloop.config.Pin configuredPin : cachedPins.keySet()) {
+			if (configuredPin.getAddress() == pin.getAddress())
+				return true;
+		}
+		return false;
+	}
+
+	public org.raspinloop.config.Pin getPin(Pin pin) {		
+		for (org.raspinloop.config.Pin configuredPin : cachedPins.keySet()) {
+			if (configuredPin.getAddress() == pin.getAddress())
+				return configuredPin;
+		}
+		return null;
+	}
+	
+	@Override
+	public String getHWGuid() {		
+		return null;
+	}
+
+
 }
