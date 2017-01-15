@@ -1,0 +1,3 @@
+/bin/org/raspinloop/fmi
+/bin/org/raspinloop/pi4j/io/gpio
+/target/

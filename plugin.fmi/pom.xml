@@ -75,12 +75,11 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
      	</plugins>
      </pluginManagement>
  </build>
- 
  <dependencies>
  	<dependency>
  		<groupId>org.raspinloop.fmi</groupId>
  		<artifactId>pi4j-launcher</artifactId>
- 		<version>2.0.0-SNAPSHOT</version>
+ 		<version>1.3.0-SNAPSHOT</version>
  	</dependency>
  </dependencies>
 </project>

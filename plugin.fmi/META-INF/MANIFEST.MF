@@ -32,7 +32,7 @@ Bundle-ClassPath: .,
  target/dependency/annotations-2.0.1.jar,
  target/dependency/guava-15.0.jar,
  target/dependency/javassist-3.19.0-GA.jar,
- target/dependency/pi4j-launcher-2.0.0-SNAPSHOT.jar,
+ target/dependency/pi4j-launcher-1.3.0-SNAPSHOT.jar,
  target/dependency/pi4j-core-1.0.jar
 Import-Package: org.apache.log4j
 Export-Package: org.raspinloop.fmi,

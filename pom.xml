@@ -11,5 +11,6 @@
   <module>plugin.updatesite</module>
   <module>plugin.hardwareSimulated</module>
   <module>plugin.config</module>
+  <module>pi4j-launcher</module>
   </modules>  
 </project>
