@@ -13,6 +13,27 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="target/dependency/annotations-2.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/aspectjrt-1.8.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/aspectjweaver-1.8.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/commons-codec-1.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/commons-logging-1.1.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/gson-2.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/guava-15.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/httpclient-4.2.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/httpcore-4.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/javassist-3.19.0-GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/jna-4.2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/libthrift-0.9.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/log4j-1.2.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/org.osgi.core-4.3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-core-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-device-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-gpio-extension-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/pi4j-service-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/reflections-0.9.10.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/slf4j-api-1.5.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
@@ -24,5 +45,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/plugin.config"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

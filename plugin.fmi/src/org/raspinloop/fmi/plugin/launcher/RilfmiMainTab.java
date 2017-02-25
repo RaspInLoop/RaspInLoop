@@ -1,7 +1,10 @@
 package org.raspinloop.fmi.plugin.launcher;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +13,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -325,7 +329,15 @@ public class RilfmiMainTab extends SharedJavaMainTab {
 							}
 							file.delete();
 						}
-						FMU.generate(file, (GpioProviderHwEmulation) emulationImplementation);
+						FMU.Locator eclipseLocator = new FMU.Locator() {
+							  public URL resolve(URL url) { try {
+								return  FileLocator.resolve(url); 
+							} catch (IOException e) {
+								System.err.print(e);
+							}
+							return null; }
+						};
+						FMU.generate(file, (GpioProviderHwEmulation) emulationImplementation, eclipseLocator);
 					}
 
 				}

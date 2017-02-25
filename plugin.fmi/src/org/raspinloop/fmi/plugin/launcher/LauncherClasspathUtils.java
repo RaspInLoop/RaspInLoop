@@ -23,9 +23,9 @@ import org.raspinloop.fmi.plugin.preferences.PreferenceConstants;
 
 public class LauncherClasspathUtils {
 
-	static Bundle fmiBundle = Platform.getBundle("org.raspinloop.fmi.plugin.fmi");
+	static Bundle launcherBundle = Platform.getBundle("org.raspinloop.fmi.plugin.pi4j-launcher");
 	static Bundle configBundle = Platform.getBundle("org.raspinloop.fmi.plugin.config");
-	
+
 	
 	/**
 	 * Used to get all classPath required by the launcher
@@ -71,31 +71,31 @@ public class LauncherClasspathUtils {
 	}
 
 	private static Collection<? extends String> getLauncherCP(ILaunchConfiguration configuration) {
-		return Arrays.asList(getFmiPath("target/dependency/aspectjrt-1.8.2.jar"), 
-							 getFmiPath("target/dependency/commons-codec-1.6.jar"),
-							 getFmiPath("target/dependency/commons-logging-1.1.1.jar"), 
-							 getFmiPath("target/dependency/httpclient-4.2.5.jar"),
-							 getFmiPath("target/dependency/httpcore-4.2.4.jar"), 
-							 getFmiPath("target/dependency/jna-4.2.1.jar"), 
-							 getFmiPath("target/dependency/libthrift-0.9.2.jar"),
-							 getFmiPath("target/dependency/log4j-1.2.17.jar"), 
-							 getFmiPath("target/dependency/pi4j-core-1.0.jar"),
-							 getFmiPath("target/dependency/pi4j-device-1.0.jar"), 
-							 getFmiPath("target/dependency/pi4j-example-1.0.jar"),
-							 getFmiPath("target/dependency/pi4j-gpio-extension-1.0.jar"), 
-							 getFmiPath("target/dependency/pi4j-service-0.0.5.jar"),
-							 getFmiPath("target/dependency/pi4j-launcher-2.0.0-SNAPSHOT.jar"), 
-							 getFmiPath("target/dependency/slf4j-api-1.5.8.jar"),
-							 getFmiPath("target/dependency/slf4j-log4j12-1.5.8.jar"),
-							 getFmiPath("target/dependency/gson-2.5.jar"),
-							 getFmiPath("target/dependency/reflections-0.9.10.jar"),
-							 getFmiPath("target/dependency/guava-15.0.jar"),
-							 getFmiPath("target/dependency/javassist-3.19.0-GA.jar"),
-							 getFmiPath("target/dependency/annotations-2.0.1.jar"));
+		return Arrays.asList(getLauncherPath("target/classes"), //debug 
+							 getLauncherPath("target/dependency/aspectjrt-1.8.4.jar"), 
+							 getLauncherPath("target/dependency/commons-codec-1.6.jar"),
+							 getLauncherPath("target/dependency/commons-logging-1.1.1.jar"), 
+							 getLauncherPath("target/dependency/httpclient-4.2.5.jar"),
+							 getLauncherPath("target/dependency/httpcore-4.2.4.jar"), 
+							 getLauncherPath("target/dependency/jna-4.2.1.jar"), 
+							 getLauncherPath("target/dependency/libthrift-0.9.2.jar"),
+							 getLauncherPath("target/dependency/log4j-1.2.17.jar"), 
+							 getLauncherPath("target/dependency/pi4j-core-1.0.jar"),
+							 getLauncherPath("target/dependency/pi4j-device-1.0.jar"), 
+							 getLauncherPath("target/dependency/pi4j-example-1.0.jar"),
+							 getLauncherPath("target/dependency/pi4j-gpio-extension-1.0.jar"), 
+							 getLauncherPath("target/dependency/pi4j-service-1.0.jar"),
+							 getLauncherPath("target/dependency/slf4j-api-1.5.8.jar"),
+							 getLauncherPath("target/dependency/slf4j-log4j12-1.5.8.jar"),
+							 getLauncherPath("target/dependency/gson-2.5.jar"),
+							 getLauncherPath("target/dependency/reflections-0.9.10.jar"),
+							 getLauncherPath("target/dependency/guava-15.0.jar"),
+							 getLauncherPath("target/dependency/javassist-3.19.0-GA.jar"),
+							 getLauncherPath("target/dependency/annotations-2.0.1.jar"));
 	}
 	
-	public static String getFmiPath(String string) {
-		return getPath(fmiBundle, string);
+	public static String getLauncherPath(String string) {
+		return getPath(launcherBundle, string);
 	}
 	
 	private static Set<String> getExtenstionPluginIds(){
@@ -156,10 +156,19 @@ public class LauncherClasspathUtils {
 	              }
 	              if (resolvedURLString.startsWith("file:"))
 	              {
+	            	  // in debug in IDE, we have to point to target/class/
+	            	  //but when used in production, we don not have to do that...
+	            	  // How can we detect that ?
+	            	 if ("/".equals(value)){
+	            		 result.add(resolvedURLString.substring("file:".length())+"target/classes");
+	            	 }
 	                result.add(resolvedURLString.substring("file:".length()));
 	              }
 	              else
 	              {
+	            	  if ("/".equals(value)){
+	            		  result.add(FileLocator.toFileURL(url).getFile()+"target/classes");
+		            	 }
 	                result.add(FileLocator.toFileURL(url).getFile());
 	              }
 	            }

@@ -35,7 +35,7 @@ public class FmiLauncher extends JavaLaunchDelegate {
 	
 
 	private String getRilFmiAspectWeaverJar(ILaunchConfiguration configuration) {
-		return LauncherClasspathUtils.getFmiPath("target/dependency/aspectjweaver-1.8.2.jar");
+		return LauncherClasspathUtils.getLauncherPath("target/dependency/aspectjweaver-1.8.4.jar");
 	}
 
 	@Override

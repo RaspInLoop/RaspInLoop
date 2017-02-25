@@ -5,8 +5,8 @@
       version="1.3.0.qualifier"
       provider-name="raspinloop">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
+   <description url="http://www.raspinloop.org/">
+      Simulate and debug java applications witten with Pi4J Project on Raspberry Pi. RaspInLoop allows debugger to interract with computer simulation software.
    </description>
 
    <license url="https://www.eclipse.org/legal/epl-v10.html">
@@ -114,6 +114,13 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <plugin
          id="org.raspinloop.fmi.plugin.hardwareSimulated"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.raspinloop.fmi.plugin.pi4j-launcher"
          download-size="0"
          install-size="0"
          version="0.0.0"

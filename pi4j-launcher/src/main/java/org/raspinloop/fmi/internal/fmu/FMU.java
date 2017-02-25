@@ -3,9 +3,19 @@ package org.raspinloop.fmi.internal.fmu;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -28,55 +38,56 @@ import org.raspinloop.fmi.modeldescription.FmiModelDescription.LogCategories.Cat
 
 public class FMU {
 
-	final static Logger logger = Logger.getLogger(FMU.class);	
+	public interface Locator {
+		URL resolve(URL url);
+	}
 
+	final static Logger logger = Logger.getLogger(FMU.class);
 
-
-	public static void generate(File fmuFileName, GpioProviderHwEmulation ch) throws FMUGenerateException {
+	public static void generate(File fmuFileName, GpioProviderHwEmulation ch, Locator locator) throws FMUGenerateException {
 		try (ZipOutputStream fmuzip = new ZipOutputStream(new FileOutputStream(fmuFileName))) {
 			FMU fmu = new FMU();
 
 			byte[] modelDescription = null;
 
 			modelDescription = fmu.generateDescription(ch);
-		
+
 			fmuzip.putNextEntry(new ZipEntry("modelDescription.xml"));
 			copy(modelDescription, fmuzip);
 			fmuzip.closeEntry();
-			
+
 			fmuzip.putNextEntry(new ZipEntry("model.png"));
-			copy( fmu.getClass().getResourceAsStream("model.png"), fmuzip);
+			copy(fmu.getClass().getResourceAsStream("model.png"), fmuzip);
 			fmuzip.closeEntry();
-			
+
 			fmuzip.putNextEntry(new ZipEntry("sources/"));
 			fmuzip.closeEntry();
-			
+
 			fmuzip.putNextEntry(new ZipEntry("documentation/"));
 			fmuzip.closeEntry();
-			
+
 			// put coSimulation so /dll
-			fmuzip.putNextEntry(new ZipEntry("binaries/win32/ril_fmi.dll"));
-			copy( fmu.getClass().getResourceAsStream("binaries/win32/ril_fmi.dll"), fmuzip);
-			fmuzip.closeEntry();
-			
+
+//			fmuzip.putNextEntry(new ZipEntry("binaries/win32/ril_fmi.dll"));
+//			copy(fmu.getClass().getResourceAsStream("binaries/win32/ril_fmi.dll"), fmuzip);
+//			fmuzip.closeEntry();
 
 			fmuzip.putNextEntry(new ZipEntry("binaries/win64/ril_fmi.dll"));
 			copy(fmu.getClass().getResourceAsStream("binaries/win64/ril_fmi.dll"), fmuzip);
 			fmuzip.closeEntry();
-	
-// NOT SUPPORTED YET			
-//			fmuzip.putNextEntry(new ZipEntry("binaries/linu32/ril_fmi.so"));
-//			copy(fmu.getClass().getResourceAsStream("binaries/linu32/ril_fmi.dll"), fmuzip);
-//			fmuzip.closeEntry();
-			
-			fmuzip.putNextEntry(new ZipEntry("binaries/linux64/ril_fmi.so"));
-			copy(fmu.getClass().getResourceAsStream("binaries/linux64/ril_fmi.dll"), fmuzip);
+
+			fmuzip.putNextEntry(new ZipEntry("binaries/linux32/ril_fmi.so"));
+			copy(fmu.getClass().getResourceAsStream("binaries/linux32/ril_fmi.so"), fmuzip);
 			fmuzip.closeEntry();
-			
+
+			fmuzip.putNextEntry(new ZipEntry("binaries/linux64/ril_fmi.so"));
+			copy(fmu.getClass().getResourceAsStream("binaries/linux64/ril_fmi.so"), fmuzip);
+			fmuzip.closeEntry();
+
 		}
 
 		catch (IOException | JAXBException e) {
-			throw new FMUGenerateException("Cannot generate fmu file", e);
+			throw new FMUGenerateException("Cannot generate fmu file: " + e.getMessage(), e);
 		}
 
 	}
@@ -93,7 +104,7 @@ public class FMU {
 			out.write(buffer, 0, readCount);
 		}
 	}
-		
+
 	private static void copy(byte[] bytes, OutputStream out) throws IOException {
 		out.write(bytes, 0, bytes.length);
 		out.flush();

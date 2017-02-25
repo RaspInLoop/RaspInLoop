@@ -1,6 +1,7 @@
 package org.raspinloop.fmi.internal.fmu;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -9,6 +10,7 @@ import org.raspinloop.config.GsonConfig;
 import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
 import org.raspinloop.fmi.hwemulation.HardwareBuilder;
 import org.raspinloop.fmi.hwemulation.HwEmulation;
+import org.raspinloop.fmi.internal.fmu.FMU.Locator;
 import org.raspinloop.fmi.internal.hwemulation.ClassLoaderBuilderFactory;
 
 public class FmuCLI {
@@ -28,7 +30,10 @@ public class FmuCLI {
 		ClassLoaderBuilderFactory clbf = new ClassLoaderBuilderFactory();
 		HardwareBuilder builder = clbf.createBuilder(hardwareProperties);
 		HwEmulation emulationImplementation = builder.build();
-		FMU.generate(new File(fmuFilename), (GpioProviderHwEmulation)emulationImplementation);
+		Locator locator = new FMU.Locator() {
+			   public URL resolve(URL url) { return url; }
+			};
+		FMU.generate(new File(fmuFilename), (GpioProviderHwEmulation)emulationImplementation, locator);
 			} catch (Exception e) {
 				System.err.println("FmuCLI Exception:"+ e.getMessage());
 			}

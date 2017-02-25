@@ -77,9 +77,19 @@
  </build>
  <dependencies>
  	<dependency>
- 		<groupId>org.raspinloop.fmi</groupId>
- 		<artifactId>pi4j-launcher</artifactId>
- 		<version>1.3.0-SNAPSHOT</version>
+ 		<groupId>com.google.code.gson</groupId>
+ 		<artifactId>gson</artifactId>
+ 		<version>2.5</version>
+ 	</dependency>
+ 	<dependency>
+ 		<groupId>com.pi4j</groupId>
+ 		<artifactId>pi4j-core</artifactId>
+ 		<version>1.0</version>
+ 	</dependency>
+ 	<dependency>
+ 		<groupId>com.pi4j</groupId>
+ 		<artifactId>pi4j-device</artifactId>
+ 		<version>1.0</version>
  	</dependency>
  </dependencies>
 </project>
