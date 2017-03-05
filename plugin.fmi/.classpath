@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="target/dependency/slf4j-api-1.7.12.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="icons"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/gson-2.5.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pi4j-launcher"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pi4j-runner"/>
+	<classpathentry kind="lib" path="target/dependency/libthrift-0.10.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

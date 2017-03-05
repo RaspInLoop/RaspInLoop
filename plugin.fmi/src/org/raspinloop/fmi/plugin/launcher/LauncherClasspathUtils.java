@@ -19,11 +19,12 @@ import org.eclipse.osgi.util.ManifestElement;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.raspinloop.fmi.plugin.Activator;
+import org.raspinloop.fmi.plugin.Trace;
 import org.raspinloop.fmi.plugin.preferences.PreferenceConstants;
 
 public class LauncherClasspathUtils {
 
-	static Bundle launcherBundle = Platform.getBundle("org.raspinloop.fmi.plugin.pi4j-launcher");
+	static Bundle runnerBundle = Platform.getBundle("org.raspinloop.fmi.plugin.pi4j-runner");
 	static Bundle configBundle = Platform.getBundle("org.raspinloop.fmi.plugin.config");
 
 	
@@ -49,7 +50,7 @@ public class LauncherClasspathUtils {
 		//add plug-ins and their dependencies
 		for (String pluginId : getExtenstionPluginIds()) {
 			try {
-				Activator.getDefault().log("found Extension: "+pluginId);
+				Trace.launcherRunner("found Extension: "+pluginId);
 				pluginsAndDependenciesIds.add(pluginId);
 				pluginsAndDependenciesIds.addAll( getDependencyPluginIds(pluginId));
 			} catch (Exception e) {
@@ -73,20 +74,20 @@ public class LauncherClasspathUtils {
 	private static Collection<? extends String> getLauncherCP(ILaunchConfiguration configuration) {
 		return Arrays.asList(getLauncherPath("target/classes"), //debug 
 							 getLauncherPath("target/dependency/aspectjrt-1.8.4.jar"), 
-							 getLauncherPath("target/dependency/commons-codec-1.6.jar"),
-							 getLauncherPath("target/dependency/commons-logging-1.1.1.jar"), 
-							 getLauncherPath("target/dependency/httpclient-4.2.5.jar"),
-							 getLauncherPath("target/dependency/httpcore-4.2.4.jar"), 
+							 getLauncherPath("target/dependency/commons-codec-1.9.jar"),
+							 getLauncherPath("target/dependency/commons-logging-1.2.jar"), 
+							 getLauncherPath("target/dependency/httpclient-4.4.1.jar"),
+							 getLauncherPath("target/dependency/httpcore-4.4.1.jar"), 
 							 getLauncherPath("target/dependency/jna-4.2.1.jar"), 
-							 getLauncherPath("target/dependency/libthrift-0.9.2.jar"),
+							 getLauncherPath("target/dependency/libthrift-0.10.0.jar"),
 							 getLauncherPath("target/dependency/log4j-1.2.17.jar"), 
 							 getLauncherPath("target/dependency/pi4j-core-1.0.jar"),
 							 getLauncherPath("target/dependency/pi4j-device-1.0.jar"), 
 							 getLauncherPath("target/dependency/pi4j-example-1.0.jar"),
 							 getLauncherPath("target/dependency/pi4j-gpio-extension-1.0.jar"), 
 							 getLauncherPath("target/dependency/pi4j-service-1.0.jar"),
-							 getLauncherPath("target/dependency/slf4j-api-1.5.8.jar"),
-							 getLauncherPath("target/dependency/slf4j-log4j12-1.5.8.jar"),
+							 getLauncherPath("target/dependency/slf4j-api-1.7.12.jar"),
+							 getLauncherPath("target/dependency/slf4j-log4j12-1.7.24.jar"),
 							 getLauncherPath("target/dependency/gson-2.5.jar"),
 							 getLauncherPath("target/dependency/reflections-0.9.10.jar"),
 							 getLauncherPath("target/dependency/guava-15.0.jar"),
@@ -95,7 +96,7 @@ public class LauncherClasspathUtils {
 	}
 	
 	public static String getLauncherPath(String string) {
-		return getPath(launcherBundle, string);
+		return getPath(runnerBundle, string);
 	}
 	
 	private static Set<String> getExtenstionPluginIds(){
@@ -190,7 +191,7 @@ public class LauncherClasspathUtils {
 	    	for (ManifestElement element : elements) {
 				
 	          String value = element.getValue();
-	          Activator.getDefault().log("Extension: "+pluginID+ " requirement found: "+value);
+	          Trace.launcherRunner("Extension: "+pluginID+ " requirement found: "+value);
 	          result.add(value);
 	        }
 	      }

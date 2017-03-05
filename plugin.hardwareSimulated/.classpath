@@ -11,6 +11,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/pi4j-launcher"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/pi4j-runner"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/plugin.fmi"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

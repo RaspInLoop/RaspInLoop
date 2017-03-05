@@ -81,5 +81,10 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xs
 			<artifactId>gson</artifactId>
 			<version>2.5</version>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>org.apache.thrift</groupId>
+			<artifactId>libthrift</artifactId>
+			<version>0.10.0</version>
+		</dependency>
+ 	</dependencies>
 </project>

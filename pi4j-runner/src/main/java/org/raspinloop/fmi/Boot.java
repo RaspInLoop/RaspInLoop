@@ -8,6 +8,7 @@ import java.util.Arrays;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.raspinloop.fmi.launcherRunnerIpc.IpcConnector;
 
 public class Boot {
 
@@ -32,7 +33,7 @@ public class Boot {
 			String jsonConfig = new String(encoded, "UTF-8");
 
 			final String[] otherArgs = Arrays.copyOfRange(args, from, to, String[].class);
-			Handler.build(jsonConfig, mainclassName, otherArgs).start(new Server());
+			Handler.build(jsonConfig, mainclassName, otherArgs).start(new IpcConnector());
 
 		} catch (ClassNotFoundException | IOException e) {
 			logger.fatal(e);

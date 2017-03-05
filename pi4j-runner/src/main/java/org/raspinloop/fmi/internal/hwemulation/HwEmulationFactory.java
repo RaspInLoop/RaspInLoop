@@ -1,6 +1,5 @@
 package org.raspinloop.fmi.internal.hwemulation;
 
-import org.raspinloop.fmi.Instance;
 import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
 
 /**
@@ -13,11 +12,9 @@ public interface HwEmulationFactory {
 	 * @param inst Instance contains hardware GUID (which comes from ModelDescritpion.xml (bundled in FMU)
 	 */
 
-	GpioProviderHwEmulation get(Instance c);
+	GpioProviderHwEmulation get();
 
-	void remove(Instance c);
-
-	GpioProviderHwEmulation create(Instance inst, String xmlHwDescription)
+	GpioProviderHwEmulation create(String xmlHwDescription)
 			throws  Exception;
 
 

@@ -5,26 +5,43 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="org.raspinloop.fmi.plugin.launcher.FmiLauncher"
-            id="org.raspinloop.fmi.plugin.launchConfigurationType1"
+            delegate="org.raspinloop.fmi.plugin.launcher.fmi.FmiLauncher"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi"
             modes="run, debug"
-            name="RIL-Simulate"
+            name="RIL-Remote simulation"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.raspinloop.fmi.plugin.launcher.standalone.StandaloneLauncher"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTypeSA"
+            modes="run, debug"
+            name="RIL-Standalone simulation"
             sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
       </launchConfigurationType>
    </extension>
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     	<launchConfigurationTypeImage
-        icon="icons/ril-16.png"
-        configTypeID="org.raspinloop.fmi.plugin.launchConfigurationType1"
+        icon="icons/rilfmi-16.png"
+        configTypeID="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi"
         id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage">
     	</launchConfigurationTypeImage>
+     <launchConfigurationTypeImage
+           configTypeID="org.raspinloop.fmi.plugin.launchConfigurationTypeSA"
+           icon="icons/ril-sa-16.png"
+           id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage2">
+     </launchConfigurationTypeImage>
 	</extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="org.raspinloop.fmi.plugin.launcher.LaunchConfigTabGroup"
-            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroup1"
-            type="org.raspinloop.fmi.plugin.launchConfigurationType1">
+            class="org.raspinloop.fmi.plugin.launcher.fmi.LaunchConfigTabGroup"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroupFmi"
+            type="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="org.raspinloop.fmi.plugin.launcher.standalone.LaunchConfigTabGroup"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroupSA"
+            type="org.raspinloop.fmi.plugin.launchConfigurationTypeSA">
       </launchConfigurationTabGroup>
    </extension>
    <extension

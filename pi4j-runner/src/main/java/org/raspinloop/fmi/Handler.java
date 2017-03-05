@@ -29,11 +29,9 @@ public class Handler {
 
 		fmiHandler = new CSHandler(jsonConfig);
 
-		ClassLoader classLoader = BootStandAlone.class.getClassLoader();
+		ClassLoader classLoader = Boot.class.getClassLoader();
 
-		final Class<?> mainclass = classLoader.loadClass(mainclassName);
-
-		
+		final Class<?> mainclass = classLoader.loadClass(mainclassName);		
 
 		HwEmulationFactory factory = new HwEmulationFactoryFromJson();
 		fmiHandler.registerHardware(factory);
@@ -57,14 +55,16 @@ public class Handler {
 							GpioFactory.setExecutorServiceFactory(simulatedTimeExecutorFactory);
 							// calling the main class
 							Object[] param = { (Object[]) otherArgs };
-							mainclass.getMethod("main", String[].class).invoke(null, param);
-
+							mainclass.getMethod("main", String[].class).invoke(null, param);							
 						} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException e) {
 							logger.info("main is unable to start");
 							SimulatedTime.INST.stop();
 						} catch (InvocationTargetException e) {
 							logger.debug("main was stopped: " + e.getTargetException().getLocalizedMessage());
 							SimulatedTime.INST.stop();
+						}
+						finally{
+							System.exit(0);
 						}
 					}
 				});
