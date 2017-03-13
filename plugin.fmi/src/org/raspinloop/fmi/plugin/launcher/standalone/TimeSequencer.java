@@ -127,6 +127,7 @@ public class TimeSequencer implements Proxy {
 		finally {
 		
 			lifeHandler.stopVMRunner();
+			lifeHandler.freeInstance(null);
 		}
 	}
 

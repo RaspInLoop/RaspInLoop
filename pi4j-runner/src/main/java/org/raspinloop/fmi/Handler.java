@@ -9,13 +9,14 @@ import org.raspinloop.fmi.internal.hwemulation.HwEmulationFactory;
 import org.raspinloop.fmi.internal.hwemulation.HwEmulationFactoryFromJson;
 import org.raspinloop.fmi.internal.timeemulation.SimulatedTime;
 import org.raspinloop.fmi.internal.timeemulation.SimulatedTimeExecutorServiceFactory;
+import org.raspinloop.fmi.launcherRunnerIpc.Status;
 
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioProvider;
 
 public class Handler {
 
-	public static Handler build(String jsonConfig, String mainclassName, String[] otherArgs) throws ClassNotFoundException {
+	public static Handler build(String jsonConfig, String mainclassName, String[] otherArgs) throws Exception {
 		return new Handler(jsonConfig, mainclassName, otherArgs);
 	}
 
@@ -25,15 +26,21 @@ public class Handler {
 
 	private CSHandler fmiHandler;
 	
-	private Handler(String jsonConfig, final String mainclassName, final String[] otherArgs) throws ClassNotFoundException {
+	private Handler(String jsonConfig, final String mainclassName, final String[] otherArgs) throws Exception {
 
-		fmiHandler = new CSHandler(jsonConfig);
+		fmiHandler = new CSHandler();
 
 		ClassLoader classLoader = Boot.class.getClassLoader();
 
 		final Class<?> mainclass = classLoader.loadClass(mainclassName);		
 
 		HwEmulationFactory factory = new HwEmulationFactoryFromJson();
+
+		if (factory.create(jsonConfig) == null){
+			logger.fatal("Cannot create instance for json["+jsonConfig+"]");
+			throw new Exception("Cannot create hardware for json");
+		}
+		
 		fmiHandler.registerHardware(factory);
 
 		final SimulatedTimeExecutorServiceFactory simulatedTimeExecutorFactory = new SimulatedTimeExecutorServiceFactory();

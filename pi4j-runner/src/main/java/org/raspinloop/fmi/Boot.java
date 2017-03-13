@@ -1,11 +1,8 @@
 package org.raspinloop.fmi;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-
-import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.raspinloop.fmi.launcherRunnerIpc.IpcConnector;
@@ -14,7 +11,7 @@ public class Boot {
 
 	final static Logger logger = Logger.getLogger(Boot.class);
 
-	public static void main(String[] args) throws JAXBException {
+	public static void main(String[] args)  {
 		logger.info("starting pi4j-launcher "+Boot.class.getPackage().getImplementationVersion());
 		logger.debug("org.raspinloop.fmi.Boot "+ Arrays.toString(args));
 		String hdDescriptionJsonFilename = args[0];
@@ -35,7 +32,7 @@ public class Boot {
 			final String[] otherArgs = Arrays.copyOfRange(args, from, to, String[].class);
 			Handler.build(jsonConfig, mainclassName, otherArgs).start(new IpcConnector());
 
-		} catch (ClassNotFoundException | IOException e) {
+		} catch ( Exception e) {
 			logger.fatal(e);
 		}
 	}		

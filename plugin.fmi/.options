@@ -1,0 +1,4 @@
+org.raspinloop.fmi.plugin.fmi/debug=true
+org.raspinloop.fmi.plugin.fmi/debug/launcherRunnerIPC=true
+org.raspinloop.fmi.plugin.fmi/debug/FmiProxy=true
+org.raspinloop.fmi.plugin.fmi/debug/timeSequencer=true

@@ -20,13 +20,7 @@ public class CSHandler implements Iface {
 	private HwEmulationFactory hwEmulationFactory;
 
 	private List<ExperimentListener> experimentListenerList = new LinkedList<ExperimentListener>();
-
-	private String hdDescriptionJson;;
 		
-
-	public CSHandler(String hdDescriptionjson) {		
-		this.hdDescriptionJson = hdDescriptionjson;
-	}
 
 	public void registerHardware(HwEmulationFactory hwEmulationFactory) {
 		this.hwEmulationFactory = hwEmulationFactory;
@@ -43,17 +37,7 @@ public class CSHandler implements Iface {
 	}
 
 	@Override
-	public Status setupExperiment(boolean toleranceDefined, double tolerance, double startTime, boolean stopTimeDefined, double stopTime) throws TException {
-		
-		try {
-		if (hwEmulationFactory.create(hdDescriptionJson) == null){
-			logger.fatal("Cannot create instance for json["+hdDescriptionJson+"]");
-			return Status.Error;
-		}
-		}catch(Exception e){
-			logger.fatal("Cannot create instance", e);
-			return Status.Error;
-		}
+	public Status setupExperiment(boolean toleranceDefined, double tolerance, double startTime, boolean stopTimeDefined, double stopTime) throws TException {				
 		
 		if (stopTimeDefined)
 			SimulatedTime.INST.setup(startTime, stopTime);

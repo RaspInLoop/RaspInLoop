@@ -24,7 +24,9 @@ Eclipse-BundleShape: dir
 Bundle-ClassPath: .,
  target/dependency/gson-2.5.jar,
  target/dependency/libthrift-0.10.0.jar,
- target/dependency/slf4j-api-1.7.12.jar
+ target/dependency/slf4j-api-1.7.12.jar,
+ target/dependency/aspectjrt-1.8.4.jar,
+ target/dependency/aspectjweaver-1.8.4.jar
 Import-Package: org.apache.log4j,
  org.raspinloop.fmi.hwemulation
 Export-Package: org.raspinloop.fmi.plugin,
