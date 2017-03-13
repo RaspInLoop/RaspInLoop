@@ -120,10 +120,9 @@ This Agreement is governed by the laws of the State of New York and the intellec
          unpack="false"/>
 
    <plugin
-         id="org.raspinloop.fmi.plugin.pi4j-launcher"
+         id="org.raspinloop.fmi.plugin.pi4j-runner"
          download-size="0"
          install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>
