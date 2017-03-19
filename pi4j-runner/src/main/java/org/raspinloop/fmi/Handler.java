@@ -65,9 +65,13 @@ public class Handler {
 							mainclass.getMethod("main", String[].class).invoke(null, param);							
 						} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException e) {
 							logger.info("main is unable to start");
+							if (logger.isTraceEnabled())
+								logger.trace("main is unable to start", e);							
 							SimulatedTime.INST.stop();
 						} catch (InvocationTargetException e) {
 							logger.debug("main was stopped: " + e.getTargetException().getLocalizedMessage());
+							if (logger.isTraceEnabled())
+								logger.trace("main was stopped", e);		
 							SimulatedTime.INST.stop();
 						}
 						finally{
