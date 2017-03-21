@@ -118,6 +118,15 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 			return null;
 		}
 	}
+	
+	private void setVar(Integer ref, double value) {
+		switch (ref - baseref) {
+		case 0:
+			position = value;
+		case 1:
+			resistantTorque = value;
+		}
+	}
 
 	public SimulatedStepperMotor() {
 		this.properties = new SimulatedStepperMotorProperties();
@@ -169,10 +178,12 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 	}
 
 	public boolean setReal(Map<Integer, Double> ref_values) {
+		
 		for (Entry<Integer, Double> entry : ref_values.entrySet()) {
+			logger.info("setting real value: "+ entry.getKey()+ " = "+ entry.getValue());
 			Double var = getVar(entry.getKey());
 			if (var != null) {
-				var = entry.getValue();
+				setVar(entry.getKey(), entry.getValue());				
 			} else {
 				logger.warn("ref:" + entry.getKey() + " not used in this stepper motor component");
 			}
@@ -245,10 +256,13 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 
 	@Override
 	public void setState(Pin pin, PinState state) {
+		logger.info("SimulatedStepperMotor state set for "+pin+" "+state );
 		org.raspinloop.config.Pin raspConfigPin = getPin(pin);
 		if (raspConfigPin != null) {
 			cachedPins.get(raspConfigPin).setState(state);
 		}
+		else
+			logger.warn("SimulatedStepperMotor pin not found "+pin);
 	}
 
 
@@ -262,7 +276,7 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 		Long currentTime = SimulatedTime.INST.getRequestingTime();
 		byte currentBinaryState = getBinaryState();
 		if (logger.isTraceEnabled())
-			logger.trace("Do Step : previous["+previousBinaryState+"] current["+currentBinaryState+"] @ "+currentTime);
+			logger.info("Do Step : previous["+previousBinaryState+"] current["+currentBinaryState+"] @ "+currentTime);
 		if (single_step_sequence.containsKey(previousBinaryState) && single_step_sequence.containsKey(currentBinaryState)) {
 			// nominal torque and current
 			if (doStep(single_step_sequence.get(previousBinaryState), single_step_sequence.get(currentBinaryState), single_step_sequence.size())){
@@ -288,24 +302,24 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 		} else if (previousBinaryState == 0 ) {
 				
 			logger.info("Stepping from init" );
-			
+			previousBinaryState = currentBinaryState;
 			if (single_step_sequence.containsKey(currentBinaryState)) {
 				// nominal torque and current
-				if (doStep(single_step_sequence.get(currentBinaryState-1), single_step_sequence.get(currentBinaryState), single_step_sequence.size())){
+				if (doStep(single_step_sequence.get(previousBinaryState), single_step_sequence.get(currentBinaryState), single_step_sequence.size())){
 					logger.info("Stepping in single_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
 					previousBinaryState = currentBinaryState;
 					previousChangeTime = currentTime;			
 				}					
 			} else if ( double_step_sequence.containsKey(previousBinaryState) && double_step_sequence.containsKey(currentBinaryState)) {
 				// double torque and current
-				if (doStep(double_step_sequence.get(currentBinaryState-1), double_step_sequence.get(currentBinaryState), double_step_sequence.size())){
+				if (doStep(double_step_sequence.get(previousBinaryState), double_step_sequence.get(currentBinaryState), double_step_sequence.size())){
 					logger.info("Stepping in double_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
 					previousBinaryState = currentBinaryState;
 					previousChangeTime = currentTime;			
 				}
 			} else if ( half_step_sequence.containsKey(previousBinaryState) && half_step_sequence.containsKey(currentBinaryState)) {
 				// double torque and current
-				if (doStep(half_step_sequence.get(currentBinaryState-1), half_step_sequence.get(currentBinaryState), half_step_sequence.size())){
+				if (doStep(half_step_sequence.get(previousBinaryState), half_step_sequence.get(currentBinaryState), half_step_sequence.size())){
 					logger.info("Stepping in half_step_sequence"+previousBinaryState+"->"+currentBinaryState+"  @"+currentTime );
 					previousBinaryState = currentBinaryState;
 					previousChangeTime = currentTime;			
@@ -315,7 +329,7 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 	}
 
 	// rotate shaft according to index difference
-	private boolean doStep(Integer previousSeqIdx, Integer currentSeqIdx, int nbStep) {
+	private boolean doStep(int previousSeqIdx, int currentSeqIdx, int nbStep) {
 		
 		int theoricalCurrentIdxForward = previousSeqIdx+1;
 		if (theoricalCurrentIdxForward == nbStep)
@@ -326,6 +340,7 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 			theoricalCurrentIdxReverse = nbStep-1;
 		
 		if (currentSeqIdx == theoricalCurrentIdxForward){
+			logger.debug("Forward Direction: Resitstant Torque: "+resistantTorque+ " holding torque: "+ properties.getHoldingTorque());
 			if (properties.getHoldingTorque()-resistantTorque > 0){
 				stepInc += 1;
 			}
@@ -341,6 +356,7 @@ public class SimulatedStepperMotor extends ComponentBase implements GpioCompHwEm
 			return true;
 		}
 		else if (currentSeqIdx == theoricalCurrentIdxReverse){
+			logger.debug("Reverse direction: resitstant Torque: "+resistantTorque+ " holding torque: "+ properties.getHoldingTorque());
 			if (properties.getHoldingTorque()+resistantTorque > 0){
 				stepInc -= 1;
 			}
