@@ -10,6 +10,15 @@ public class PinImpl implements  Pin{
 	 private String name;
 
 	 
+	 
+	public PinImpl(String provider, String name, int address) {
+		super();
+		this.provider = provider;
+		this.name = name;
+		this.address = address;
+		getSupportedPinModes().clear();	
+	}
+
 	public PinImpl(Pin v) {
 		provider = v.getProvider();
 		address = v.getAddress();

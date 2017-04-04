@@ -2,7 +2,6 @@ package org.raspinloop.fmi.hwemulation;
 
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinState;
-import com.pi4j.io.gpio.event.PinListener;
 
 
 

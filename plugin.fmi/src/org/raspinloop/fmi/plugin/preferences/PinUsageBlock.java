@@ -3,7 +3,11 @@ package org.raspinloop.fmi.plugin.preferences;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.jface.wizard.IWizard;
@@ -13,6 +17,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.raspinloop.config.HardwareConfig;
 import org.raspinloop.config.Pin;
 
 public class PinUsageBlock {
@@ -22,6 +27,7 @@ public class PinUsageBlock {
 	private Button[] inputs;
 	private Button[] outputs;
 	private Button[] unused;
+	private Map<HardwareConfig, Collection<Pin>> pinsByHw = new HashMap<HardwareConfig, Collection<Pin>>();
 
 	public PinUsageBlock(Pin[] pins, String providerName) {
 		
@@ -32,6 +38,7 @@ public class PinUsageBlock {
 				
 	}
 
+	@SuppressWarnings("restriction")
 	public void createControl(Composite composite) {
 		compositeIO = new Composite(composite, SWT.NONE);	
 		GridLayout layoutIO = new GridLayout();
@@ -82,13 +89,28 @@ public class PinUsageBlock {
 		}
 	}
 
-	public void setConfiguredComponentPins(Collection<Pin> usedByCompPins) {
-		for (Pin pin : usedByCompPins) {
+	public void setConfiguredComponentPins(HardwareConfig hw) {
+		
+		for (Pin pin : getPreviouslyUsedPinByHw(hw)){
+			if (pin != null)
+				enableLine(pin.getAddress(), true);	
+				unused[pin.getAddress()].setSelection(true);
+		}
+		
+		for (Pin pin : hw.getUsedPins()) {
 			if (pin != null)
 				enableLine(pin.getAddress(), false);			
 		}
+		pinsByHw.put(hw, new LinkedList<>(hw.getUsedPins()));
 	}
 	
+	private Collection<Pin> getPreviouslyUsedPinByHw(HardwareConfig hw) {	
+		if (pinsByHw.containsKey(hw))
+			return pinsByHw.get(hw);
+		else
+			return Collections.emptyList();
+	}
+
 	private void enableLine(int address, boolean b) {
 		outputs[address].setEnabled(b);
 		inputs[address].setEnabled(b);

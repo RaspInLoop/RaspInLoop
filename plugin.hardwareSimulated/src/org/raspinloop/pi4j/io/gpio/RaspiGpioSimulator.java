@@ -90,7 +90,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	public void setState(Pin pin, PinState state) {
 		super.setState(pin, state);
 		
-		for (BoardExtentionHardware comp : properties.getComponents()) {			
+		for (HardwareConfig comp : properties.getAllComponents()) {			
 				HwEmulation emulationComp = getEmulationInstance(comp);
 					if (emulationComp instanceof GpioCompHwEmulation) {
 						GpioCompHwEmulation compHwE = ((GpioCompHwEmulation)emulationComp);
@@ -103,14 +103,14 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	@Override
 	public PinState getState(Pin pin) {
 
-		for (BoardExtentionHardware comp : properties.getComponents()) {
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp instanceof GpioCompHwEmulation) {
 				GpioCompHwEmulation compHwE = ((GpioCompHwEmulation) emulationComp);
 				if (compHwE.usePin(pin))
 					return compHwE.getState(pin);
 			}
-		}
+		}		
 		return super.getState(pin);
 
 	}
@@ -123,7 +123,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	@Override
 	public boolean enterInitialize() {
 		boolean result = true;
-		for (BoardExtentionHardware comp : properties.getComponents()){
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null)
 				result &= emulationComp.enterInitialize();
@@ -134,7 +134,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	@Override
 	public boolean exitInitialize() {
 		boolean result = true;
-		for (BoardExtentionHardware comp : properties.getComponents()){
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null)
 				result &= emulationComp.exitInitialize();
@@ -144,7 +144,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 
 	@Override
 	public void terminate() {
-		for (BoardExtentionHardware comp : properties.getComponents()) {
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null)
 				emulationComp.terminate();
@@ -154,7 +154,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 
 	@Override
 	public void reset() {
-		for (BoardExtentionHardware comp : properties.getComponents()) {
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null)
 				emulationComp.reset();
@@ -346,7 +346,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 			list.add(createBooleanOutput(pin.getName(), "Output signal related to pin " + pin.getName(), getOutputReference(pin)));
 		}
 
-		for (BoardExtentionHardware comp : properties.getComponents()) {
+		for (HardwareConfig comp : properties.getAllComponents()) {
 
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null)
@@ -356,7 +356,8 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 		return list;
 	}
 
-	private HwEmulation getEmulationInstance(BoardExtentionHardware comp) {
+	
+	private HwEmulation getEmulationInstance(HardwareConfig comp) {
 		if (classCache.containsKey(comp))
 			return classCache.get(comp);
 
@@ -365,7 +366,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 			hardware = builderFactory.createBuilder(comp).setBaseReference(nextAvailableBase ).build();
 			nextAvailableBase+=hardware.getModelVariables().size();
 		} catch (Exception e) {
-			logger.error("Cannot build class for board extension named " + comp.getName() + " reason:" + e.getMessage());
+			logger.error("Cannot build class for Hardware extension named " + comp.getName() + " reason:" + e.getMessage());
 			return null;
 		}
 		classCache.put(comp, hardware);
@@ -405,7 +406,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	}
 
 	private HwEmulation getSimulatedCompUsingRef(long ref) {
-		for (BoardExtentionHardware comp : properties.getComponents()) {
+		for (HardwareConfig comp : properties.getAllComponents()) {		
 			HwEmulation emulationComp = getEmulationInstance(comp);
 			if (emulationComp != null) {
 				for (Fmi2ScalarVariable modelVariable : emulationComp.getModelVariables()) {

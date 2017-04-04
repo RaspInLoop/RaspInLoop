@@ -2,6 +2,7 @@ package org.raspinloop.fmi.plugin.preferences;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
@@ -26,7 +27,7 @@ import org.raspinloop.fmi.plugin.Activator;
 
 /**
  * 
- * @author Motte
+ * @author Fred
  *
  *         Editor page used to list , add edit and remove RaspInLoop hardware
  *         page
@@ -64,10 +65,9 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		// SWTFactory.createWrapLabel(parent, JREMessages.JREsPreferencePage_2,
 		// 1, 300);
 		SWTFactory.createVerticalSpacer(parent, 1);
-
-		PluggedHardwareEnumerator enumerator = new PluggedHardwareEnumerator();
-		ArrayList<HardwareConfig> list = enumerator.buildListImplementing(BoardHardware.class);
-		rilHwBlock = new RilHarwareListBlock(null, list );
+		List<Class<? extends HardwareConfig>> supportedTypes = new LinkedList<>();
+		supportedTypes.add(BoardHardware.class);
+		rilHwBlock = new RilHarwareListBlock(null, supportedTypes);
 		rilHwBlock.setEditAfterAdd(true);
 		rilHwBlock.createControl(parent);
 		
@@ -81,6 +81,8 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		rilHwBlock.addEditHWListener(new UpdateHardwareListener());
 		rilHwBlock.restoreColumnSettings(Activator.getDefault().getDialogSettings(), PreferenceConstants.RIL_PREFERENCE_PAGE);
 
+		PluggedHardwareEnumerator enumerator = new PluggedHardwareEnumerator();
+	
 		List<HardwareConfig> hws = new ArrayList<HardwareConfig>();
 		String listStr = preferences.get("HwList", "");
 		String[] hwNames = listStr.split(":");

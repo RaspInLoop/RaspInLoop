@@ -1,6 +1,7 @@
 package org.raspinloop.pi4j.io.gpio;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,11 +27,13 @@ import org.raspinloop.config.AlreadyUsedPin;
 import org.raspinloop.config.BoardExtentionHardware;
 import org.raspinloop.config.BoardHardware;
 import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.I2CComponent;
 import org.raspinloop.config.Pin;
+import org.raspinloop.config.SPIComponent;
+import org.raspinloop.config.UARTComponent;
 import org.raspinloop.fmi.plugin.Images;
 import org.raspinloop.fmi.plugin.preferences.IHWListener;
 import org.raspinloop.fmi.plugin.preferences.PinUsageBlock;
-import org.raspinloop.fmi.plugin.preferences.PluggedHardwareEnumerator;
 import org.raspinloop.fmi.plugin.preferences.RilHarwareListBlock;
 import org.raspinloop.fmi.plugin.preferences.extension.AbstractHWConfigPage;
 
@@ -48,7 +51,6 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 	private IStatus[] fFieldStatus = new IStatus[1];
 	private PinUsageBlock fPinUsageBlock;
 	private RilHarwareListBlock fCompUsageBlock;
-	private ArrayList<HardwareConfig> supportedHardwares;
 
 	/**
 	 * 
@@ -73,7 +75,7 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 	private IHWListener compModifiedListener = new IHWListener() {
 		@Override
 		public void addOrRemoveHW(HardwareConfig hw) {
-			fPinUsageBlock.setConfiguredComponentPins(fHW.getUsedByCompPins());
+			fPinUsageBlock.setConfiguredComponentPins(hw);
 		}
 	};
 
@@ -117,10 +119,7 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 		fPinUsageBlock.createControl(composite);
 		Control pinUsageControl = fPinUsageBlock.getControl();
 		pinUsageControl.setLayoutData(new GridData(GridData.FILL, GridData.FILL, false, false, 1, 1));
-		PluggedHardwareEnumerator enumerator = PluggedHardwareEnumerator.INSTANCE();
-		supportedHardwares = enumerator.buildListImplementing(BoardExtentionHardware.class);
-
-		fCompUsageBlock = new RilHarwareListBlock(fHW, supportedHardwares);
+		fCompUsageBlock = new RilHarwareListBlock(fHW, Arrays.asList(BoardExtentionHardware.class, I2CComponent.class, SPIComponent.class,UARTComponent.class));
 		fCompUsageBlock.setWizard(getWizard());
 		fCompUsageBlock.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -241,8 +240,10 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 		fHWName.setText(fHW.getName());
 		fPinUsageBlock.setConfiguredInputPins(fHW.getInputPins());
 		fPinUsageBlock.setConfiguredOutputPins(fHW.getOutputPins());
-		fPinUsageBlock.setConfiguredComponentPins(fHW.getUsedByCompPins());
-		fCompUsageBlock.setHwList(new ArrayList<HardwareConfig>(fHW.getComponents()));
+		for (HardwareConfig hw : fHW.getAllComponents()) {
+			fPinUsageBlock.setConfiguredComponentPins(hw);
+		}
+		fCompUsageBlock.setHwList(new ArrayList<HardwareConfig>(fHW.getAllComponents()));
 		validateHWName();
 	}
 

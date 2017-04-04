@@ -18,4 +18,9 @@ public interface BoardHardware extends HardwareConfig, I2CParent, UARTParent, SP
 
 	public abstract Collection<Pin> getSupportedPin();
 
+	/* return BoardExtension, i2c, spi and uarts
+	 * 
+	 */
+	Collection<HardwareConfig> getAllComponents();
+
 }

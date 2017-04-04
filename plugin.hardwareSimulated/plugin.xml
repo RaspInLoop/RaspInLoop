@@ -13,6 +13,11 @@
             editorClass="org.raspinloop.pi4j.io.gpio.SimulatedStepperMotorPropertiesPage"
             simulatorClass="org.raspinloop.pi4j.io.gpio.SimulatedStepperMotor">
       </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.gpio.MCP3008Properties"
+            editorClass="org.raspinloop.pi4j.io.gpio.MCP3008PropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.gpio.MCP3008">
+      </Hardware>
    </extension>
 
 </plugin>

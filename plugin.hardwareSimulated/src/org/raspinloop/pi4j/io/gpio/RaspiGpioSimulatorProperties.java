@@ -27,19 +27,27 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 
 	public static final String GUID = "{5571c639-6438-4eee-839e-ff8442e3bbbc}"; 
 	
+	static Collection<Pin> spiPins = Arrays.asList((Pin)new PinImpl(SIMULATED_PROVIDER_NAME, "MOSI", 12),
+														new PinImpl(SIMULATED_PROVIDER_NAME, "MISO", 13),
+														new PinImpl(SIMULATED_PROVIDER_NAME, "SCLK", 14),
+														new PinImpl(SIMULATED_PROVIDER_NAME, "CE0", 10),
+														new PinImpl(SIMULATED_PROVIDER_NAME, "CE1", 11));
+	static Collection<Pin> i2cPins  = Arrays.asList((Pin)  new PinImpl(SIMULATED_PROVIDER_NAME, "SDA", 8),
+			   new PinImpl(SIMULATED_PROVIDER_NAME, "SCL", 9));
+	
+	static Collection<Pin> uartPins  = Arrays.asList((Pin)new PinImpl(SIMULATED_PROVIDER_NAME, "TX", 15),
+			   new PinImpl(SIMULATED_PROVIDER_NAME, "RX", 16));
+	
 	BoardHardwareDelegate boardHardwareDelegate = new BoardHardwareDelegate(GUID);
 	private String name = DISPLAY_NAME;
 
 	static Pin[] pins = new Pin[NB_PIN];
 	static {
 	for (int i = 0; i < pins.length; i++) {
-		pins[i] = new PinImpl();
-		pins[i].setAddress(i);
-		pins[i].setName("GPIO " + i);
-		pins[i].setProvider(SIMULATED_PROVIDER_NAME);
-		pins[i].getSupportedPinModes().clear();	
+		pins[i] = new PinImpl(SIMULATED_PROVIDER_NAME, "GPIO " + i, i);		
+		}
 	}
-	}
+
 	
 	public RaspiGpioSimulatorProperties() {
 				
@@ -190,5 +198,26 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	public String getGuid() {
 		return boardHardwareDelegate.getGuid();
 	}
+
+
+	@Override
+	public Collection<HardwareConfig> getAllComponents() {
+		return boardHardwareDelegate.getAllComponents();
+	}
+
+
+	@Override
+	public Collection<Pin> getUsedPins() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public Collection<Pin> getSpiPins() {
+		return spiPins;
+	}
+
+
 
 }

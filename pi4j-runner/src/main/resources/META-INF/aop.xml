@@ -4,6 +4,7 @@
 		<aspect name="org.raspinloop.fmi.internal.aspect.SleepAspect" />	
 		<aspect name="org.raspinloop.fmi.internal.aspect.SimulatedTimeAspect" />
 		<aspect name="org.raspinloop.fmi.internal.aspect.GpioFactoryAspect" />	
+		<aspect name="org.raspinloop.fmi.internal.aspect.SpiFactoryAspect" />	
 	</aspects>
 
 	<weaver options="-verbose -warn:none -Xlint:ignore">

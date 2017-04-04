@@ -1,5 +1,7 @@
 package org.raspinloop.config;
 
+import java.util.Collection;
+
 public interface HardwareConfig {
 
 	/**
@@ -31,4 +33,9 @@ public interface HardwareConfig {
 	 */
 	public String getSimulatedProviderName();
 	
+	/**
+	 * 
+	 * @return the Pins used by this hardware board/extension
+	 */
+	Collection<Pin>  getUsedPins();
 }
