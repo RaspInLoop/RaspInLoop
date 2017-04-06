@@ -73,7 +73,7 @@ public class MainTab extends RilMainTab {
 			if (hwProperties != null) {
 				HardwareBuilderFactory hbf = new PluggedClassBuilderFactory();
 				HwEmulation emulationImplementation = hbf.createBuilder(hwProperties).build();
-				if (emulationImplementation instanceof GpioProviderHwEmulation) {
+				if (emulationImplementation instanceof HwEmulation) {
 					FileDialog dialog = new FileDialog(compositeParent.getShell(), SWT.SAVE);
 					dialog.setFilterNames(new String[] { "FMU Files", "All Files (*.*)" });
 					dialog.setFilterExtensions(new String[] { "*.fmu", "*.*" }); // Windows
@@ -100,7 +100,7 @@ public class MainTab extends RilMainTab {
 								return null;
 							}
 						};
-						FMU.generate(file, (GpioProviderHwEmulation) emulationImplementation, eclipseLocator);
+						FMU.generate(file, (HwEmulation) emulationImplementation, eclipseLocator);
 					}
 
 				}

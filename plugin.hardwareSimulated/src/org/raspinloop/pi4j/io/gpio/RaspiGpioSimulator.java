@@ -20,6 +20,7 @@ import org.raspinloop.fmi.hwemulation.HwEmulation;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 
 import com.pi4j.io.gpio.GpioProviderBase;
+import com.pi4j.io.gpio.GpioProviderPinCache;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinEdge;
 import com.pi4j.io.gpio.PinMode;
@@ -308,15 +309,14 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 	 * Return the pin given its address
 	 * 
 	 * output pin references equals its address. input pin refs equals address +
-	 * max output pin address (20)
+	 * max output pin address (20) // for raspberry A,B
 	 * 
 	 * @param ref
 	 * @return
 	 */
 	private Pin getPin(Integer ref) {
 		//
-		//
-		for (Pin pin : super.cache.keySet()) {
+		for (Pin pin : RaspiPin.allPins()) {
 			if (ref > RaspiPin.GPIO_20.getAddress()) { // input pin
 				if (ref.equals(RaspiPin.GPIO_20.getAddress() + 1 + pin.getAddress()))
 					return pin;

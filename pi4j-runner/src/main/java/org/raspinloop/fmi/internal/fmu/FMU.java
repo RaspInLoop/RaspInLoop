@@ -44,7 +44,7 @@ public class FMU {
 
 	final static Logger logger = Logger.getLogger(FMU.class);
 
-	public static void generate(File fmuFileName, GpioProviderHwEmulation ch, Locator locator) throws FMUGenerateException {
+	public static void generate(File fmuFileName, HwEmulation ch, Locator locator) throws FMUGenerateException {
 		try (ZipOutputStream fmuzip = new ZipOutputStream(new FileOutputStream(fmuFileName))) {
 			FMU fmu = new FMU();
 
