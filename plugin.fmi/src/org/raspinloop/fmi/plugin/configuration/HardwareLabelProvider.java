@@ -8,7 +8,7 @@ public class HardwareLabelProvider extends LabelProvider {
 	  public String getText(Object element) {
 	    if (element instanceof HardwareConfig) {
 	    	HardwareConfig hw = (HardwareConfig) element;
-	      return hw.getName();
+	      return hw.getComponentName();
 	    }
 	    return super.getText(element);
 	  }

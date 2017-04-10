@@ -12,7 +12,7 @@ public class Boot {
 	final static Logger logger = Logger.getLogger(Boot.class);
 
 	public static void main(String[] args)  {
-		logger.info("starting pi4j-launcher "+Boot.class.getPackage().getImplementationVersion());
+		logger.info("starting pi4j-launcher ");
 		logger.debug("org.raspinloop.fmi.Boot "+ Arrays.toString(args));
 		String hdDescriptionJsonFilename = args[0];
 		String mainclassName = args[1];

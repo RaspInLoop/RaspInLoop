@@ -110,7 +110,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 	protected String getHwNameList(RilHarwareListBlock fRilHwBlock) {
 		ArrayList<String> names = new ArrayList<>(fRilHwBlock.getHWs().length);
 		for (HardwareConfig hw : fRilHwBlock.getHWs()) {
-			names.add(hw.getName());
+			names.add(hw.getComponentName());
 		}
 		return join(names, ":");
 	}
@@ -120,7 +120,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 		public void addOrRemoveHW(HardwareConfig hw) {
 			try {
 
-				preferences.remove(hw.getName());
+				preferences.remove(hw.getComponentName());
 				preferences.put("HwList", getHwNameList(rilHwBlock));
 				preferences.flush();
 			} catch (BackingStoreException e) {
@@ -139,7 +139,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 			try {
 				GsonConfig conf = new GsonConfig(new PluggedHardwareEnumerator());
 				if (hw instanceof BoardHardware) {
-					preferences.put(hw.getName(), conf.write((BoardHardware) hw));
+					preferences.put(hw.getComponentName(), conf.write((BoardHardware) hw));
 					preferences.put("HwList", getHwNameList(rilHwBlock));
 					preferences.flush();
 				}
@@ -158,7 +158,7 @@ public class RilManageHardwarePage extends PreferencePage implements IWorkbenchP
 			try {
 				GsonConfig conf = new GsonConfig(new PluggedHardwareEnumerator());
 				if (hw instanceof BoardHardware) {
-					preferences.put(hw.getName(), conf.write((BoardHardware) hw));
+					preferences.put(hw.getComponentName(), conf.write((BoardHardware) hw));
 					preferences.put("HwList", getHwNameList(rilHwBlock));
 					preferences.flush();
 				}

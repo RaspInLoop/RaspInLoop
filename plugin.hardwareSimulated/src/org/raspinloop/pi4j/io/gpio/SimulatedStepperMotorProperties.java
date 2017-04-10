@@ -33,12 +33,12 @@ public class SimulatedStepperMotorProperties implements BoardExtentionHardware {
 	
 	
 	@Override
-	public String getName() {
+	public String getComponentName() {
 		return this.name;
 	}
 
 	@Override
-	public SimulatedStepperMotorProperties setName(String string) {
+	public SimulatedStepperMotorProperties setComponentName(String string) {
 		this.name = string;		
 		return this;
 	}

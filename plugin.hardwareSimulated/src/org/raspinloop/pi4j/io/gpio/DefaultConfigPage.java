@@ -205,7 +205,7 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 	 */
 	protected void setFieldValuesToHW(BoardHardware hw) {
 
-		hw.setName(fHWName.getText());
+		hw.setComponentName(fHWName.getText());
 		updatePins(hw);
 	}
 
@@ -237,7 +237,7 @@ public class DefaultConfigPage extends AbstractHWConfigPage {
 	 * Initialize the dialogs fields
 	 */
 	private void initializeFields() {
-		fHWName.setText(fHW.getName());
+		fHWName.setText(fHW.getComponentName());
 		fPinUsageBlock.setConfiguredInputPins(fHW.getInputPins());
 		fPinUsageBlock.setConfiguredOutputPins(fHW.getOutputPins());
 		for (HardwareConfig hw : fHW.getAllComponents()) {

@@ -43,6 +43,9 @@ public class FmiLauncher extends Launcher {
 				return;
 			}
 			monitor.worked(1);
+			// set the default source locator if required
+			setDefaultSourceLocator(launch, configuration);
+
 			fmiLaunch(launch, monitor, runner, runConfig);
 
 		} finally {

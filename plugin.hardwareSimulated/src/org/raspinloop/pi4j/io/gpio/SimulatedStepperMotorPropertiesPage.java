@@ -196,7 +196,7 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 	 * Initialize the dialogs fields
 	 */
 	private void initializeFields() {
-		fHWName.setText(fHW.getName());
+		fHWName.setText(fHW.getComponentName());
 		Pin[] pins = fHW.getUsedPins().toArray(new Pin[0]);
 		for (int j = 0; j < pins.length; j++) {
 			fHWPins[j].setSelection(new StructuredSelection(pins[j]));
@@ -210,7 +210,7 @@ public class SimulatedStepperMotorPropertiesPage extends AbstractHWConfigPage {
 	}
 
 	private void setFieldValuesToHW() {
-		fHW.setName(fHWName.getText());
+		fHW.setComponentName(fHWName.getText());
 		ArrayList<Pin> pins2 = new ArrayList<>(4);
 		for (ComboViewer comboPin : fHWPins) {
 			IStructuredSelection  selection = (IStructuredSelection) comboPin.getSelection();

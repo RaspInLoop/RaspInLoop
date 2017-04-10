@@ -366,7 +366,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 			hardware = builderFactory.createBuilder(comp).setBaseReference(nextAvailableBase ).build();
 			nextAvailableBase+=hardware.getModelVariables().size();
 		} catch (Exception e) {
-			logger.error("Cannot build class for Hardware extension named " + comp.getName() + " reason:" + e.getMessage());
+			logger.error("Cannot build class for Hardware extension named " + comp.getComponentName() + " reason:" + e.getMessage());
 			return null;
 		}
 		classCache.put(comp, hardware);
@@ -420,7 +420,7 @@ public class RaspiGpioSimulator extends GpioProviderBase implements GpioProvider
 
 	@Override
 	public String getName() {
-		return properties.getName();
+		return properties.getSimulatedProviderName();
 	}
 
 }

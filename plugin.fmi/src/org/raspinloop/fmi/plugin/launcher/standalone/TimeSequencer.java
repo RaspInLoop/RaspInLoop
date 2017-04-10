@@ -49,7 +49,7 @@ public class TimeSequencer implements Proxy {
 		try {
 			String selectedHardwareName = configuration.getAttribute(RilMainTab.ATTR_HARDWARE_CONFIG, "");
 			for (HardwareConfig hardwareConfig : hardwares) {
-				if (selectedHardwareName.equals(hardwareConfig.getName()) && (hardwareConfig instanceof BoardHardware)) {
+				if (selectedHardwareName.equals(hardwareConfig.getComponentName()) && (hardwareConfig instanceof BoardHardware)) {
 					return ((BoardHardware) hardwareConfig).getGuid();
 				}
 			}

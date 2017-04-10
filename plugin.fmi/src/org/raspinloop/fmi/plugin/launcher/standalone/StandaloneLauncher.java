@@ -35,6 +35,9 @@ public class StandaloneLauncher extends Launcher {
 			if (monitor.isCanceled()) {
 				return;
 			}
+			// set the default source locator if required
+			setDefaultSourceLocator(launch, configuration);
+			
 			monitor.worked(1);
 			standaloneLaunch(launch, configuration, monitor, runner, runConfig);
 

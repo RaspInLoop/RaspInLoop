@@ -28,12 +28,12 @@ public class MCP3008Properties implements SPIComponent {
 	private  Collection<Pin> availablesPins = Collections.emptyList();	
 	
 	@Override
-	public String getName() {
+	public String getComponentName() {
 		return name;
 	}
 
 	@Override
-	public HardwareConfig setName(String name) {
+	public HardwareConfig setComponentName(String name) {
 		this.name = name;
 		return this;
 	}

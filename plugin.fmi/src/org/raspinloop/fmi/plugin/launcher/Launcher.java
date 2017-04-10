@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IPersistableSourceLocator;
+import org.eclipse.debug.core.sourcelookup.IPersistableSourceLocator2;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -75,7 +77,7 @@ public abstract class Launcher extends AbstractJavaLaunchConfigurationDelegate {
 		try {
 			String selectedHardwareName = configuration.getAttribute(RilMainTab.ATTR_HARDWARE_CONFIG, "");
 			for (HardwareConfig hardwareConfig : hardwares) {
-				if (selectedHardwareName.equals(hardwareConfig.getName()) && (hardwareConfig instanceof BoardHardware)) {
+				if (selectedHardwareName.equals(hardwareConfig.getComponentName()) && (hardwareConfig instanceof BoardHardware)) {
 					GsonConfig conf = new GsonConfig(PluggedHardwareEnumerator.INSTANCE());
 					Path temp = Files.createTempFile(null, ".json");
 

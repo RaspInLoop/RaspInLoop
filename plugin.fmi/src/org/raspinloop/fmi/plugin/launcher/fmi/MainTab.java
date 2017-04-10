@@ -80,7 +80,7 @@ public class MainTab extends RilMainTab {
 					// wild
 					// cards
 					dialog.setFilterPath("c:\\"); // Windows path
-					dialog.setFileName(hwProperties.getName() + ".fmu");
+					dialog.setFileName(hwProperties.getComponentName() + ".fmu");
 					String fileName = dialog.open();
 					if (fileName != null && !fileName.isEmpty()) {
 						File file = new File(fileName);

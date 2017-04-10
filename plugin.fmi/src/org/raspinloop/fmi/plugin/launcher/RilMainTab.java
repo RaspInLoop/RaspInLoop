@@ -335,7 +335,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, fMainText.getText().trim());
 		HardwareConfig hardware = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
 		if (hardware != null) {
-			config.setAttribute(ATTR_HARDWARE_CONFIG, hardware.getName());
+			config.setAttribute(ATTR_HARDWARE_CONFIG, hardware.getComponentName());
 		}
 		mapResources(config);
 
@@ -417,7 +417,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 		try {
 			String selectedHardwareName = config.getAttribute(ATTR_HARDWARE_CONFIG, "");
 			for (HardwareConfig hardwareConfig : hardwares) {
-				if (selectedHardwareName.equals(hardwareConfig.getName())) {
+				if (selectedHardwareName.equals(hardwareConfig.getComponentName())) {
 					final ISelection selection = new StructuredSelection(hardwareConfig);
 					fHardwareCombo.setSelection(selection);
 				}

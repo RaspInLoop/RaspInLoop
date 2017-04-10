@@ -59,7 +59,7 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 			// TODO ADD timeout ?
 		}
 		Trace.launcherRunner("runner started and listened on port " + fmiProxyRunnerJob.getRunnerPort());
-		TSocket transport = new TSocket("localhost", fmiProxyRunnerJob.getRunnerPort(), 10000, 5000);
+		TSocket transport = new TSocket("localhost", fmiProxyRunnerJob.getRunnerPort(), 0); // NO timeout because debug is allowed! 
 		transport.open();
 		TProtocol protocol = new TBinaryProtocol(transport);
 		client = new Client(protocol);

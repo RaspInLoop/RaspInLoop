@@ -33,7 +33,7 @@ public abstract class HWConfigWizard extends Wizard {
 		for (int i = 0; i < currentHWs.length; i++) {
 			HardwareConfig existing = currentHWs[i];
 			if (!existing.equals(editHW)) {
-				names.add(existing.getName());
+				names.add(existing.getComponentName());
 			}
 		}
 		fExistingNames = names.toArray(new String[names.size()]);

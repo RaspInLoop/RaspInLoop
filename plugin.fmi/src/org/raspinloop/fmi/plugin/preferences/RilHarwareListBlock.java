@@ -165,9 +165,9 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 				switch (columnIndex) {
 				case 0:
 					if (isBuiltIn(hw)) {
-						return hw.getName() + " (built-in)";
+						return hw.getComponentName() + " (built-in)";
 					}
-					return hw.getName();
+					return hw.getComponentName();
 
 				case 1:
 					StringBuilder desc = new StringBuilder();
@@ -498,7 +498,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 			HardwareConfig selectedHW = it.next();
 			// duplicate & add HW
 			HardwareConfig newHardware = selectedHW.getClass().newInstance();
-			newHardware.setName(generateName(selectedHW.getName(), getDisplayNames()));
+			newHardware.setComponentName(generateName(selectedHW.getComponentName(), getDisplayNames()));
 			linkComponent(parent, newHardware);
 
 			EditHwWizard wizard = new EditHwWizard(newHardware, hardwares.toArray(new HardwareConfig[hardwares.size()]));
@@ -706,10 +706,10 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		Object[] results = hdsd.getResult();
 		if (results.length >= 1 && results[0] instanceof HardwareConfig) {
 			HardwareConfig hWDef = (HardwareConfig)results[0];
-			String name = generateName(hWDef.getName(), getNames());
+			String name = generateName(hWDef.getComponentName(), getNames());
 
 			HardwareConfig newHardware = hWDef.getClass().newInstance();
-			newHardware.setName(name);
+			newHardware.setComponentName(name);
 
 			linkComponent(parent, newHardware);
 
@@ -788,7 +788,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		LinkedList<String> result = new LinkedList<String>();
 		for (int i = 0; i < hardwares.size(); i++) {
 			HardwareConfig hw = hardwares.get(i);
-			result.add(hw.getName());
+			result.add(hw.getComponentName());
 		}
 		return result;
 	}

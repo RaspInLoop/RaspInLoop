@@ -39,7 +39,7 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 			   new PinImpl(SIMULATED_PROVIDER_NAME, "RX", 16));
 	
 	BoardHardwareDelegate boardHardwareDelegate = new BoardHardwareDelegate(GUID);
-	private String name = DISPLAY_NAME;
+	private String componentName = DISPLAY_NAME;
 
 	static Pin[] pins = new Pin[NB_PIN];
 	static {
@@ -55,13 +55,13 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 	
 	
 	@Override
-	public String getName() {
-		return name ;
+	public String getComponentName() {
+		return componentName ;
 	}
 
 	@Override
-	public HardwareConfig setName(String string) {
-		this.name = string;
+	public HardwareConfig setComponentName(String string) {
+		this.componentName = string;
 		return this;
 	}
 
@@ -208,7 +208,6 @@ public class RaspiGpioSimulatorProperties implements BoardHardware {
 
 	@Override
 	public Collection<Pin> getUsedPins() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

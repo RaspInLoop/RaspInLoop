@@ -113,13 +113,13 @@ public class MCP3008PropertiesPage extends AbstractHWConfigPage {
 	 * Initialize the dialogs fields
 	 */
 	private void initializeFields() {
-		fHWName.setText(fHW.getName());	
+		fHWName.setText(fHW.getComponentName());	
 		fHWChannel.setText((fHW.getChannel() == null)?SpiChannel.CS0.toString():fHW.getChannel().toString());		
 		nameChanged(fHWName.getText());
 	}
 
 	private void setFieldValuesToHW() {
-		fHW.setName(fHWName.getText());
+		fHW.setComponentName(fHWName.getText());
 		
 		fHW.setChannel(SpiChannel.valueOf(fHWChannel.getText()));
 	}	

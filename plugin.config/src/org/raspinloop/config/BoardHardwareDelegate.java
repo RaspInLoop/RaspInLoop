@@ -30,7 +30,7 @@ public  class  BoardHardwareDelegate implements BoardHardware {
 	}
 
 	@Override
-	public String getName() {		
+	public String getComponentName() {		
 		throw new RuntimeException("getName not implemented by BoardHardwareDelegate");
 	}
 
@@ -40,7 +40,7 @@ public  class  BoardHardwareDelegate implements BoardHardware {
 	}	
 	
 	@Override
-	public BoardHardwareDelegate setName(String string) {
+	public BoardHardwareDelegate setComponentName(String string) {
 		throw new RuntimeException("getImplementationClassName not implemented by BoardHardwareDelegate");
 	}
 	

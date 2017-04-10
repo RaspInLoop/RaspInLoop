@@ -46,7 +46,7 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 		public String getText(Object element) {
 			if (element instanceof HardwareConfig ){
 				HardwareConfig hwConfig = (HardwareConfig) element;
-				return hwConfig.getName();
+				return hwConfig.getComponentName();
 			}
 			return element.toString();
 		}		
@@ -195,7 +195,7 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 	public String getElementName(Object item) {
 		if (item instanceof HardwareConfig ){
 			HardwareConfig hwConfig = (HardwareConfig) item;
-			return hwConfig.getName();
+			return hwConfig.getComponentName();
 		}
 		return item.toString();
 	}

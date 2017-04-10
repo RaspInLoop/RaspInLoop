@@ -8,13 +8,13 @@ public interface HardwareConfig {
 	 * 	
 	 * @return the name of this instance of hardware simulator
 	 */
-	public String getName();
+	public String getComponentName();
 	
 	/**
 	 * 
 	 * @param the name of this instance of hardware simulator
 	 */
-	HardwareConfig setName(String string);
+	HardwareConfig setComponentName(String string);
 	/**
 	 * 
 	 * @return the name of this kind of hardware simulator
