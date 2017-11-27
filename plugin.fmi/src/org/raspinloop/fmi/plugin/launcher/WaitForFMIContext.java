@@ -1,7 +1,5 @@
 package org.raspinloop.fmi.plugin.launcher;
 
-import java.io.IOException;
-
 import org.apache.thrift.server.TServer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,7 +14,6 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
-import org.eclipse.jdt.internal.launching.LaunchingPlugin;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.raspinloop.fmi.plugin.Activator;
 
@@ -62,7 +59,7 @@ public class WaitForFMIContext implements IProcess {
 		this.launch = launch;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Object getAdapter(Class adapter) {
 		return null;

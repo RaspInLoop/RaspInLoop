@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 
 public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
@@ -44,8 +44,8 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 
 		@Override
 		public String getText(Object element) {
-			if (element instanceof HardwareConfig ){
-				HardwareConfig hwConfig = (HardwareConfig) element;
+			if (element instanceof HardwareProperties ){
+				HardwareProperties hwConfig = (HardwareProperties) element;
 				return hwConfig.getComponentName();
 			}
 			return element.toString();
@@ -87,7 +87,7 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 			this.hwSearchFilter = hwSearchFilter;
 		}
 
-		public void acceptHardware(HardwareConfig hwConfig) {
+		public void acceptHardware(HardwareProperties hwConfig) {
 			contentProvider.add(hwConfig, hwSearchFilter);
 		}
 
@@ -95,7 +95,7 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 
 	public class HardwareItemsFilter extends ItemsFilter {
 
-		public HardwareItemsFilter(List<Class<? extends HardwareConfig>> hwTypes) {
+		public HardwareItemsFilter(List<Class<? extends HardwareProperties>> hwTypes) {
 			super(new SearchPattern( SearchPattern.RULE_EXACT_MATCH | 
 									 SearchPattern.RULE_PREFIX_MATCH | 
 									 SearchPattern.RULE_PATTERN_MATCH | 
@@ -103,7 +103,7 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 		}
 		@Override
 		public boolean matchItem(Object item) {
-			for (Class<? extends HardwareConfig> class1 : hwTypes) {
+			for (Class<? extends HardwareProperties> class1 : hwTypes) {
 				if (class1.isInstance(item))
 					return true;					
 			}			
@@ -127,9 +127,9 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 			
 	private ItemsFilter fFilter;
 
-	private List<Class<? extends HardwareConfig>> hwTypes;
+	private List<Class<? extends HardwareProperties>> hwTypes;
 	
-	public HardwareSelectionDialog(Shell shell, List<Class<? extends HardwareConfig>> hwTypes) {
+	public HardwareSelectionDialog(Shell shell, List<Class<? extends HardwareProperties>> hwTypes) {
 		super(shell, false);
 		this.hwTypes = hwTypes;
 		setListLabelProvider(new HwLabelProvider());
@@ -168,10 +168,10 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 
 	@Override
 	protected Comparator getItemsComparator() {		
-		return new Comparator<HardwareConfig>() {
+		return new Comparator<HardwareProperties>() {
 
 			@Override
-			public int compare(HardwareConfig o1, HardwareConfig o2) {				
+			public int compare(HardwareProperties o1, HardwareProperties o2) {				
 				return o1.getImplementationClassName().compareToIgnoreCase(o2.getImplementationClassName());
 			}
 		};
@@ -193,8 +193,8 @@ public class HardwareSelectionDialog extends FilteredItemsSelectionDialog {
 
 	@Override
 	public String getElementName(Object item) {
-		if (item instanceof HardwareConfig ){
-			HardwareConfig hwConfig = (HardwareConfig) item;
+		if (item instanceof HardwareProperties ){
+			HardwareProperties hwConfig = (HardwareProperties) item;
 			return hwConfig.getComponentName();
 		}
 		return item.toString();

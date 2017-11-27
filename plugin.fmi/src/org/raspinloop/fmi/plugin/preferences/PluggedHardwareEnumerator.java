@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.config.HardwareEnumerator;
 import org.raspinloop.fmi.plugin.Activator;
 
@@ -22,14 +22,14 @@ public class PluggedHardwareEnumerator implements HardwareEnumerator{
 
 	protected PluggedHardwareEnumerator() {};
 	@Override
-	public ArrayList<HardwareConfig> buildListImplementing(Class<? extends HardwareConfig	> class1) {
-		ArrayList<HardwareConfig> list = new ArrayList<HardwareConfig>();
+	public ArrayList<HardwareProperties> buildListImplementing(Class<? extends HardwareProperties	> class1) {
+		ArrayList<HardwareProperties> list = new ArrayList<HardwareProperties>();
 		IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(PreferenceConstants.HARDWARE_EXTENSION_POINT_ID);
 		IConfigurationElement[] infos= extensionPoint.getConfigurationElements();
 		for (int i = 0; i < infos.length; i++) {
 			IConfigurationElement element = infos[i];
 			try {
-					HardwareConfig config = (HardwareConfig) element.createExecutableExtension("configClass"); //$NON-NLS-1$
+					HardwareProperties config = (HardwareProperties) element.createExecutableExtension("configClass"); //$NON-NLS-1$
 					if (class1.isInstance(config))
 						list.add(config);
 				} catch (CoreException e) {

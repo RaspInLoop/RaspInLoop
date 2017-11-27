@@ -2,6 +2,7 @@ package org.raspinloop.fmi.plugin.launcher.fmi;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -20,11 +21,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.raspinloop.config.HardwareConfig;
-import org.raspinloop.fmi.hwemulation.GpioProviderHwEmulation;
-import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
-import org.raspinloop.fmi.hwemulation.HwEmulation;
-import org.raspinloop.fmi.internal.fmu.FMU;
+import org.raspinloop.config.HardwareBuilderFactory;
+import org.raspinloop.config.HardwareProperties;
+import org.raspinloop.fmi.FMU;
+import org.raspinloop.fmi.HwEmulation;
 import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.configuration.SimulationType;
 import org.raspinloop.fmi.plugin.launcher.PluggedClassBuilderFactory;
@@ -69,42 +69,40 @@ public class MainTab extends RilMainTab {
 	
 	private void getFMUButtonSelected() {
 		try {
-			HardwareConfig hwProperties = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+			HardwareProperties hwProperties = (HardwareProperties) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
 			if (hwProperties != null) {
-				HardwareBuilderFactory hbf = new PluggedClassBuilderFactory();
-				HwEmulation emulationImplementation = hbf.createBuilder(hwProperties).build();
-				if (emulationImplementation instanceof HwEmulation) {
-					FileDialog dialog = new FileDialog(compositeParent.getShell(), SWT.SAVE);
-					dialog.setFilterNames(new String[] { "FMU Files", "All Files (*.*)" });
-					dialog.setFilterExtensions(new String[] { "*.fmu", "*.*" }); // Windows
-					// wild
-					// cards
-					dialog.setFilterPath("c:\\"); // Windows path
-					dialog.setFileName(hwProperties.getComponentName() + ".fmu");
-					String fileName = dialog.open();
-					if (fileName != null && !fileName.isEmpty()) {
-						File file = new File(fileName);
-						if (file.exists()) {
-							if (!MessageDialog.openQuestion(compositeParent.getShell(), "Overwrite", "File already exist!\n Do you want to overwrite it ?")) {
-								return;
-							}
-							file.delete();
-						}
-						FMU.Locator eclipseLocator = new FMU.Locator() {
-							public URL resolve(URL url) {
-								try {
-									return FileLocator.resolve(url);
-								} catch (IOException e) {
-									System.err.print(e);
-								}
-								return null;
-							}
-						};
-						FMU.generate(file, (HwEmulation) emulationImplementation, eclipseLocator);
-					}
 
+				FileDialog dialog = new FileDialog(compositeParent.getShell(), SWT.SAVE);
+				// wild
+				dialog.setFilterNames(new String[] { "FMU Files", "All Files (*.*)" });
+				dialog.setFilterExtensions(new String[] { "*.fmu", "*.*" }); // Windows
+				// cards
+				dialog.setFilterPath(System.getProperty("user.home")); // Windows path
+				dialog.setFileName(hwProperties.getComponentName() + ".fmu");
+				String fileName = dialog.open();
+				if (fileName != null && !fileName.isEmpty()) {
+					File file = new File(fileName);
+					if (file.exists()) {
+						if (!MessageDialog.openQuestion(compositeParent.getShell(), "Overwrite", "File already exist!\n Do you want to overwrite it ?")) {
+							return;
+						}
+						file.delete();
+					}
+					FMU.Locator eclipseLocator = new FMU.Locator() {
+						public URL resolve(URL url) {
+							try {
+								return FileLocator.resolve(url);
+							} catch (IOException e) {
+								System.err.print(e);
+							}
+							return null;
+						}
+					};
+					FMU.generate(file, hwProperties);
 				}
+
 			}
+
 		} catch (Exception e) {
 			IStatus status = new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage());
 			StatusManager.getManager().handle(status, StatusManager.LOG | StatusManager.SHOW);

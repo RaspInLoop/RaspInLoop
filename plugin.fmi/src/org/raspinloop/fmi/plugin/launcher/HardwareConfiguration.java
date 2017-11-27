@@ -6,15 +6,15 @@ import java.util.Collection;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.raspinloop.config.GsonConfig;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.GsonProperties;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.preferences.PluggedHardwareEnumerator;
 
 public class HardwareConfiguration {	
 
-	static public Collection<HardwareConfig> buildList() {
+	static public Collection<HardwareProperties> buildList() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode("org.raspinloop.fmi.preferences.configuredhardware");
-		ArrayList<HardwareConfig> hardwares = buildListFromPref(preferences);
+		ArrayList<HardwareProperties> hardwares = buildListFromPref(preferences);
 		
 		IEclipsePreferences defaultPref = DefaultScope.INSTANCE.getNode("org.raspinloop.fmi.preferences.configuredhardware");
 		hardwares.addAll(buildListFromPref(defaultPref));
@@ -22,16 +22,16 @@ public class HardwareConfiguration {
 		return hardwares;
 	}
 
-	private static ArrayList<HardwareConfig> buildListFromPref(IEclipsePreferences preferences) {
-		ArrayList<HardwareConfig> hardwares = new ArrayList<HardwareConfig>();
+	private static ArrayList<HardwareProperties> buildListFromPref(IEclipsePreferences preferences) {
+		ArrayList<HardwareProperties> hardwares = new ArrayList<HardwareProperties>();
 		String listStr = preferences.get("HwList", "");
 		String[] hwNames = listStr.split(":");
 		for (String hwName : hwNames) {
 			String bytes = preferences.get(hwName, "");
 			if (bytes.trim().length() != 0) {
 				try {
-				GsonConfig conf = new GsonConfig(PluggedHardwareEnumerator.INSTANCE());
-				HardwareConfig hw = conf.read(bytes);
+				GsonProperties conf = new GsonProperties(PluggedHardwareEnumerator.INSTANCE());
+				HardwareProperties hw = conf.read(bytes);
 				if (hw != null)
 					hardwares.add(hw);
 				} catch (Exception e)

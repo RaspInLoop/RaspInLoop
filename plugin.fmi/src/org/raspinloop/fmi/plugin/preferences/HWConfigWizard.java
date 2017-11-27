@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.Wizard;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.preferences.extension.AbstractHWConfigPage;
 
@@ -18,7 +18,7 @@ import org.raspinloop.fmi.plugin.preferences.extension.AbstractHWConfigPage;
  */
 public abstract class HWConfigWizard extends Wizard {
 	
-	private HardwareConfig fEditHW;
+	private HardwareProperties fEditHW;
 	private String[] fExistingNames;
 	
 	/**
@@ -27,11 +27,11 @@ public abstract class HWConfigWizard extends Wizard {
 	 * @param editHW the Hardware being edited, or <code>null</code> if none
 	 * @param currentHWs current Hardware used to validate name changes
 	 */
-	public HWConfigWizard(HardwareConfig editHW, HardwareConfig[] currentHWs) {
+	public HWConfigWizard(HardwareProperties editHW, HardwareProperties[] currentHWs) {
 		fEditHW = editHW;
 		List<String> names = new ArrayList<String>(currentHWs.length);
 		for (int i = 0; i < currentHWs.length; i++) {
-			HardwareConfig existing = currentHWs[i];
+			HardwareProperties existing = currentHWs[i];
 			if (!existing.equals(editHW)) {
 				names.add(existing.getComponentName());
 			}
@@ -44,7 +44,7 @@ public abstract class HWConfigWizard extends Wizard {
 	 * 
 	 * @return hw to edit or <code>null</code>
 	 */
-	protected HardwareConfig getHWConfig() {
+	protected HardwareProperties getHWConfig() {
 		return fEditHW;
 	}
 	
@@ -53,7 +53,7 @@ public abstract class HWConfigWizard extends Wizard {
 	 * 
 	 * @return resulting VM
 	 */
-	protected abstract HardwareConfig getResult();
+	protected abstract HardwareProperties getResult();
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.wizard.Wizard#performFinish()

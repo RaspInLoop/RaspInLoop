@@ -48,7 +48,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.configuration.HardwareContentProvider;
 import org.raspinloop.fmi.plugin.configuration.HardwareLabelProvider;
@@ -88,7 +88,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 
 	private Button fManageHardwareButton;
 	protected ComboViewer fHardwareCombo;
-	private Collection<HardwareConfig> hardwares;
+	private Collection<HardwareProperties> hardwares;
 	protected Composite compositeParent;
 
 
@@ -176,7 +176,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 	protected void showPrefPage(String pageId) {
 		if (PreferencesUtil.createPreferenceDialogOn(getShell(), pageId, new String[] { pageId }, null).open() == Window.OK) {
 			hardwares = HardwareConfiguration.buildList();
-			fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
+			fHardwareCombo.setInput(hardwares.toArray(new HardwareProperties[hardwares.size()]));
 		}
 	}
 
@@ -315,7 +315,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 			setErrorMessage(LauncherMessages.JavaMainTab_Main_type_not_specified_16);
 			return false;
 		}
-		HardwareConfig hardware = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+		HardwareProperties hardware = (HardwareProperties) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
 		if (hardware == null) {
 			setErrorMessage("You have to select an Hardware Definition");
 			return false;
@@ -333,7 +333,7 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, fMainText.getText().trim());
-		HardwareConfig hardware = (HardwareConfig) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
+		HardwareProperties hardware = (HardwareProperties) ((IStructuredSelection) fHardwareCombo.getSelection()).getFirstElement();
 		if (hardware != null) {
 			config.setAttribute(ATTR_HARDWARE_CONFIG, hardware.getComponentName());
 		}
@@ -413,10 +413,10 @@ public abstract class RilMainTab extends SharedJavaMainTab {
 
 	private void updateHardwareDefinition(ILaunchConfiguration config) {
 		hardwares = HardwareConfiguration.buildList();
-		fHardwareCombo.setInput(hardwares.toArray(new HardwareConfig[hardwares.size()]));
+		fHardwareCombo.setInput(hardwares.toArray(new HardwareProperties[hardwares.size()]));
 		try {
 			String selectedHardwareName = config.getAttribute(ATTR_HARDWARE_CONFIG, "");
-			for (HardwareConfig hardwareConfig : hardwares) {
+			for (HardwareProperties hardwareConfig : hardwares) {
 				if (selectedHardwareName.equals(hardwareConfig.getComponentName())) {
 					final ISelection selection = new StructuredSelection(hardwareConfig);
 					fHardwareCombo.setSelection(selection);

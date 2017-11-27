@@ -6,9 +6,9 @@ import java.lang.reflect.Constructor;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
-import org.raspinloop.fmi.hwemulation.HardwareBuilder;
-import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
-import org.raspinloop.fmi.hwemulation.HwEmulation;
+import org.raspinloop.config.HardwareBuilder;
+import org.raspinloop.config.HardwareBuilderFactory;
+import org.raspinloop.fmi.HwEmulation;
 import org.raspinloop.fmi.plugin.preferences.PreferenceConstants;
 
 public class PluggedClassBuilder implements HardwareBuilder {

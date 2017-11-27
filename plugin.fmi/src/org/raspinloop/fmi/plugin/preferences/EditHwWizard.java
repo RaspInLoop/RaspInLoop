@@ -1,6 +1,6 @@
 package org.raspinloop.fmi.plugin.preferences;
 
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.preferences.extension.AbstractHWConfigPage;
 
 public class EditHwWizard extends HWConfigWizard {
@@ -15,7 +15,7 @@ public class EditHwWizard extends HWConfigWizard {
 	 * @param allHWs
 	 *            all Hardware being edited
 	 */
-	public EditHwWizard(HardwareConfig hw, HardwareConfig[] allHWs) {
+	public EditHwWizard(HardwareProperties hw, HardwareProperties[] allHWs) {
 		super(hw, allHWs);
 		setWindowTitle("Edit RIL Hardware");
 	}
@@ -38,7 +38,7 @@ public class EditHwWizard extends HWConfigWizard {
 	}
 
 	@Override
-	protected HardwareConfig getResult() {
+	protected HardwareProperties getResult() {
 		return fEditPage.getSelection();
 	}
 

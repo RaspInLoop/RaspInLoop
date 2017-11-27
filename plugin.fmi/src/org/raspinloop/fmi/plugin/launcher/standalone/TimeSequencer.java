@@ -12,7 +12,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.raspinloop.config.BoardHardware;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.Instance;
 import org.raspinloop.fmi.Type;
 import org.raspinloop.fmi.launcherRunnerIpc.RunnerService.Client;
@@ -44,11 +44,11 @@ public class TimeSequencer implements Proxy {
 	}
 
 	private String getHardwareGuid(ILaunchConfiguration configuration) throws CoreException {
-		Collection<HardwareConfig> hardwares = HardwareConfiguration.buildList();
+		Collection<HardwareProperties> hardwares = HardwareConfiguration.buildList();
 
 		try {
 			String selectedHardwareName = configuration.getAttribute(RilMainTab.ATTR_HARDWARE_CONFIG, "");
-			for (HardwareConfig hardwareConfig : hardwares) {
+			for (HardwareProperties hardwareConfig : hardwares) {
 				if (selectedHardwareName.equals(hardwareConfig.getComponentName()) && (hardwareConfig instanceof BoardHardware)) {
 					return ((BoardHardware) hardwareConfig).getGuid();
 				}

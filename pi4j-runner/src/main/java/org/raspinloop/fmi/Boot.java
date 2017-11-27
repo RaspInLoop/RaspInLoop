@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.raspinloop.agent.Handler;
 import org.raspinloop.fmi.launcherRunnerIpc.IpcConnector;
 
 public class Boot {

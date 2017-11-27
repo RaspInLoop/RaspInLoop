@@ -1,0 +1,60 @@
+[VERBOSE][FMUCHK] Setting log level to [VERBOSE]
+[INFO][FMUCHK] FMI compliance checker 2.0 [FMILibrary: 2.0] build date: Aug 22 2014
+[INFO][FMUCHK] Will process FMU Blinking.fmu
+[VERBOSE][FMILIB] Allocating FMIL context
+[VERBOSE][FMILIB] Detecting FMI standard version
+[VERBOSE][FMIZIP] Unpacking FMU into C:\Users\Fred\Documents\RIL\RaspInLoop-fmi-plugin\FmiProxy\src\test\resources\fmucktmpa13244
+[VERBOSE][FMIXML] Parsing XML to detect FMI standard version
+[VERBOSE][FMIXML] XML specifies FMI 2.0
+[INFO][FMILIB] XML specifies FMI standard version 2.0
+[VERBOSE][FMILIB] Parsing model description XML
+[VERBOSE][FMI2XML] Parsing XML element fmiModelDescription
+[VERBOSE][FMI2XML] Parsing XML element CoSimulation
+[VERBOSE][FMI2XML] Parsing XML element LogCategories
+[VERBOSE][FMI2XML] Parsing XML element ModelVariables
+[INFO][FMI2XML] [Line:1] Detected during parsing:
+[ERROR][FMI2XML] Start attribute is required for this causality, variability and initial combination
+[VERBOSE][FMI2XML] Building alias index
+[VERBOSE][FMI2XML] Parsing XML element ModelStructure
+[VERBOSE][FMI2XML] Parsing XML element Outputs
+[VERBOSE][FMILIB] Parsing finished successfully
+[INFO][FMUCHK] Model name: raspberryPiGpioSimulator
+[INFO][FMUCHK] Model GUID: {5571c639-6438-4eee-839e-ff8442e3bbbc}
+[INFO][FMUCHK] Model version: 
+[INFO][FMUCHK] FMU kind: CoSimulation
+[INFO][FMUCHK] The FMU contains:
+0 constants
+0 parameters
+0 discrete variables
+3 continuous variables
+1 inputs
+2 outputs
+0 local variables
+0 independent variables
+0 calculated parameters
+0 real variables
+0 integer variables
+0 enumeration variables
+3 boolean variables
+0 string variables
+
+[INFO][FMUCHK] Printing output file header
+[INFO][FMUCHK] Model identifier for CoSimulation: ril_fmi
+[INFO][FMILIB] Loading 'win64' binary with 'default' platform types
+[VERBOSE][FMICAPI] Loaded FMU binary from C:\Users\Fred\Documents\RIL\RaspInLoop-fmi-plugin\FmiProxy\src\test\resources\fmucktmpa13244\binaries\win64\ril_fmi.dll
+[VERBOSE][FMICAPI] Loading functions for the co-simulation interface
+[VERBOSE][FMILIB] Successfully loaded all the interface functions
+[INFO][FMUCHK] Version returned from CS FMU:   2.0
+[VERBOSE][FMICAPI] Calling fmi2GetModelTypesPlatform
+[FATAL][FMUCHK] Could not instantiate the model
+[VERBOSE][FMILIB] Releasing allocated library resources
+[VERBOSE][FMILIB] Releasing FMU CAPI interface
+[VERBOSE][FMICAPI] Successfully unloaded FMU binary
+[VERBOSE][JMPRT] Removing C:\Users\Fred\Documents\RIL\RaspInLoop-fmi-plugin\FmiProxy\src\test\resources\fmucktmpa13244
+FMU check summary:
+FMU reported:
+	0 warning(s) and error(s)
+Checker reported:
+	0 Warning(s)
+	1 Error(s)
+	Fatal error occurred during processing

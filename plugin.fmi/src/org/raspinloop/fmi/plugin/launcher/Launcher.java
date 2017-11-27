@@ -30,8 +30,8 @@ import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.raspinloop.config.BoardHardware;
-import org.raspinloop.config.GsonConfig;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.GsonProperties;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 import org.raspinloop.fmi.plugin.Trace;
 import org.raspinloop.fmi.plugin.configuration.SimulationType;
@@ -72,13 +72,13 @@ public abstract class Launcher extends AbstractJavaLaunchConfigurationDelegate {
 	}
 
 	private String getHardwareConfigJsonName(ILaunchConfiguration configuration) throws CoreException {
-		Collection<HardwareConfig> hardwares = HardwareConfiguration.buildList();
+		Collection<HardwareProperties> hardwares = HardwareConfiguration.buildList();
 
 		try {
 			String selectedHardwareName = configuration.getAttribute(RilMainTab.ATTR_HARDWARE_CONFIG, "");
-			for (HardwareConfig hardwareConfig : hardwares) {
+			for (HardwareProperties hardwareConfig : hardwares) {
 				if (selectedHardwareName.equals(hardwareConfig.getComponentName()) && (hardwareConfig instanceof BoardHardware)) {
-					GsonConfig conf = new GsonConfig(PluggedHardwareEnumerator.INSTANCE());
+					GsonProperties conf = new GsonProperties(PluggedHardwareEnumerator.INSTANCE());
 					Path temp = Files.createTempFile(null, ".json");
 
 					Files.write(temp, conf.write((BoardHardware) hardwareConfig).getBytes("UTF-8"));

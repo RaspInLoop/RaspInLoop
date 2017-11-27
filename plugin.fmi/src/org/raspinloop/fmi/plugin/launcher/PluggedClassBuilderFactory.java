@@ -1,16 +1,16 @@
 package org.raspinloop.fmi.plugin.launcher;
 
-import org.raspinloop.config.HardwareConfig;
-import org.raspinloop.fmi.hwemulation.HardwareBuilder;
-import org.raspinloop.fmi.hwemulation.HardwareBuilderFactory;
+import org.raspinloop.config.HardwareBuilder;
+import org.raspinloop.config.HardwareBuilderFactory;
+import org.raspinloop.config.HardwareProperties;
 
 public class PluggedClassBuilderFactory implements HardwareBuilderFactory {
 
 	@Override
-	public HardwareBuilder createBuilder(HardwareConfig hwConfig) {
-		HardwareBuilder builder = new PluggedClassBuilder(hwConfig.getClass().getName());
+	public HardwareBuilder createBuilder(HardwareProperties hwProps) {
+		HardwareBuilder builder = new PluggedClassBuilder(hwProps.getClass().getName());
 		builder.setBuilderFactory(this);
-		builder.setProperties(hwConfig);
+		builder.setProperties(hwProps);
 		return builder;
 	}
 

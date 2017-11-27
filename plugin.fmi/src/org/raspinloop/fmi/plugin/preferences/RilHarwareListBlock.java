@@ -60,7 +60,7 @@ import org.raspinloop.config.AlreadyUsedPin;
 import org.raspinloop.config.BoardExtentionHardware;
 import org.raspinloop.config.BoardHardware;
 import org.raspinloop.config.GPIOHardware;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.config.I2CComponent;
 import org.raspinloop.config.I2CParent;
 import org.raspinloop.config.SPIComponent;
@@ -89,9 +89,9 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	/**
 	 * VMs being displayed
 	 */
-	private List<HardwareConfig> hardwares = new ArrayList<HardwareConfig>();
+	private List<HardwareProperties> hardwares = new ArrayList<HardwareProperties>();
 
-	private List<Class<? extends HardwareConfig>> supportedHwChildrenTypes;
+	private List<Class<? extends HardwareProperties>> supportedHwChildrenTypes;
 	/**
 	 * The main list control
 	 */
@@ -102,6 +102,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	private Button removeButton;
 	private Button editButton;
 	private Button copyButton;
+	private Button exportButton;
 
 	// index of column used for sorting
 	private int sortColumn = 0;
@@ -109,22 +110,28 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	/**
 	 * Selection listeners (checked HW changes)
 	 */
-	private ListenerList selectionListeners = new ListenerList();
+	private ListenerList<ISelectionChangedListener> selectionListeners = new ListenerList<>();
 
 	/**
 	 * Add new Hardware listener
 	 */
-	private ListenerList addHWListeners = new ListenerList();
+	private ListenerList<IHWListener> addHWListeners = new ListenerList<>();
 
 	/**
 	 * Remove Hardware listener
 	 */
-	private ListenerList deleteHWListeners = new ListenerList();
+	private ListenerList<IHWListener> deleteHWListeners = new ListenerList<>();
 
 	/**
 	 * Update Hardware listener
 	 */
-	private ListenerList updateHWListeners = new ListenerList();
+	private ListenerList<IHWListener> updateHWListeners = new ListenerList<>();
+
+
+	/**
+	 * Expport Hardware listener
+	 */
+	private ListenerList<IHWListener> exportHWListeners = new ListenerList<>();
 
 	private Table table;
 	// private ArrayList<HardwareConfig> supportedHardwareDefs = new
@@ -132,7 +139,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 
 	private boolean editAfterAdd = false;
 
-	private HardwareConfig parentHw;
+	private HardwareProperties parentHw;
 
 	/**
 	 * Content provider to show a list of hardware
@@ -160,8 +167,8 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		 * @see ITableLabelProvider#getColumnText(Object, int)
 		 */
 		public String getColumnText(Object element, int columnIndex) {
-			if (element instanceof HardwareConfig) {
-				HardwareConfig hw = (HardwareConfig) element;
+			if (element instanceof HardwareProperties) {
+				HardwareProperties hw = (HardwareProperties) element;
 				switch (columnIndex) {
 				case 0:
 					if (isBuiltIn(hw)) {
@@ -192,13 +199,13 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		 * @see ITableLabelProvider#getColumnImage(Object, int)
 		 */
 		public Image getColumnImage(Object element, int columnIndex) {
-			// TODO find image based on implemntation className
+			// TODO find image based on implementation className
 			return null;
 		}
 
 		public Font getFont(Object element) {
-			if (element instanceof HardwareConfig) {
-				HardwareConfig hw = (HardwareConfig) element;
+			if (element instanceof HardwareProperties) {
+				HardwareProperties hw = (HardwareProperties) element;
 				if (isBuiltIn(hw)) {
 					if (bold == null) {
 						Font dialogFont = JFaceResources.getDialogFont();
@@ -241,8 +248,8 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		}
 
 		boolean isUnmodifiable(Object element) {
-			if (element instanceof HardwareConfig) {
-				HardwareConfig hw = (HardwareConfig) element;
+			if (element instanceof HardwareProperties) {
+				HardwareProperties hw = (HardwareProperties) element;
 				return isBuiltIn(hw);
 			}
 			return false;
@@ -250,13 +257,13 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 
 	}
 
-	public RilHarwareListBlock(final HardwareConfig parentHw,  List<Class<? extends HardwareConfig>> list) {		
+	public RilHarwareListBlock(final HardwareProperties parentHw, List<Class<? extends HardwareProperties>> list) {
 		// parent must be a type having component
-		// TODO: this class should not have to known such information		
+		// TODO: this class should not have to known such information
 		if ((parentHw instanceof BoardHardware) || (parentHw instanceof I2CParent) || (parentHw instanceof SPIParent) || (parentHw instanceof UARTParent))
 			this.parentHw = parentHw;
 		// list of children type
-		this.supportedHwChildrenTypes = list; 
+		this.supportedHwChildrenTypes = list;
 
 	}
 
@@ -271,7 +278,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		selectionListeners.add(listener);
 	}
 
-	public boolean isBuiltIn(HardwareConfig hw) {
+	public boolean isBuiltIn(HardwareProperties hw) {
 		return false;
 	}
 
@@ -299,6 +306,16 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		updateHWListeners.remove(listener);
 	}
 
+	public void addExportHWListener(IHWListener listener) {
+		exportHWListeners.add(listener);
+
+	}
+
+	public void removeExportHWListener(IHWListener listener) {
+		exportHWListeners.remove(listener);
+
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -311,8 +328,8 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener
+	 * @see org.eclipse.jface.viewers.ISelectionProvider#
+	 * removeSelectionChangedListener
 	 * (org.eclipse.jface.viewers.ISelectionChangedListener)
 	 */
 	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
@@ -367,8 +384,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 				hardwareList.refresh(true);
 			}
 		});
-		int defaultwidth = 350 / 3 + 1;
-		column.setWidth(defaultwidth);
+		column.setWidth(200);
 
 		column = new TableColumn(table, SWT.NULL);
 		column.setText("Usage description");
@@ -379,7 +395,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 				hardwareList.refresh(true);
 			}
 		});
-		column.setWidth(defaultwidth);
+		column.setWidth(100);
 
 		column = new TableColumn(table, SWT.NULL);
 		column.setText("Simulated provider name");
@@ -390,7 +406,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 				hardwareList.refresh(true);
 			}
 		});
-		column.setWidth(defaultwidth);
+		column.setWidth(50);
 
 		hardwareList = new TableViewer(table);
 		hardwareList.setLabelProvider(new HWLabelProvider());
@@ -427,7 +443,6 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 
 		addButton = SWTFactory.createPushButton(buttons, "Add...", null);
 		addButton.addListener(SWT.Selection, new Listener() {
-			
 
 			public void handleEvent(Event evt) {
 				try {
@@ -464,6 +479,14 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 				removeHWs(parentHw);
 			}
 		});
+
+
+		exportButton = SWTFactory.createPushButton(buttons, "Export", null);
+		exportButton.addListener(SWT.Selection, new Listener() {
+			public void handleEvent(Event evt) {
+				exportHWs(parentHw);
+			}
+		});
 		enableButtons();
 		addButton.setEnabled(true);
 	}
@@ -473,9 +496,10 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	 * 
 	 * @param hws
 	 */
-	public void setHwList(List<HardwareConfig> hws) {
+	public void setHwList(List<HardwareProperties> hws) {
 		hardwares = hws;
 		hardwareList.setInput(hardwares);
+		control.layout(new Control[] { hardwareList.getControl() });
 		hardwareList.refresh();
 	}
 
@@ -488,24 +512,24 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	 * 
 	 * @since 3.2
 	 */
-	protected void copyHW(HardwareConfig parent) throws InstantiationException, IllegalAccessException, AlreadyUsedPin {
+	protected void copyHW(HardwareProperties parent) throws InstantiationException, IllegalAccessException, AlreadyUsedPin {
 		IStructuredSelection selection = (IStructuredSelection) hardwareList.getSelection();
 		@SuppressWarnings("unchecked")
-		Iterator<HardwareConfig> it = selection.iterator();
+		Iterator<HardwareProperties> it = selection.iterator();
 
-		ArrayList<HardwareConfig> newEntries = new ArrayList<HardwareConfig>();
+		ArrayList<HardwareProperties> newEntries = new ArrayList<HardwareProperties>();
 		while (it.hasNext()) {
-			HardwareConfig selectedHW = it.next();
+			HardwareProperties selectedHW = it.next();
 			// duplicate & add HW
-			HardwareConfig newHardware = selectedHW.getClass().newInstance();
+			HardwareProperties newHardware = selectedHW.getClass().newInstance();
 			newHardware.setComponentName(generateName(selectedHW.getComponentName(), getDisplayNames()));
 			linkComponent(parent, newHardware);
 
-			EditHwWizard wizard = new EditHwWizard(newHardware, hardwares.toArray(new HardwareConfig[hardwares.size()]));
+			EditHwWizard wizard = new EditHwWizard(newHardware, hardwares.toArray(new HardwareProperties[hardwares.size()]));
 			WizardDialog dialog = new WizardDialog(getShell(), wizard);
 			int dialogResult = dialog.open();
 			if (dialogResult == Window.OK) {
-				HardwareConfig result = wizard.getResult();
+				HardwareProperties result = wizard.getResult();
 				if (result != null) {
 					newEntries.add(result);
 				}
@@ -519,7 +543,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 			for (Object listenerObj : addHWListeners.getListeners()) {
 				if (listenerObj instanceof IHWListener) {
 					IHWListener listerner = (IHWListener) listenerObj;
-					for (HardwareConfig configurableHardware : newEntries) {
+					for (HardwareProperties configurableHardware : newEntries) {
 						listerner.addOrRemoveHW(configurableHardware);
 					}
 				}
@@ -653,20 +677,23 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		copyButton.setEnabled(selectionCount > 0);
 		if (selectionCount > 0 && selectionCount <= hardwareList.getTable().getItemCount()) {
 			@SuppressWarnings("unchecked")
-			Iterator<HardwareConfig> iterator = selection.iterator();
+			Iterator<HardwareProperties> iterator = selection.iterator();
 			while (iterator.hasNext()) {
-				HardwareConfig hardware = iterator.next();
+				HardwareProperties hardware = iterator.next();
 				if (isBuiltIn(hardware)) {
 					removeButton.setEnabled(false);
+					exportButton.setEnabled(false);
 					editButton.setEnabled(false);
 					return;
 				}
 			}
 			removeButton.setEnabled(true);
+			exportButton.setEnabled(true);
 			editButton.setEnabled(selectionCount == 1);
 		} else {
 			editButton.setEnabled(false);
 			removeButton.setEnabled(false);
+			exportButton.setEnabled(false);
 		}
 	}
 
@@ -684,41 +711,44 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	 * 
 	 * @return Hardware currently being displayed in this block
 	 */
-	public HardwareConfig[] getHWs() {
-		return hardwares.toArray(new HardwareConfig[hardwares.size()]);
+	public HardwareProperties[] getHWs() {
+		return hardwares.toArray(new HardwareProperties[hardwares.size()]);
 	}
 
 	/**
 	 * Bring up a wizard that lets the user create a new HD definition.
-	 * @param hwType TODO
+	 * 
+	 * @param hwType
+	 *            TODO
 	 * 
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws AlreadyUsedPin
 	 */
-	private void addHW(HardwareConfig parent, List<Class<? extends HardwareConfig>> hwType) throws InstantiationException, IllegalAccessException, AlreadyUsedPin {
+	private void addHW(HardwareProperties parent, List<Class<? extends HardwareProperties>> hwType)
+			throws InstantiationException, IllegalAccessException, AlreadyUsedPin {
 		// Select a type in list
 
-		HardwareSelectionDialog hdsd = new HardwareSelectionDialog(getShell(), hwType );
+		HardwareSelectionDialog hdsd = new HardwareSelectionDialog(getShell(), hwType);
 		if (hdsd.open() == Window.CANCEL) {
 			return;
 		}
 		Object[] results = hdsd.getResult();
-		if (results.length >= 1 && results[0] instanceof HardwareConfig) {
-			HardwareConfig hWDef = (HardwareConfig)results[0];
+		if (results.length >= 1 && results[0] instanceof HardwareProperties) {
+			HardwareProperties hWDef = (HardwareProperties) results[0];
 			String name = generateName(hWDef.getComponentName(), getNames());
 
-			HardwareConfig newHardware = hWDef.getClass().newInstance();
+			HardwareProperties newHardware = hWDef.getClass().newInstance();
 			newHardware.setComponentName(name);
 
 			linkComponent(parent, newHardware);
 
 			if (editAfterAdd) {
 				// then edit it
-				EditHwWizard wizard = new EditHwWizard(newHardware, hardwares.toArray(new HardwareConfig[hardwares.size()]));
+				EditHwWizard wizard = new EditHwWizard(newHardware, hardwares.toArray(new HardwareProperties[hardwares.size()]));
 				WizardDialog dialog = new WizardDialog(getShell(), wizard);
 				int dialogResult = dialog.open();
-				HardwareConfig result = wizard.getResult();
+				HardwareProperties result = wizard.getResult();
 				if (dialogResult == Window.OK && result != null) {
 					hardwares.add(result);
 					for (Object listenerObj : addHWListeners.getListeners()) {
@@ -750,7 +780,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	/**
 	 * @see IAddVMDialogRequestor#vmAdded(IVMInstall)
 	 */
-	public void hwAdded(HardwareConfig hw) {
+	public void hwAdded(HardwareProperties hw) {
 		boolean makeselection = hardwares.size() < 1;
 		hardwares.add(hw);
 		// update from model
@@ -778,7 +808,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	private List<String> getNames() {
 		LinkedList<String> result = new LinkedList<String>();
 		for (int i = 0; i < hardwares.size(); i++) {
-			HardwareConfig hw = hardwares.get(i);
+			HardwareProperties hw = hardwares.get(i);
 			result.add(hw.getType());
 		}
 		return result;
@@ -787,7 +817,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	private List<String> getDisplayNames() {
 		LinkedList<String> result = new LinkedList<String>();
 		for (int i = 0; i < hardwares.size(); i++) {
-			HardwareConfig hw = hardwares.get(i);
+			HardwareProperties hw = hardwares.get(i);
 			result.add(hw.getComponentName());
 		}
 		return result;
@@ -799,13 +829,13 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	private void editHW() {
 		IStructuredSelection selection = (IStructuredSelection) hardwareList.getSelection();
 		@SuppressWarnings("unchecked")
-		Iterator<HardwareConfig> it = selection.iterator();
+		Iterator<HardwareProperties> it = selection.iterator();
 		if (it.hasNext()) {
-			HardwareConfig selectedHW = it.next();
-			EditHwWizard wizard = new EditHwWizard(selectedHW, hardwares.toArray(new HardwareConfig[hardwares.size()]));
+			HardwareProperties selectedHW = it.next();
+			EditHwWizard wizard = new EditHwWizard(selectedHW, hardwares.toArray(new HardwareProperties[hardwares.size()]));
 			WizardDialog dialog = new WizardDialog(getShell(), wizard);
 			int dialogResult = dialog.open();
-			HardwareConfig result = wizard.getResult();
+			HardwareProperties result = wizard.getResult();
 			if (dialogResult == Window.OK && result != null) {
 
 				for (Object listenerObj : updateHWListeners.getListeners()) {
@@ -823,11 +853,11 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	/**
 	 * Performs the remove VM(s) action when the Remove... button is pressed
 	 */
-	private void removeHWs(HardwareConfig parent) {
+	private void removeHWs(HardwareProperties parent) {
 		IStructuredSelection selection = (IStructuredSelection) hardwareList.getSelection();
-		HardwareConfig[] hws = new HardwareConfig[selection.size()];
+		HardwareProperties[] hws = new HardwareProperties[selection.size()];
 		@SuppressWarnings("unchecked")
-		Iterator<HardwareConfig> iter = selection.iterator();
+		Iterator<HardwareProperties> iter = selection.iterator();
 		int i = 0;
 		while (iter.hasNext()) {
 			hws[i] = iter.next();
@@ -837,11 +867,43 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 	}
 
 	/**
+	 * Performs the export VM(s) action when the Remove... button is pressed
+	 */
+	private void exportHWs(HardwareProperties parent) {
+		IStructuredSelection selection = (IStructuredSelection) hardwareList.getSelection();
+		HardwareProperties[] hws = new HardwareProperties[selection.size()];
+		@SuppressWarnings("unchecked")
+		Iterator<HardwareProperties> iter = selection.iterator();
+		int i = 0;
+		while (iter.hasNext()) {
+			hws[i] = iter.next();
+			i++;
+		}
+		exportHWs(hws, parent);
+	}
+
+	/**
 	 * Removes the given VMs from the table.
 	 * 
 	 * @param hws
 	 */
-	public void removeHWs(HardwareConfig[] hws, HardwareConfig parent) {
+	public void exportHWs(HardwareProperties[] hws, HardwareProperties parent) {
+		for (int i = 0; i < hws.length; i++) {
+			for (Object listenerObj : exportHWListeners.getListeners()) {
+				if (listenerObj instanceof IHWListener) {
+					IHWListener listerner = (IHWListener) listenerObj;
+					listerner.addOrRemoveHW(hws[i]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Removes the given VMs from the table.
+	 * 
+	 * @param hws
+	 */
+	public void removeHWs(HardwareProperties[] hws, HardwareProperties parent) {
 		for (int i = 0; i < hws.length; i++) {
 			removeFromParent(parent, hws[i]);
 			hardwares.remove(hws[i]);
@@ -855,7 +917,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		}
 		hardwareList.refresh();
 		IStructuredSelection curr = (IStructuredSelection) getSelection();
-		HardwareConfig[] installs = getHWs();
+		HardwareProperties[] installs = getHWs();
 		if (curr.size() == 0 && installs.length == 1) {
 			// pick a default HD automatically
 			setSelection(new StructuredSelection(installs[0]));
@@ -865,7 +927,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 		hardwareList.refresh(true);
 	}
 
-	private void removeFromParent(HardwareConfig parent, HardwareConfig component) {
+	private void removeFromParent(HardwareProperties parent, HardwareProperties component) {
 		// TODO: this class should not have to known such information
 		if ((component instanceof BoardExtentionHardware) && (parent instanceof BoardHardware))
 			((BoardHardware) parent).removeComponent((BoardExtentionHardware) component);
@@ -877,7 +939,7 @@ public class RilHarwareListBlock implements IAddHardwareDialogRequestor, ISelect
 			((UARTParent) parent).removeComponent((UARTComponent) component);
 	}
 
-	private void linkComponent(HardwareConfig parent, HardwareConfig component) throws AlreadyUsedPin {
+	private void linkComponent(HardwareProperties parent, HardwareProperties component) throws AlreadyUsedPin {
 		// TODO: this class should not have to known such information
 		if ((component instanceof BoardExtentionHardware) && (parent instanceof BoardHardware)) {
 			BoardHardware board = (BoardHardware) parent;

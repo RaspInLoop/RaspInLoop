@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 
 public class HardwareContentProvider implements IStructuredContentProvider {
 	
@@ -25,12 +25,12 @@ public class HardwareContentProvider implements IStructuredContentProvider {
 	public Object[] getElements(Object inputElement) {
 		if (inputElement instanceof Collection<?>){
 			
-			 ArrayList<HardwareConfig> arrayList = new ArrayList<HardwareConfig>((Collection<? extends HardwareConfig>)inputElement);			
+			 ArrayList<HardwareProperties> arrayList = new ArrayList<HardwareProperties>((Collection<? extends HardwareProperties>)inputElement);			
 			return arrayList.toArray();
 		}
-		else if ( inputElement instanceof HardwareConfig[])
+		else if ( inputElement instanceof HardwareProperties[])
 			return (Object[]) inputElement;
 		else
-			return new HardwareConfig[0];
+			return new HardwareProperties[0];
 	}
 }

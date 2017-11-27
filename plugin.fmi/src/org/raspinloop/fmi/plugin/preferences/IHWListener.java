@@ -1,7 +1,7 @@
 package org.raspinloop.fmi.plugin.preferences;
 
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 
 public interface IHWListener {
-	void addOrRemoveHW(HardwareConfig hw);
+	void addOrRemoveHW(HardwareProperties hw);
 }

@@ -6,7 +6,7 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
-import org.raspinloop.config.HardwareConfig;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 
 /**
@@ -87,14 +87,14 @@ public abstract class AbstractHWConfigPage extends WizardPage {
 	 * 
 	 * @return the edited or created RIL Hardware Configuration.
 	 */
-	public abstract HardwareConfig getSelection();
+	public abstract HardwareProperties getSelection();
 
 	/**
 	 * Sets the VM install to be edited. 
 	 * 
 	 * @param vm the VM install to edit
 	 */
-	public void setSelection(HardwareConfig hw) {
+	public void setSelection(HardwareProperties hw) {
 		fOriginalName = hw.getType();
 	}
 	

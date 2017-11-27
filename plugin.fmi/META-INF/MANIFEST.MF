@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: RIL-FMI.Plugin
 Bundle-SymbolicName: org.raspinloop.fmi.plugin.fmi;singleton:=true
-Bundle-Version: 1.3.0.qualifier
+Bundle-Version: 1.4.0.qualifier
 Bundle-Activator: org.raspinloop.fmi.plugin.Activator
 Bundle-Vendor: raspinloop
 Require-Bundle: org.eclipse.ui,
@@ -15,10 +15,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.debug;bundle-version="3.7.100",
  org.apache.log4j;bundle-version="1.2.15",
  org.eclipse.e4.core.di;bundle-version="1.4.0",
- org.raspinloop.fmi.plugin.config;bundle-version="1.3.0",
- org.raspinloop.fmi.plugin.pi4j-runner;bundle-version="1.3.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7,
- JavaSE-1.8
+ org.raspinloop.fmi.plugin.config;bundle-version="1.4.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
 Bundle-ClassPath: .,
@@ -27,9 +25,7 @@ Bundle-ClassPath: .,
  target/dependency/slf4j-api-1.7.12.jar,
  target/dependency/aspectjrt-1.8.4.jar,
  target/dependency/aspectjweaver-1.8.4.jar
-Import-Package: org.apache.log4j,
- org.raspinloop.fmi.hwemulation
+Import-Package: org.apache.log4j
 Export-Package: org.raspinloop.fmi.plugin,
- org.raspinloop.fmi.plugin.launcher,
  org.raspinloop.fmi.plugin.preferences,
  org.raspinloop.fmi.plugin.preferences.extension
