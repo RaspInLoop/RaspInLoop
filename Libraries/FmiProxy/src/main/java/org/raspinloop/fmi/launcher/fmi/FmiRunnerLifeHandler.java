@@ -23,7 +23,6 @@ public class FmiRunnerLifeHandler extends  BaseRunnerLifeHandler {
 	@Override
 	public  org.raspinloop.fmi.launcherRunnerIpc.Status freeInstance(Instance c) {
 		logger.trace("FmiRunnerLifeHandler.terminate called");
-		server.stop();
 		return org.raspinloop.fmi.launcherRunnerIpc.Status.OK;
 
 	}
@@ -34,6 +33,10 @@ public class FmiRunnerLifeHandler extends  BaseRunnerLifeHandler {
 		return org.raspinloop.fmi.Status.Discard;
 	}
 
+	public void stopFMIServer(){
+		if (server != null )
+			server.stop();
+	}
 
 	public org.raspinloop.fmi.launcherRunnerIpc.Status stopVMRunner() {
 		return super.stopVMRunner();				

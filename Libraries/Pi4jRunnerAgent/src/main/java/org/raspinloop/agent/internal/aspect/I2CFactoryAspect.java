@@ -2,7 +2,6 @@ package org.raspinloop.agent.internal.aspect;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.raspinloop.hwemulation.I2CBus;
 import org.raspinloop.hwemulation.I2CEmulation;
 
 

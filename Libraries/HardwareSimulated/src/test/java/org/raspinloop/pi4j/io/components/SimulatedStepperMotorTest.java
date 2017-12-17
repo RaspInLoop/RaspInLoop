@@ -1,7 +1,9 @@
-package org.raspinloop.pi4j.io.gpio;
+package org.raspinloop.pi4j.io.components;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.raspinloop.fmi.testtools.AssertFMI.assertIsInputVariable;
+import static org.raspinloop.fmi.testtools.AssertFMI.assertIsRealVariable;
+import static org.raspinloop.fmi.testtools.Builder.getBuilderFor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,19 +11,12 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.Test;
-import org.raspinloop.config.HardwareBuilder;
-import org.raspinloop.config.HardwareBuilderFactory;
 import org.raspinloop.config.Pin;
 import org.raspinloop.config.PinImpl;
 import org.raspinloop.config.PinMode;
 import org.raspinloop.config.PinState;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
-import org.raspinloop.pi4j.io.components.SimulatedStepperMotor;
-import org.raspinloop.pi4j.io.components.SimulatedStepperMotorProperties;
 import org.raspinloop.timeemulation.SimulatedTime;
-
-import static org.raspinloop.fmi.testtools.AssertFMI.*;
-import static org.raspinloop.fmi.testtools.Builder.*;
 
 public class SimulatedStepperMotorTest {
 	
@@ -34,7 +29,7 @@ public class SimulatedStepperMotorTest {
 		pins[i].setName("GPIO " + i);
 		pins[i].setProvider("");
 		pins[i].getSupportedPinModes().clear();	
-		pi4jPins[i] = new PinImpl("", i, "GPIO " + i, EnumSet.of(PinMode.OUT));
+		pi4jPins[i] = new PinImpl("", i, "GPIO " + i, EnumSet.of(PinMode.DIGITAL_OUTPUT));
 	}
 	}
 

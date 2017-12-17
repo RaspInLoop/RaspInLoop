@@ -5,16 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.server.TServer;
-import org.raspinloop.fmi.launcherRunnerIpc.RunnerService.Client;
-import org.raspinloop.fmi.modeldescription.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.raspinloop.fmi.CoSimulation.Iface;
 import org.raspinloop.fmi.Instance;
 import org.raspinloop.fmi.Status;
 import org.raspinloop.fmi.StatusKind;
 import org.raspinloop.fmi.Type;
+import org.raspinloop.fmi.launcherRunnerIpc.RunnerService.Client;
+import org.raspinloop.fmi.modeldescription.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FmiProxy implements Iface, Proxy {
 
@@ -27,7 +26,6 @@ public class FmiProxy implements Iface, Proxy {
 	private IProxyMonitor monitor;
 	public FmiProxy(IProxyMonitor monitor) {
 		this.monitor = monitor;
-
 	}
 
 	// TODO: should left on C++ ril-fmi.dll
@@ -46,7 +44,7 @@ public class FmiProxy implements Iface, Proxy {
 	public Instance instanciate(String instanceName, Type fmuType, String fmuGUID, String fmuResourceLocation, boolean visible, boolean loggingOn)
 			throws TException {
 		if (lifeHandler == null ){
-			// TODO log error
+			logger.error("LifeHandler is null");
 			throw new TException("lifeHandlerNotSet");
 		}
 
@@ -54,10 +52,10 @@ public class FmiProxy implements Iface, Proxy {
 			client = lifeHandler.startVMRunner(monitor);
      		return lifeHandler.instanciate(instanceName, fmuType, fmuGUID, fmuResourceLocation, visible, loggingOn);
 		} catch (Exception e) {
-			// TODO log error
-			new TException(e.getMessage(), e);
+			logger.error("Cannot Start VMRunner : "+e.getMessage());
+			lifeHandler.stopVMRunner();		
+			return null;
 		}
-		return null;
 	}
 
 	@Override
@@ -100,9 +98,10 @@ public class FmiProxy implements Iface, Proxy {
 			throw new TException("DebugTarget not yet started");
 		}
 		org.raspinloop.fmi.launcherRunnerIpc.Status status = org.raspinloop.fmi.launcherRunnerIpc.Status.OK;
-		logger.trace("-->terminate");		
+		logger.trace("--> terminate");		
 		lifeHandler.stopVMRunner();		
-		logger.trace("-->terminate " + status);
+		terminated=true;
+		logger.trace("<-- terminate " + status);
 		return convertStatus(status);
 	}
 
@@ -114,7 +113,9 @@ public class FmiProxy implements Iface, Proxy {
 
 	@Override
 	public void freeInstance(Instance c) throws TException {
+		logger.trace("--> free");		
 		lifeHandler.freeInstance(c);
+		logger.trace("<-- free");	
 	}
 
 	@Override
@@ -221,9 +222,9 @@ public class FmiProxy implements Iface, Proxy {
 			// TODO log error
 			throw new TException("DebugTarget net yet started");
 		}
-		logger.trace("-->doStep");
+		//logger.trace("--> doStep");
 		org.raspinloop.fmi.launcherRunnerIpc.Status status = client.doStep( currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint);
-		logger.trace("-->doStep" + status);
+		//logger.trace("<-- doStep " + status);
 		return convertStatus(status);
 	}
 
@@ -308,7 +309,7 @@ public class FmiProxy implements Iface, Proxy {
 	 */
 	@Override
 	public void setFmiRunnerLifeHandler(RunnerLifeHandler lifeHandler) {
-		this.lifeHandler = lifeHandler;
+		this.lifeHandler = lifeHandler;		
 	}
 
 	@Override

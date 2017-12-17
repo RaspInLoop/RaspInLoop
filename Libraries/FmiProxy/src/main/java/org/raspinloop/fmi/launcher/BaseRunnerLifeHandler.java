@@ -1,8 +1,6 @@
 package org.raspinloop.fmi.launcher;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -13,9 +11,9 @@ import org.raspinloop.fmi.Instance;
 import org.raspinloop.fmi.ModelState;
 import org.raspinloop.fmi.launcher.ProxyRunnerJob.LauncherServerJob;
 import org.raspinloop.fmi.launcherRunnerIpc.RunnerService.Client;
+import org.raspinloop.fmi.launcherRunnerIpc.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	Logger logger = LoggerFactory.getLogger(BaseRunnerLifeHandler.class);
@@ -24,9 +22,9 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	private LauncherServerJob launcherServer;
 	private Instance inst;
 	private ProxyRunnerJob fmiProxyRunnerJob;
-	ExecutorService executor = Executors.newSingleThreadExecutor();
-	private Future<?> future;
-	
+
+	private Throwable errorDuringStart;
+
 	public BaseRunnerLifeHandler(ProxyRunnerJob fmiProxyRunnerJob) {
 		this.fmiProxyRunnerJob = fmiProxyRunnerJob;
 	}
@@ -41,7 +39,7 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	}
 
 	@Override
-	public  org.raspinloop.fmi.launcherRunnerIpc.Status freeInstance(Instance c) {
+	public org.raspinloop.fmi.launcherRunnerIpc.Status freeInstance(Instance c) {
 		logger.trace("FmiRunnerLifeHandler.freeInstance called");
 		return org.raspinloop.fmi.launcherRunnerIpc.Status.OK;
 
@@ -54,41 +52,68 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	}
 
 	@Override
-	public Client startVMRunner(IProxyMonitor monitor) throws TTransportException, InterruptedException {
+	public Client startVMRunner(IProxyMonitor monitor) throws TTransportException, InterruptedException, RunnerLifeException {
 		logger.trace("FmiRunnerLifeHandler.startVMRunner called");
 
 		launcherServer = fmiProxyRunnerJob.new LauncherServerJob(RUNNER_SERVER_PORT, monitor);
-		future = executor.submit(launcherServer);
+		CompletableFuture.runAsync(launcherServer).exceptionally(e -> {
+			this.setStartInError(e);
+			return null;
+		});
 
 		// wait for for ready message
-		while (fmiProxyRunnerJob.getRunnerPort() == 0 && !monitor.isCanceled()) {
+		while (fmiProxyRunnerJob.getRunnerPort() == 0 && !monitor.isCanceled() && !isStartedInError()) {
 			Thread.sleep(100);
-			// TODO ADD timeout ?
 		}
+
+		if (isStartedInError()) {
+			throw new RunnerLifeException(errorDuringStart);
+		}
+
+		if (monitor.isCanceled()) {
+			if (monitor.getCancelCause() == null)
+				throw new InterruptedException("VMRunner start canceled");
+			else
+				throw new RunnerLifeException(monitor.getCancelCause());
+		}
+
 		logger.trace("runner started and listened on port " + fmiProxyRunnerJob.getRunnerPort());
-		TSocket transport = new TSocket("localhost", fmiProxyRunnerJob.getRunnerPort(), 0); // NO timeout because debug is allowed! 
+		TSocket transport = new TSocket("localhost", fmiProxyRunnerJob.getRunnerPort(), 0); // NO
+																							// timeout
+																							// because
+																							// debug
+																							// is
+																							// allowed!
 		transport.open();
 		TProtocol protocol = new TBinaryProtocol(transport);
 		client = new Client(protocol);
-		logger.trace(" launcher connected on port " + fmiProxyRunnerJob.getRunnerPort());			
+		logger.trace(" launcher connected on port " + fmiProxyRunnerJob.getRunnerPort());
 		return client;
+	}
+
+	private void setStartInError(Throwable e) {
+		logger.error("Cannot start Application", e);
+		errorDuringStart = e;
+	}
+
+	private boolean isStartedInError() {
+		return errorDuringStart != null;
 	}
 
 	@Override
 	public org.raspinloop.fmi.launcherRunnerIpc.Status stopVMRunner() {
 		logger.trace("FmiRunnerLifeHandler.stopVMRunner called" + fmiProxyRunnerJob.getRunnerPort());
 		try {
-			if (client != null)
-				return client.terminate();
-			else
+			Status result;
+			if (client != null) {
+				result = client.terminate();
+				fmiProxyRunnerJob.cancel();
+				return result;
+			} else
 				return org.raspinloop.fmi.launcherRunnerIpc.Status.Discard;
 		} catch (TException e) {
-			return  org.raspinloop.fmi.launcherRunnerIpc.Status.Error;
+			return org.raspinloop.fmi.launcherRunnerIpc.Status.Error;
 		}
-		finally {
-			if (future != null)
-				future.cancel(true);		
-		}
-		
+
 	}
 }

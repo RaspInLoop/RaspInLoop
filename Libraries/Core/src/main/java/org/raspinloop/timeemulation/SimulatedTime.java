@@ -8,6 +8,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum SimulatedTime {
 	// Singleton
 	INST;
@@ -18,6 +21,7 @@ public enum SimulatedTime {
 	long currentTimeNano = 0;
 	long startDate = 0;
 	private Set<SimulatedTimeListerner> listeners = new HashSet<>();
+	@SuppressWarnings("unused")
 	private Long stoptimeNano = null;
 	private Long waitingThresholdNano = 0L;
 	private boolean isStarted = false;
@@ -26,6 +30,7 @@ public enum SimulatedTime {
         @Override protected Long initialValue() { return 0L; }
 	};
 
+	final static Logger logger = LoggerFactory.getLogger(SimulatedTime.class);
 
 	/**
 	 * The computation of a time step is started.
@@ -40,7 +45,8 @@ public enum SimulatedTime {
 	 *            run [the slave can use this flag to flush a result buffer].
 	 * @return
 	 */
-	public synchronized void doStep(double time) {
+	public synchronized void doStep(double time) {		
+		logger.trace("Do a step of  {} ms ",time*1000);
 		long incrementInNano = sectoNano(time);
 		currentTimeNano += incrementInNano;
 		if (INST.getWaitingThreshold() >= incrementInNano)
@@ -84,6 +90,7 @@ public enum SimulatedTime {
 	}
 
 	public synchronized void setup(double startTime, double stoptime) {
+		logger.debug("setup simulation with startTime {} and stopTime {}",startTime, stoptime );
 		this.stoptimeNano = sectoNano(stoptime);
 		startDate = new Date().getTime();
 		currentTimeNano = sectoNano(startTime);
@@ -92,6 +99,7 @@ public enum SimulatedTime {
 	}
 
 	public synchronized void setup(double startTime) {
+		logger.debug("setup simulation with startTime {}",startTime);
 		startDate = new Date().getTime();
 		currentTimeNano = sectoNano(startTime);
 		isStarted = false;
@@ -140,6 +148,7 @@ public enum SimulatedTime {
 	}
 
 	public static void sleep(long millis, int nano) throws InterruptedException {
+		logger.debug("Simulation sleep called for {} ms and {} ns",millis, nano);
 		long nanos = millis * 1000000L + nano;
 		for (SimulatedTimeListerner listener : INST.listeners) {
 			listener.onRequestingSleep(nanos);
@@ -159,7 +168,7 @@ public enum SimulatedTime {
 					INST.wait(); // notify called at each doStep
 					waitingTime = INST.getCurrentTimeNano() - startWaitingTime;
 					if (INST.isStopped())
-						throw new InterruptedException();
+						System.exit(0); // Simulation stopped: close the app.
 				}
 			} while (waitingTime < nanos);
 		}
@@ -175,12 +184,13 @@ public enum SimulatedTime {
 
 	public static long nanotime() {
 		long nano = INST.getCurrentTimeNano();
-		// System.out.println("nanotime :"+nano);
+		logger.trace("Simulation nanotime called at {} ms", nano/1000000.0);
 		return nano;
 	}
 
 	public static long awaitNanos(long nanos, Condition target)
 			throws InterruptedException {
+		logger.trace("Simulation awaitNanos called for {} ms", nanos/1000000.0);
 		// we have to wait for do step and wait for target condition
 		INST.lock.lock();
 		try {
@@ -198,7 +208,7 @@ public enum SimulatedTime {
 				INST.wait(); // notify called at each doStep
 				waitingTime = INST.getCurrentTimeNano() - startWaitingTime;
 				if (INST.isStopped())
-					throw new InterruptedException();
+					System.exit(0); // Simulation stopped: close the app.
 			}
 		} while ((waitingTime < nanos)
 				&& !target.await(10/*

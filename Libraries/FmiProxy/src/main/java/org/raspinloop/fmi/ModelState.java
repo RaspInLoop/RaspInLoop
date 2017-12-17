@@ -6,11 +6,6 @@
  */
 package org.raspinloop.fmi;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum ModelState implements org.apache.thrift.TEnum {
   modelStartAndEnd(1),
   modelInstantiated(2),

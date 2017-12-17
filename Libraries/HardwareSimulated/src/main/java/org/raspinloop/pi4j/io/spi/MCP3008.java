@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-
-
-
 import org.raspinloop.config.HardwareBuilder;
 import org.raspinloop.fmi.SpiCompHwEmulation;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;

@@ -6,11 +6,6 @@
  */
 package org.raspinloop.fmi.launcherRunnerIpc;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum ReportType implements org.apache.thrift.TEnum {
   Error(0),
   Info(1),

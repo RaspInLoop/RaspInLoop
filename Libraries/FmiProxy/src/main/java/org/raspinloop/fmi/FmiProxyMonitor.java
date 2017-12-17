@@ -1,24 +1,28 @@
 package org.raspinloop.fmi;
 
 import org.raspinloop.fmi.launcher.IProxyMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FmiProxyMonitor implements IProxyMonitor {
 
 	private boolean canceled = false;
+	Logger logger = LoggerFactory.getLogger(FmiProxyMonitor.class);
+	private Throwable e;
 
 	@Override
 	public void subTask(String string) {
-		System.out.println("Subtask: " + string);
+		logger.info("++++++++++++++++++++++++++++ Subtask: " + string + " +++++++++++++++++++++++++++++++++++");
 	}
 
 	@Override
 	public void done() {
-		System.out.println("Done !");
+		logger.info("++++++++++++++++++++++++++++ Done ! +++++++++++++++++++++++++++++++++++");
 	}
 
 	@Override
 	public void worked(int i) {
-		System.out.println("working+++: " + i + "%");
+		logger.info("++++++++++++++++++++++++++++ working+++: " + i + "% +++++++++++++++++++++++++++++++++++");
 	}
 
 	@Override
@@ -27,9 +31,15 @@ public class FmiProxyMonitor implements IProxyMonitor {
 	}
 
 	@Override
-	public void aborted(InterruptedException e) {
-		System.out.println("Aborted: " + e.getMessage());
+	public void aborted(Throwable e) {
+		this.e = e;
+		logger.info("++++++++++++++++++++++++++++ Aborted: " + e.getMessage() + " +++++++++++++++++++++++++++++++++++");
 		canceled = true;
+	}
+
+	@Override
+	public Throwable getCancelCause() {
+		return this.e;
 	}
 
 }

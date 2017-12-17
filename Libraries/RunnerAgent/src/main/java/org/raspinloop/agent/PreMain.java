@@ -6,16 +6,20 @@ import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
 import org.raspinloop.agent.launcherRunnerIpc.IpcConnector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PreMain {
 
+	final static Logger logger = LoggerFactory.getLogger(PreMain.class);
+	
 	public static void premain(String agentArgs, Instrumentation inst) {
-		System.out.println("starting Runner Agent ");
+		logger.info("starting Raspinloop Runner Agent ");
 		if (StringUtils.isBlank(agentArgs)) {
 			System.err.println("missing jsonFileName");
 			System.exit(1);
 		}
-		System.out.println("org.raspinloop.agent.PreMain " + agentArgs);
+		logger.debug("org.raspinloop.agent.PreMain " + agentArgs);
 
 		String hdDescriptionJsonFilename = agentArgs;
 
@@ -28,10 +32,11 @@ public class PreMain {
 			while (!handler.isReadyForMain()) {
 				Thread.sleep(10);
 			}
-
+			logger.info("Setup Experiment Done: starting Application");
 		} catch (Exception e) {
 			System.err.println(e.getLocalizedMessage());
 			System.exit(1);
 		}
+		// lets execution next premain (Aspect Weaving for replacing hardware and time specific function)
 	}
 }

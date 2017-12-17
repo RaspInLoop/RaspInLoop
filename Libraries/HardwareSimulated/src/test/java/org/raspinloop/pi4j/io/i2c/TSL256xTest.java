@@ -1,17 +1,17 @@
 package org.raspinloop.pi4j.io.i2c;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.raspinloop.fmi.testtools.AssertFMI.assertIsInputVariable;
+import static org.raspinloop.fmi.testtools.AssertFMI.assertIsRealVariable;
+import static org.raspinloop.fmi.testtools.Builder.getBuilderFor;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
-import org.raspinloop.pi4j.io.i2c.TSL256xProperties.PackageType;
+import org.raspinloop.fmi.testtools.FMU;
 import org.raspinloop.fmi.testtools.HarwareSimulatedTest;
 import org.raspinloop.fmi.testtools.RaspInLoopHardwareTestRunner;
-
-import static org.raspinloop.fmi.testtools.AssertFMI.*;
-import static org.raspinloop.fmi.testtools.Builder.*;
-import org.raspinloop.fmi.testtools.FMU;
+import org.raspinloop.pi4j.io.i2c.TSL256xProperties.PackageType;
 
 @RunWith(RaspInLoopHardwareTestRunner.class)
 public class TSL256xTest {

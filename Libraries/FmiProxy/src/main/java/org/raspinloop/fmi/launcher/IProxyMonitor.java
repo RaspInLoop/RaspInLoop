@@ -10,7 +10,8 @@ public interface IProxyMonitor {
 
 	boolean isCanceled();
 
-	void aborted(InterruptedException e);
+	void aborted(Throwable e);
 
+	Throwable getCancelCause();
 
 }

@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.raspinloop.config.PinEdge;
 import org.raspinloop.config.Pin;
+import org.raspinloop.config.PinEdge;
 import org.raspinloop.config.PinImpl;
 import org.raspinloop.config.PinMode;
 import org.raspinloop.config.PinPullResistance;
@@ -140,21 +140,21 @@ public class RaspiPin {
 
     protected static Pin createDigitalPin(String providerName, int address, String name, EnumSet<PinPullResistance> resistance, EnumSet<PinEdge> edges) {
         return createPin(providerName, address, name,
-                EnumSet.of(PinMode.IN, PinMode.OUT),
+                EnumSet.of(PinMode.DIGITAL_INPUT, PinMode.DIGITAL_OUTPUT),
                 resistance,
                 edges);
     }
 
     protected static Pin createDigitalPin(String providerName, int address, String name, EnumSet<PinEdge> edges) {
         return createPin(providerName, address, name,
-                EnumSet.of(PinMode.IN, PinMode.OUT),
+                EnumSet.of(PinMode.DIGITAL_INPUT, PinMode.DIGITAL_OUTPUT),
                 PinPullResistance.all(),
                 edges);
     }
 
     protected static Pin createDigitalAndPwmPin(String providerName, int address, String name, EnumSet<PinEdge> edges) {
         return createPin(providerName, address, name,
-                         EnumSet.of(PinMode.IN, PinMode.OUT),
+                         EnumSet.of(PinMode.DIGITAL_INPUT, PinMode.DIGITAL_OUTPUT),
                          PinPullResistance.all(),
                          edges);
     }
@@ -164,7 +164,7 @@ public class RaspiPin {
     }
 
     protected static Pin createAnalogInputPin(String providerName, int address, String name) {
-        return createPin(providerName, address, name, EnumSet.of(PinMode.IN));
+        return createPin(providerName, address, name, EnumSet.of(PinMode.DIGITAL_INPUT));
     }
 
     protected static Pin createPin(String providerName, int address, String name, EnumSet<PinMode> modes) {

@@ -5,21 +5,22 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
 import org.raspinloop.agent.launcherRunnerIpc.RunnerService.Iface;
 import org.raspinloop.agent.launcherRunnerIpc.Status;
 import org.raspinloop.agent.launcherRunnerIpc.StatusKind;
 import org.raspinloop.hwemulation.HwEmulationFactory;
 import org.raspinloop.timeemulation.SimulatedTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CSHandler implements Iface {
 
-	final static Logger logger = Logger.getLogger(CSHandler.class);
+	final static Logger logger = LoggerFactory.getLogger(CSHandler.class);
 
 	private static CSHandler INST;
 
-	private static Object lock;
+	private static Object lock = new Object();
 
 	private HwEmulationFactory hwEmulationFactory;
 
@@ -124,6 +125,11 @@ public class CSHandler implements Iface {
 
 	@Override
 	public Status doStep(double currentCommunicationPoint, double communicationStepSize, boolean noSetFMUStatePriorToCurrentPoint) throws TException {
+		try {
+			SimulatedTime.INST.waitForApplicationStarting();
+		} catch (InterruptedException e) {
+			return Status.Error;
+		}
 		SimulatedTime.INST.doStep(communicationStepSize);
 		return Status.OK;
 	}

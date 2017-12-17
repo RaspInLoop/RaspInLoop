@@ -6,11 +6,6 @@
  */
 package org.raspinloop.fmi;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum Type implements org.apache.thrift.TEnum {
   ModelExchange(0),
   CoSimulation(1);

@@ -1,6 +1,6 @@
 package org.raspinloop.agent.launcherRunnerIpc;
 
-import org.apache.log4j.Logger;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -18,6 +18,8 @@ import org.raspinloop.agent.HandlerRunner;
 import org.raspinloop.agent.launcherRunnerIpc.LauncherService.Client;
 import org.raspinloop.agent.launcherRunnerIpc.RunnerService.Iface;
 import org.raspinloop.agent.launcherRunnerIpc.RunnerService.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Two way communication between launcher and runner. This is the runner part.
@@ -34,7 +36,7 @@ public class IpcConnector implements HandlerRunner {
 
 	private static final int LAUNCHER_SERVER_PORT = 9091;
 
-	final static Logger logger = Logger.getLogger(IpcConnector.class);
+	final static Logger logger = LoggerFactory.getLogger(IpcConnector.class);
 
 	public RunnerService.Processor<RunnerService.Iface> processor;
 
@@ -68,7 +70,7 @@ public class IpcConnector implements HandlerRunner {
 			} catch (Exception e) {
 				tryNb++;
 				if (tryNb > 20) {
-					logger.fatal("runner error:" + e.getMessage());
+					logger.error("runner error:" + e.getMessage());
 					return;
 				}
 			}
@@ -86,7 +88,7 @@ public class IpcConnector implements HandlerRunner {
 				try {
 					client.ReadyToStart(9092);
 				} catch (TException e) {
-					logger.fatal("runner cannot be launched:" + e.getMessage());
+					logger.error("runner cannot be launched:" + e.getMessage());
 				}
 			}
 

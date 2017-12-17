@@ -1,6 +1,9 @@
 package org.raspinloop.fmi.launcher;
 
 import java.util.LinkedList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -12,11 +15,9 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-
 import org.raspinloop.fmi.launcherRunnerIpc.LauncherService;
 import org.raspinloop.fmi.launcherRunnerIpc.LauncherService.Iface;
 import org.raspinloop.fmi.launcherRunnerIpc.ReportType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * @author Motte
  *
  */
-public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
+public abstract class ProxyRunnerJob implements  ServerContext {
 
 	Logger logger = LoggerFactory.getLogger(ProxyRunnerJob.class);
 	protected  Proxy proxy;
@@ -38,6 +39,7 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 	
 	private LinkedList<IReportListener> reportListeners = new LinkedList<>();
 	private Runnable runner;
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	public ProxyRunnerJob(Proxy proxy, Runnable runner) {
 		this.runner = runner;
@@ -82,10 +84,12 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 		}
 	}
 
+	
 	public class LauncherServerJob implements Runnable {
 
 		private TServer server;
 		private final String name;
+
 		
 
 		public LauncherServerJob(int port, IProxyMonitor monitor) throws TTransportException {
@@ -97,7 +101,7 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 			LauncherService.Processor<LauncherService.Iface> processor = new LauncherService.Processor<LauncherService.Iface>(launcherServiceHandler);
 			this.server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
 
-			server.setServerEventHandler(new LauncherServerEventHandler(port, monitor));
+			server.setServerEventHandler(new LauncherServerEventHandler(server, port, monitor));
 		}
 
 		protected void canceling() {
@@ -112,14 +116,19 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 		public String getName() {
 			return name;
 		}
+
+
 	}
 
 	public class LauncherServerEventHandler implements TServerEventHandler {
 
 		private IProxyMonitor monitor;
 		private int port;
-
-		public LauncherServerEventHandler(int port, IProxyMonitor monitor) {
+		private TServer server;
+		
+		
+		public LauncherServerEventHandler(TServer server, int port, IProxyMonitor monitor) {
+			this.server = server;
 			this.port = port;
 			this.monitor = monitor;
 			
@@ -139,12 +148,12 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 
 		@Override
 		public void preServe() {
-			try {
 				logger.trace("runner connector server listening on port " + port);
-				runner.run();
-			} catch (Exception e) {
-				logger.error("runner connector failed to start runner", e);
-			}
+					 CompletableFuture.runAsync(runner,executor) 
+										.handle((r,e) ->  {  server.stop();
+														if (e != null)
+					 										monitor.aborted(e);													
+				                 					    return null;});
 		}
 
 		@Override
@@ -154,8 +163,9 @@ public abstract class ProxyRunnerJob implements  ServerContext, Runnable {
 	}
 
 	public void cancel() {
-		// TODO Auto-generated method stub
-		
+		// it will force close of running VM.
+		if (!executor.isShutdown())
+			executor.shutdownNow();
 	}
 
 }

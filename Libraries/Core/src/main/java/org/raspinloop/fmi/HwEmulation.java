@@ -5,6 +5,15 @@ import java.util.Map;
 
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 
+/**
+ * 
+ *	HwEmulation is the interface used by the simulation tool.
+ *	<br> to get the description (model)
+ *	<br> to get the ID 
+ *	<br> to initialize, reset and terminate the simulation
+ *	<br> and to read and write variable (setBoolean, setInteger,..., getBoolean, getInteger,...)
+ *
+ */
 public interface HwEmulation {
 
 	/**

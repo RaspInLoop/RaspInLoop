@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.config.HardwareEnumerator;
+import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.HwEmulation;
 import org.reflections.Reflections;
 

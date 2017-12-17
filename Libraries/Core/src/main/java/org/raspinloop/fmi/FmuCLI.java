@@ -1,16 +1,11 @@
 package org.raspinloop.fmi;
 
 import java.io.File;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.raspinloop.config.BoardHardware;
 import org.raspinloop.config.GsonProperties;
-import org.raspinloop.config.HardwareBuilder;
-import org.raspinloop.fmi.FMU.Locator;
-import org.raspinloop.hwemulation.ClassLoaderBuilderFactory;
-import org.raspinloop.hwemulation.GpioProviderHwEmulation;
 import org.raspinloop.hwemulation.HardwareClassFactory;
 
 public class FmuCLI {

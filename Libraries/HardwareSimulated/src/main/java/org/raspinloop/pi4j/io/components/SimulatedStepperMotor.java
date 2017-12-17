@@ -10,15 +10,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-
-
-
-
-
-
-
-
 import org.raspinloop.config.AlreadyUsedPin;
 import org.raspinloop.config.HardwareBuilder;
 import org.raspinloop.config.Pin;
@@ -28,6 +19,7 @@ import org.raspinloop.config.PinState;
 import org.raspinloop.fmi.GpioCompHwEmulation;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable;
 import org.raspinloop.fmi.modeldescription.Fmi2ScalarVariable.Real;
+import org.raspinloop.pi4j.io.gpio.PinCache;
 import org.raspinloop.timeemulation.SimulatedTime;
 import org.raspinloop.timeemulation.SimulatedTimeListerner;
 import org.slf4j.Logger;
@@ -47,7 +39,7 @@ public class SimulatedStepperMotor implements GpioCompHwEmulation, SimulatedTime
 
 	
 	private int baseref;
-	protected final Map<org.raspinloop.config.Pin, PinImpl> cachedPins = new ConcurrentHashMap<>();
+	protected final Map<org.raspinloop.config.Pin, PinCache> cachedPins = new ConcurrentHashMap<>();
 
 	private PinState onState;
 	@SuppressWarnings("unused")
@@ -66,8 +58,8 @@ public class SimulatedStepperMotor implements GpioCompHwEmulation, SimulatedTime
 		Iterator<org.raspinloop.config.Pin> it = properties.getUsedPins().iterator();
 		while (it.hasNext() && pinIdx++ < 4) {
 			org.raspinloop.config.Pin configuredPin = (org.raspinloop.config.Pin) it.next();
-			cachedPins.put(configuredPin, new PinImpl(configuredPin.getProvider(), configuredPin.getAddress(),
-					configuredPin.getName(), EnumSet.of(PinMode.OUT)));
+			cachedPins.put(configuredPin, new PinCache( new PinImpl(configuredPin.getProvider(), 
+					configuredPin.getAddress(), configuredPin.getName(), EnumSet.of(PinMode.DIGITAL_OUTPUT))));
 			if (properties.isAverageMode()) {
 				// only if in Average mode
 				SimulatedTime.INST.RegisterWaitingThreshold(SimulatedStepperMotor.class.getCanonicalName(), 100 * 1000000/*																										 */);
@@ -118,7 +110,6 @@ public class SimulatedStepperMotor implements GpioCompHwEmulation, SimulatedTime
 
 	private double stepInc;
 
-	private String name;
 
 	private Double getVar(Integer ref) {
 		switch (ref - baseref) {
@@ -144,15 +135,12 @@ public class SimulatedStepperMotor implements GpioCompHwEmulation, SimulatedTime
 		this.properties = new SimulatedStepperMotorProperties();
 	}
 
-	public SimulatedStepperMotor(String name, org.raspinloop.config.PinState onState, org.raspinloop.config.PinState offState) throws AlreadyUsedPin {
-		setName(name);
+	public SimulatedStepperMotor(org.raspinloop.config.PinState onState, org.raspinloop.config.PinState offState) throws AlreadyUsedPin {
 		properties.setOnState(onState);
 		properties.setOffState(offState);
 	}
 
-	private void setName(String name) {
-		this.name = name;
-	}
+
 
 	public boolean enterInitialize() {
 		previousChangeTime = 0L;

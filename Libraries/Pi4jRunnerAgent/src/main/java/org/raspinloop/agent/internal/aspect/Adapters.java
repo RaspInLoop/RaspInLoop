@@ -9,15 +9,11 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
-
-
-
-
-
-
+import org.raspinloop.config.PinEdge;
+import org.raspinloop.hwemulation.PinDigitalStateChangeEvent;
 import org.raspinloop.hwemulation.PinEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.pi4j.io.gpio.GpioProvider;
 import com.pi4j.io.gpio.Pin;
@@ -36,6 +32,7 @@ import com.pi4j.io.spi.SpiMode;
 public class Adapters {
 
 	private static com.pi4j.io.gpio.event.PinListener listener;
+	final static Logger logger = LoggerFactory.getLogger(Adapters.class);
 
 	public static class Pi4jPin implements org.raspinloop.config.Pin {
 
@@ -47,17 +44,7 @@ public class Adapters {
 		EnumSet<org.raspinloop.config.PinPullResistance> pullResistance = EnumSet.noneOf(org.raspinloop.config.PinPullResistance.class);
 
 
-		public Pi4jPin(Pin pin) {
-			this.address = pin.getAddress();
-			this.name = pin.getName();
-			this.provider = pin.getName();
-			for (PinMode enum1 : pin.getSupportedPinModes()) {
-				supportedPinMode.add(forPi4j(enum1));
-			}
-			for (PinPullResistance enum1 : pin.getSupportedPinPullResistance()) {
-				pullResistance.add(forPi4j(enum1));
-			}
-		}
+		
 
 		@Override
 		public int getAddress() {
@@ -111,8 +98,8 @@ public class Adapters {
 		}
 
 		@Override
-		public void addListener(Pin arg0, PinListener arg1) {
-			provider.addListener(forPi4j(arg0), forPi4j(arg1));
+		public void addListener(Pin pin, PinListener listener) {
+			provider.addListener(forPi4j(pin), forPi4j(listener));
 		}
 
 		@Override
@@ -146,8 +133,10 @@ public class Adapters {
 		}
 
 		@Override
-		public PinState getState(Pin arg0) {
-			return forPi4j(provider.getState(forPi4j(arg0)));
+		public PinState getState(Pin pin) {
+			PinState state = forPi4j(provider.getState(forPi4j(pin)));
+			logger.trace("getstate {} retuned  for {}", state, pin);
+			return state;
 		}
 
 		@Override
@@ -201,8 +190,9 @@ public class Adapters {
 		}
 
 		@Override
-		public void setState(Pin arg0, PinState arg1) {
-			provider.setState(forPi4j(arg0), forPi4j(arg1));
+		public void setState(Pin pin, PinState state) {
+			logger.trace("setstate to {} for {}", state, pin);
+			provider.setState(forPi4j(pin), forPi4j(state));
 		}
 
 		@Override
@@ -378,6 +368,8 @@ public class Adapters {
 
 
 	public static PinState forPi4j(org.raspinloop.config.PinState state) {
+		if (state == null)
+			return null;
 		switch(state){
 		case HIGH:
 			return PinState.HIGH;
@@ -392,6 +384,8 @@ public class Adapters {
 
 
 	public static org.raspinloop.config.PinState forPi4j(PinState state) {
+		if (state == null)
+			return null;
 		switch(state){
 		case HIGH:
 			return org.raspinloop.config.PinState.HIGH;
@@ -417,10 +411,15 @@ public class Adapters {
 
 
 	protected static com.pi4j.io.gpio.event.PinEvent forPi4j(PinEvent event) {
-		return new com.pi4j.io.gpio.event.PinEvent(null, forPi4j(event.getPin()), forPi4j(event.getEventType()));
+		if (event instanceof PinDigitalStateChangeEvent)
+			return new com.pi4j.io.gpio.event.PinDigitalStateChangeEvent(new Object(), forPi4j(event.getPin()), forPi4j(((PinDigitalStateChangeEvent) event).getState()));
+		else
+			return null; //TODO: throw error ? log ? report?
 	}
 
 	private static PinEventType forPi4j(org.raspinloop.hwemulation.PinEventType eventType) {
+		if (eventType == null)
+			return null;
 		switch (eventType) {
 		case ANALOG_VALUE_CHANGE:
 			return PinEventType.ANALOG_VALUE_CHANGE;
@@ -434,15 +433,86 @@ public class Adapters {
 	private static Map<Pin, org.raspinloop.config.Pin> pins = new HashMap<>();
 	synchronized public static org.raspinloop.config.Pin forPi4j(Pin pin) {
 		if (! pins.containsKey(pin)) {
-			pins.put(pin, new Pi4jPin(pin));
+			pins.put(pin, new  org.raspinloop.config.PinImpl(pin.getProvider(), 
+															 pin.getAddress(),
+															 pin.getName(), 
+															 enumSetPinModeForPi4j(pin.getSupportedPinModes()),
+															 enumSetPinPullupForPi4j(pin.getSupportedPinPullResistance()),
+															 enumSetPinEdgeForPi4j(pin.getSupportedPinEdges())
+															 
+					));
 		}
 		return pins.get(pin);
 	}
 
+	private static EnumSet<org.raspinloop.config.PinEdge> enumSetPinEdgeForPi4j(EnumSet<com.pi4j.io.gpio.PinEdge> supportedPinEdges) {
+		EnumSet<org.raspinloop.config.PinEdge> result = EnumSet.noneOf(org.raspinloop.config.PinEdge.class);
+		for (com.pi4j.io.gpio.PinEdge pinEdge : supportedPinEdges) {
+			result.add(forPi4j(pinEdge));
+		}		
+		return result;
+	}
+
+	private static PinEdge forPi4j(com.pi4j.io.gpio.PinEdge pinEdge) {
+		if (pinEdge == null)
+			return null;
+		switch(pinEdge){
+		case BOTH:
+			return PinEdge.BOTH;
+		case FALLING:
+			return PinEdge.FALLING;
+		case NONE:
+			return PinEdge.NONE;
+		case RISING:
+			return PinEdge.RISING;
+		default:
+			return null;		
+		}
+	}
+
+
+
+
+	private static EnumSet<org.raspinloop.config.PinPullResistance> enumSetPinPullupForPi4j(EnumSet<PinPullResistance> supportedPinPullResistance) {
+		EnumSet<org.raspinloop.config.PinPullResistance> result = EnumSet.noneOf(org.raspinloop.config.PinPullResistance.class);
+		for (PinPullResistance pinMode : supportedPinPullResistance) {
+			result.add(forPi4j(pinMode));
+		}		
+		return result;
+	}
+
+
+
+
+	private static EnumSet<org.raspinloop.config.PinMode> enumSetPinModeForPi4j(EnumSet<PinMode> supportedPinModes) {
+		EnumSet<org.raspinloop.config.PinMode> result = EnumSet.noneOf(org.raspinloop.config.PinMode.class);
+		for (PinMode pinMode : supportedPinModes) {
+			result.add(forPi4j(pinMode));
+		}		
+		return result;
+	}
+	
+//	
+//	private static EnumSet<org.raspinloop.config.PinPullResistance> forPi4j(EnumSet<PinPullResistance> supportedPinPullResistance) {
+//		EnumSet<org.raspinloop.config.PinPullResistance> result = EnumSet.noneOf(org.raspinloop.config.PinPullResistance.class);
+//		for (PinPullResistance pinPullResistance : supportedPinPullResistance) {
+//			result.add(forPi4j(pinPullResistance));
+//		}		
+//		return result;
+//	}
+
+
+	
+	
+
 	private static Map<org.raspinloop.config.Pin, Pin> raspinloopPins = new HashMap<>();
 	synchronized public static Pin forPi4j(org.raspinloop.config.Pin pin) {
 		if (! raspinloopPins.containsKey(pin)) {
-			raspinloopPins.put(pin, new PinImpl(pin.getProvider(), pin.getAddress(), pin.getName(), forPi4jPinModeSet(pin.getSupportedPinModes()), forPi4j(pin.getSupportedPinPullResistance())));
+			raspinloopPins.put(pin, new PinImpl( pin.getProvider(), 
+												 pin.getAddress(), 
+												 pin.getName(), 
+												 forPi4jPinModeSet(pin.getSupportedPinModes()), 
+												 forPi4j(pin.getSupportedPinPullResistance())));
 		}
 		return raspinloopPins.get(pin);
 	}
@@ -455,10 +525,9 @@ public class Adapters {
 		return result;
 	}
 
-
-
-
 	private static PinPullResistance forPi4j(org.raspinloop.config.PinPullResistance pinPullResistance) {
+		if (pinPullResistance == null)
+			return null;
 		switch (pinPullResistance) {
 		case OFF:
 			return PinPullResistance.OFF;
@@ -484,10 +553,12 @@ public class Adapters {
 
 
 	private static PinMode forPi4j(org.raspinloop.config.PinMode pinmode) {
+		if (pinmode == null)
+			return null;
 		switch(pinmode){
-		case IN:
+		case DIGITAL_INPUT:
 			return PinMode.DIGITAL_INPUT;
-		case OUT:
+		case DIGITAL_OUTPUT:
 			return PinMode.DIGITAL_OUTPUT;
 		default:
 			return null;		
@@ -517,6 +588,8 @@ public class Adapters {
 
 
 	public static org.raspinloop.hwemulation.SpiChannel forPi4j(SpiChannel spiChannel) {
+		if (spiChannel == null)
+			return null;
 		switch(spiChannel){
 		case CS0:
 			return org.raspinloop.hwemulation.SpiChannel.CS0;
@@ -528,6 +601,8 @@ public class Adapters {
 	}
 
 	public static org.raspinloop.hwemulation.SpiMode forPi4j(SpiMode spiMode) {
+		if (spiMode == null)
+			return null;
 		switch(spiMode){
 		case MODE_0:
 			return org.raspinloop.hwemulation.SpiMode.MODE_0;
@@ -544,6 +619,8 @@ public class Adapters {
 	
 
 	public static org.raspinloop.config.PinPullResistance forPi4j(PinPullResistance enum1) {
+		if (enum1 == null)
+			return null;
 		switch(enum1){
 		case OFF:
 			return org.raspinloop.config.PinPullResistance.OFF;
@@ -558,10 +635,12 @@ public class Adapters {
 	}
 
 	public static org.raspinloop.config.PinMode forPi4j(PinMode enum1) {
+		if (enum1 == null)
+			return null;
 		switch(enum1){
 		case ANALOG_INPUT:
 		case DIGITAL_INPUT:
-			return (org.raspinloop.config.PinMode.IN);
+			return (org.raspinloop.config.PinMode.DIGITAL_INPUT);
 		case ANALOG_OUTPUT:
 		case DIGITAL_OUTPUT:
 		case GPIO_CLOCK:
@@ -569,7 +648,7 @@ public class Adapters {
 		case PWM_TONE_OUTPUT:
 		case SOFT_PWM_OUTPUT:
 		case SOFT_TONE_OUTPUT:
-			return (org.raspinloop.config.PinMode.OUT);
+			return (org.raspinloop.config.PinMode.DIGITAL_OUTPUT);
 		default:
 			return null;
 		}

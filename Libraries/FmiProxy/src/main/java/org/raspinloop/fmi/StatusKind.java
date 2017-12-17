@@ -6,11 +6,6 @@
  */
 package org.raspinloop.fmi;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum StatusKind implements org.apache.thrift.TEnum {
   DoStepStatus(0),
   PendingStatus(1),

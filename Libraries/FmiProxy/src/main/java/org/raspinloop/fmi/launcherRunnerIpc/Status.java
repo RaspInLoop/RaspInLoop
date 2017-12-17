@@ -6,11 +6,6 @@
  */
 package org.raspinloop.fmi.launcherRunnerIpc;
 
-
-import java.util.Map;
-import java.util.HashMap;
-import org.apache.thrift.TEnum;
-
 public enum Status implements org.apache.thrift.TEnum {
   OK(0),
   Warning(1),

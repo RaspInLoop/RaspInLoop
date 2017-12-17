@@ -60,9 +60,6 @@ public class SimulatedTimeExecutorServiceFactory implements ExecutorServiceFacto
         	heldExecutor = null;
         }
     }
-  
-  
-    
       
     private static class ScheduledExecutorServiceWrapperHolder {
     	static ScheduledExecutorServiceWrapper get(){
@@ -79,7 +76,6 @@ public class SimulatedTimeExecutorServiceFactory implements ExecutorServiceFacto
 			heldWrapper = null;
 		}
     }
-    
     
     private static ScheduledExecutorServiceWrapper getScheduledExecutorServiceWrapper() {
         return ScheduledExecutorServiceWrapperHolder.get();

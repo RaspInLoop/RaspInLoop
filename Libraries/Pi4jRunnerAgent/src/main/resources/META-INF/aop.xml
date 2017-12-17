@@ -1,0 +1,21 @@
+<aspectj>
+	<aspects  >
+		<aspect name="org.raspinloop.agent.internal.aspect.I2CFactoryAspect" />
+		<aspect name="org.raspinloop.agent.internal.aspect.GpioFactoryAspect" />	
+		<aspect name="org.raspinloop.agent.internal.aspect.SpiFactoryAspect" />	
+		<aspect name="org.raspinloop.agent.internal.aspect.SimulatedTimeAspect" />	
+		<aspect name="org.raspinloop.agent.internal.aspect.SleepAspect" />	
+	</aspects>
+
+	<weaver options="-warn:none -debug -showWeaveInfo -Xlint:ignore">
+	<!-- weaver -->
+	<exclude within="org.raspinloop.fmi..*"/>
+	<exclude within="org.raspinloop.standalone..*"/>
+
+	<exclude within="javax.servlet"/>
+	<exclude within="org.reflections.*"/>
+	<exclude within="org.apache.log4j..*"/>
+	<exclude within="org.slf4j..*"/>
+	</weaver>
+
+</aspectj>

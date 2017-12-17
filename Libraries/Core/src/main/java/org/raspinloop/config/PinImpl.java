@@ -5,38 +5,38 @@ import java.util.EnumSet;
 
 public class PinImpl implements  Pin{
 
-	 private String provider;
-	 private int address;
-	 private String name;
-	private PinState state;
-
+    private String provider;
+	private int address;
+	private String name;
+	private EnumSet<PinMode> supportedPinMode;
+	private EnumSet<PinPullResistance> supportedResistance;
+	private EnumSet<PinEdge> supportedEdges;
+	 
      public PinImpl(String providerName, int address, String name, EnumSet<PinMode> modes, EnumSet<PinPullResistance> resistance, EnumSet<PinEdge> edges) {
-    	 this(providerName, address,  name, modes);
-     }
-	   
-	 public PinImpl(String provider, int address, String name, EnumSet<PinMode> modes ){
 		 super();
-			this.provider = provider;
+			this.provider = providerName;
 			this.name = name;
 			this.address = address;
-			getSupportedPinModes().clear();	
+			this.supportedPinMode = modes;
+			this.supportedResistance = resistance;
+			this.supportedEdges = edges;
+		
+     }
+	   
+	 public PinImpl(String provider,  int address, String name, EnumSet<PinMode> modes ){
+		 this(provider, address, name, modes, EnumSet.noneOf(PinPullResistance.class),  EnumSet.noneOf(PinEdge.class) );
 	 }
 	 
 	public PinImpl(String provider, String name, int address) {
-		super();
-		this.provider = provider;
-		this.name = name;
-		this.address = address;
-		getSupportedPinModes().clear();	
+		this(provider,  address, name, EnumSet.noneOf(PinMode.class));
 	}
 
 	public PinImpl(Pin v) {
-		provider = v.getProvider();
-		address = v.getAddress();
-		name = v.getName();
+		this(v.getProvider(),  v.getName(),  v.getAddress());
 	}
 
 	public PinImpl() {	
+		this("","",0);
 	}
 	
 
@@ -104,7 +104,7 @@ public boolean equals(Object obj) {
 	 */
 	@Override
 	public EnumSet<PinMode> getSupportedPinModes() {		
-		return EnumSet.noneOf(PinMode.class);
+		return supportedPinMode;
 	}
 
 	/* (non-Javadoc)
@@ -112,7 +112,7 @@ public boolean equals(Object obj) {
 	 */
 	@Override
 	public EnumSet<PinPullResistance> getSupportedPinPullResistance() {
-		return EnumSet.noneOf(PinPullResistance.class);
+		return supportedResistance;
 	}
 
 	/* (non-Javadoc)
@@ -139,18 +139,7 @@ public boolean equals(Object obj) {
 		this.name = name;
 	}
 
-	public PinMode getMode() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	public void setState(PinState state) {
-		this.state = state;
-	}
-
-	public PinState getState() {
-		return state;
-	}
 
 
 }

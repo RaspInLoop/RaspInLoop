@@ -3,11 +3,12 @@ package org.raspinloop.agent;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
 import org.raspinloop.hwemulation.GpioProvider;
 import org.raspinloop.hwemulation.HwEmulationFactory;
 import org.raspinloop.hwemulation.HwEmulationFactoryFromJson;
 import org.raspinloop.timeemulation.SimulatedTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Handler {
@@ -16,7 +17,7 @@ public class Handler {
 		return new Handler(jsonConfig);
 	}
 
-	final static Logger logger = Logger.getLogger(Handler.class);
+	final static Logger logger = LoggerFactory.getLogger(Handler.class);
 
 	final Executor ex = Executors.newCachedThreadPool();
 
@@ -40,7 +41,7 @@ public class Handler {
 		HwEmulationFactory factory = new HwEmulationFactoryFromJson();
 
 		if (factory.create(jsonConfig) == null){
-			logger.fatal("Cannot create instance for json["+jsonConfig+"]");
+			logger.error("Cannot create instance for json["+jsonConfig+"]");
 			throw new Exception("Cannot create hardware for json");
 		}
 		
