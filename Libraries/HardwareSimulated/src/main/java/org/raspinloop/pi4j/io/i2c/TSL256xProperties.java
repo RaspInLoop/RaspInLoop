@@ -14,10 +14,42 @@ import org.raspinloop.hwemulation.I2CBus;
 public class TSL256xProperties implements I2CComponent {
 
 	public enum PackageType{
-		TSL2561_PACKAGE_CS,
-		TSL2561_PACKAGE_T_FN_CL
+		TSL2561_PACKAGE_CS((byte)1),
+		TSL2561_PACKAGE_T_FN_CL((byte)5);
+		
+		private byte partNo;
+		
+		PackageType(byte partNo){
+			this.partNo = partNo;			
+		}
+
+		public byte getPartNo() {
+			return partNo;
+		}
 	}
 	
+	public enum AddressSelectionPin {
+		GND(0x29),
+		FLOATING(0x39),
+		VDD(0x49);
+		
+		private int address;
+
+		AddressSelectionPin(int address){
+			this.address = address;			
+		}
+		
+		int getAddress(){
+			return address;
+		}
+		
+		@Override
+		public String toString() {
+			return super.toString()+(" (0x"+Integer.toHexString(getAddress())+")");
+		}
+	}
+	
+		
 	public static final String TYPE = "TLS2560";
 	public static final String DISPLAY_NAME = "TSL2560 (LIGHT-TO-DIGITAL CONVERTER)";
 	public static final String SIMULATED_PROVIDER_NAME = "TSL2560";
@@ -25,14 +57,17 @@ public class TSL256xProperties implements I2CComponent {
 
 	private String name = DISPLAY_NAME;
 
-	private int address = 0x39; // default: address pin not connected (FLOATING)
-	private int partNumber_ID = 0x50;
+	private byte revNumber = 0x0;
 	private int busId = I2CBus.BUS_0;
 	private double irBroadbandRatio = 0.12;
 	private I2CParent parent;
 	private Collection<Pin> availablesPins = Collections.emptyList();
 	private PackageType packageType = PackageType.TSL2561_PACKAGE_T_FN_CL; // only this package is supported now
+	private AddressSelectionPin selectedAddress = AddressSelectionPin.FLOATING; // default: not connected
 
+	public TSL256xProperties() {
+	}
+	
 	@Override
 	public String getComponentName() {
 		return name;
@@ -86,26 +121,36 @@ public class TSL256xProperties implements I2CComponent {
 		return (short) busId;
 	}
 
-	public int getAddress() {
-		return address;
+	public AddressSelectionPin gettSelecteAddress() {
+		return selectedAddress;
 	}
 
-	public void setAddress(int address) {
-		this.address = address;
+	//either 0x29 0x39 or àx49
+	public void setSelectedAddress(AddressSelectionPin sel) {
+		this.selectedAddress = sel;
 	}
 
 	public int getPartNumber_ID() {
-		return partNumber_ID;
+		return packageType.getPartNo()*0x10 + revNumber;
+	}
+	
+	public PackageType getPackageType(){
+		return packageType;
 	}
 
-	public void setPartNumber_ID(int partNumber_ID) {
-		this.partNumber_ID = partNumber_ID;
+	public void setRevNumber(byte revNumber ) {
+		this.revNumber = revNumber;
+	}
+	
+	public byte getRevNumber() {
+		return revNumber;
 	}
 
 	public double getIrBroadbandRatio() {
 		return irBroadbandRatio;
 	}
 
+ 	//ration CH1/CH0  infrared light / visible light  from 0 to 1.3
 	public void setIrBroadbandRatio(double irBroadbandRatio) {
 		this.irBroadbandRatio = irBroadbandRatio;
 	}

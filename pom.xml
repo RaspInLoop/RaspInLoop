@@ -13,8 +13,8 @@
         <module>Libraries/Pi4jRunnerAgent</module>
         <module>Libraries/RunnerAgent</module>
         <module>Libraries/testtools</module>
-        <module>Application/CLI</module>
-        <!--module>plugins/eclipsePlugin</module-->
-        <module>Utils/codeToDebug</module>
+        <!--module>Application/CLI</module>
+        <module>Plugins/eclipsePlugin</module>
+        <module>Utils/codeToDebug</module-->
     </modules>
 </project>

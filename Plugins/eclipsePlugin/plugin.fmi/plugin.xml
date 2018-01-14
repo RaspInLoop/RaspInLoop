@@ -58,4 +58,27 @@
             name="Ril Manage Hardware">
       </page>
    </extension>   
+    <extension
+         point="org.raspinloop.fmi.Hardware">
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulatorPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.DefaultConfigPage"
+            simulatorClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulator">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotorPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotorPropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotor">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.spi.MCP3008PropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.spi.MCP3008PropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.spi.MCP3008">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.i2c.TSL256xPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.i2c.TSL256xPropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.i2c.TSL256x">
+      </Hardware>
+   </extension>
 </plugin>

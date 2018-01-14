@@ -2,9 +2,6 @@ package org.raspinloop.fmi.launcher;
 
 public interface IProxyMonitor {
 
-	void subTask(String string);
-
-	void done();
 
 	void worked(int i);
 
@@ -12,6 +9,10 @@ public interface IProxyMonitor {
 
 	void aborted(Throwable e);
 
-	Throwable getCancelCause();
-
+	Throwable getAbortedCause();
+	
+	void processStatusChanged(ProcessStatus status);
+	
+	void simulationToolsStatusChanged(SimulationToolStatus status);
+	
 }

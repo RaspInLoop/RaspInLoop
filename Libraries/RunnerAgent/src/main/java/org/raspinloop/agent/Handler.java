@@ -59,7 +59,7 @@ public class Handler {
 					@Override
 					public void run() {
 						try {
-						
+							logger.debug("Ready to start");
 							setReadyForMain();
 
 						} catch (IllegalArgumentException |  SecurityException e) {

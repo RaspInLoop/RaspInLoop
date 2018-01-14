@@ -32,9 +32,8 @@ public class TSL256x implements I2CCompHwEmulation {
 	protected boolean powered;
 	protected int data0;
 	protected int data1;
-	
+
 	static final int NB_VAR = 1;
-	
 
 	public TSL256x() {
 		this.properties = new TSL256xProperties();
@@ -104,7 +103,7 @@ public class TSL256x implements I2CCompHwEmulation {
 	}
 
 	private void setVar(Integer ref, double value) {
-		if (ref - baseref == 0){
+		if (ref - baseref == 0) {
 			lux = value;
 			startAquisition();
 		}
@@ -140,13 +139,7 @@ public class TSL256x implements I2CCompHwEmulation {
 	public boolean setReal(Map<Integer, Double> ref_values) {
 		for (Entry<Integer, Double> entry : ref_values.entrySet()) {
 			logger.trace("setting real value: " + entry.getKey() + " = " + entry.getValue());
-			Double var = getVar(entry.getKey());
-			if (var != null) {
-				setVar(entry.getKey(), entry.getValue());
-			} else {
-				logger.warn("ref:" + entry.getKey() + " not used in this component");
-				return false;
-			}
+			setVar(entry.getKey(), entry.getValue());
 		}
 		return true;
 	}
@@ -170,7 +163,7 @@ public class TSL256x implements I2CCompHwEmulation {
 
 	@Override
 	public Integer getAddress() {
-		return properties.getAddress();
+		return properties.gettSelecteAddress().getAddress();
 	}
 
 	@Override
@@ -217,7 +210,7 @@ public class TSL256x implements I2CCompHwEmulation {
 
 	IRegister timmingRegister = new Register("TIMMING", (byte) 0x01) {
 		@Override
-		public byte read() {		
+		public byte read() {
 			return timmingbs.toByteArray()[0];
 		}
 
@@ -249,162 +242,180 @@ public class TSL256x implements I2CCompHwEmulation {
 			}
 		}
 	};
-	
-	IRegister idRegister = new RoRegister("ID", (byte)0x0A ) {
+
+	IRegister idRegister = new RoRegister("ID", (byte) 0x0A) {
 		@Override
-		public byte read() {		
-			return (byte)properties.getPartNumber_ID();
+		public byte read() {
+			return (byte) properties.getPartNumber_ID();
 		}
 	};
-	
-	
-	IRegister data0LowRegister = new RoRegister("DATA0LOW", (byte)0x0C ) {
+
+	IRegister data0LowRegister = new RoRegister("DATA0LOW", (byte) 0x0C) {
 		@Override
-		public byte read() {	
+		public byte read() {
 			if (data0 > 0xffff)
-				return (byte)0xff; //saturation
-			return (byte)(data0 & 0x00ff); 
+				return (byte) 0xff; // saturation
+			return (byte) (data0 & 0x00ff);
 		}
 	};
 
-	IRegister data0HighRegister = new RoRegister("DATA0HIGH", (byte)0x0D ) {
+	IRegister data0HighRegister = new RoRegister("DATA0HIGH", (byte) 0x0D) {
 		@Override
-		public byte read() {		
+		public byte read() {
 			if (data0 > 0xffff)
-				return (byte)0xff; //saturation
-			return (byte)((data0 & 0xff00) >> 8); 
+				return (byte) 0xff; // saturation
+			return (byte) ((data0 & 0xff00) >> 8);
 		}
 	};
 
-	IRegister data1LowRegister = new RoRegister("DATA1LOW", (byte)0x0E ) {
+	IRegister data1LowRegister = new RoRegister("DATA1LOW", (byte) 0x0E) {
 		@Override
-		public byte read() {	
+		public byte read() {
 			if (data1 > 0xffff)
-				return (byte)0xff; //saturation
-			return (byte)(data1 & 0x00ff); 
+				return (byte) 0xff; // saturation
+			return (byte) (data1 & 0x00ff);
 		}
 	};
 
-	IRegister data1HighRegister = new RoRegister("DATA1HIGH", (byte)0x0F ) {		
+	IRegister data1HighRegister = new RoRegister("DATA1HIGH", (byte) 0x0F) {
 		@Override
-		public byte read() {	
+		public byte read() {
 			if (data1 > 0xffff)
-				return (byte)0xff; //saturation
-			return (byte)((data1 & 0xff00) >> 8);
+				return (byte) 0xff; // saturation
+			return (byte) ((data1 & 0xff00) >> 8);
 		}
 	};
 
-	private RegisterBank getRegisterBank() {		
-		RegisterBank rb = new RegisterBank()
-		.add(controlRegister)
-		.add(timmingRegister)
-		.add(idRegister)
-		.add(data0LowRegister)
-		.add(data0HighRegister)
-		.add(data1LowRegister)
-		.add(data1HighRegister);
-			
+	private RegisterBank getRegisterBank() {
+		RegisterBank rb = new RegisterBank().add(controlRegister).add(timmingRegister).add(idRegister).add(data0LowRegister).add(data0HighRegister)
+				.add(data1LowRegister).add(data1HighRegister);
+
 		return rb;
 	}
 
 	protected void stopIntegration() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	protected void startIntegration() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	protected void stopAquisition() {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	protected void startAquisition() {
-		// we do not really integrate, we have to compute data0 and data1 base on provided lux value.
-		
-		//computation based on TSL256x.pdf from TAOS (www.taosinc.com)
+		// we do not really integrate, we have to compute data0 and data1 base
+		// on provided lux value.
+
+		// computation based on TSL256x.pdf from TAOS (www.taosinc.com)
 		double ratio = properties.getIrBroadbandRatio();
 		double b = getB(ratio);
 		double m = getM(ratio);
-		double channel0 = lux / (b - (m * ratio) );
+		double channel0 = lux / (b - (m * ratio));
 		double channel1 = ratio * channel0;
-		
+
 		long chScale = 1 << 4;
-	
-		if (gain==Gain.HIGH)
+
+		if (gain == Gain.HIGH)
 			chScale = chScale << 4;
-		
-		data0 = (int)Math.round((channel0 ) / chScale*scale) & 0x0ffffffff;
-		data1 = (int)Math.round((channel1 ) / chScale*scale) & 0x0ffffffff;
+
+		data0 = (int) Math.round((channel0) / chScale * scale) & 0x0ffffffff;
+		data1 = (int) Math.round((channel1) / chScale * scale) & 0x0ffffffff;
 
 	}
 
 	// T, FN and CL package values
-	private static double TSL2561_LUX_K1T = 0.125; //        (0x0040);  // 0.125 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B1T = 0.0304; //       (0x01f2);  // 0.0304 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M1T = 0.0272;//        (0x01be);  // 0.0272 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K2T = 0.250;//         (0x0080); // 0.250 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B2T = 0.0325;//         (0x0214); // 0.0325 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M2T = 0.0440;//         (0x02d1);  // 0.0440 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K3T = 0.375;//         (0x00c0);  // 0.375 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B3T = 0.0351;//         (0x023f);  // 0.0351 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M3T = 0.0544;//         (0x037b);  // 0.0544 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K4T = 0.5;//         (0x0100);  // 0.50 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B4T = 0.0381;//        (0x0270);  // 0.0381 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M4T = 0.0624;//         (0x03fe);  // 0.0624 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K5T = 0.61;//         (0x0138);  // 0.61 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B5T = 0.0224;//         (0x016f);  // 0.0224 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M5T = 0.0310;//         (0x01fc);  // 0.0310 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K6T = 0.8;//        (0x019a); // 0.80 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B6T = 0.0128;//         (0x00d2);  // 0.0128 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M6T = 0.0153;//         (0x00fb); // 0.0153 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K7T = 1.3;//         (0x029a); // 1.3 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B7T = 0.00146;//         (0x0018); // 0.00146 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M7T = 0.00112;//         (0x0012);  // 0.00112 * 2^LUX_SCALE
-	private static double TSL2561_LUX_K8T = 1.3;//        (0x029a);  // 1.3 * 2^RATIO_SCALE
-	private static double TSL2561_LUX_B8T = 0.0;//        (0x0000);  // 0.000 * 2^LUX_SCALE
-	private static double TSL2561_LUX_M8T = 0.0;//(0x0000); // 0.000 * 2^LUX_SCALE
-	
+	private static double TSL2561_LUX_K1T = 0.125; // (0x0040); // 0.125 *
+													// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B1T = 0.0304; // (0x01f2); // 0.0304 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M1T = 0.0272;// (0x01be); // 0.0272 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K2T = 0.250;// (0x0080); // 0.250 *
+													// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B2T = 0.0325;// (0x0214); // 0.0325 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M2T = 0.0440;// (0x02d1); // 0.0440 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K3T = 0.375;// (0x00c0); // 0.375 *
+													// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B3T = 0.0351;// (0x023f); // 0.0351 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M3T = 0.0544;// (0x037b); // 0.0544 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K4T = 0.5;// (0x0100); // 0.50 *
+												// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B4T = 0.0381;// (0x0270); // 0.0381 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M4T = 0.0624;// (0x03fe); // 0.0624 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K5T = 0.61;// (0x0138); // 0.61 *
+													// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B5T = 0.0224;// (0x016f); // 0.0224 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M5T = 0.0310;// (0x01fc); // 0.0310 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K6T = 0.8;// (0x019a); // 0.80 *
+												// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B6T = 0.0128;// (0x00d2); // 0.0128 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M6T = 0.0153;// (0x00fb); // 0.0153 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K7T = 1.3;// (0x029a); // 1.3 *
+												// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B7T = 0.00146;// (0x0018); // 0.00146 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_M7T = 0.00112;// (0x0012); // 0.00112 *
+													// 2^LUX_SCALE
+	private static double TSL2561_LUX_K8T = 1.3;// (0x029a); // 1.3 *
+												// 2^RATIO_SCALE
+	private static double TSL2561_LUX_B8T = 0.0;// (0x0000); // 0.000 *
+												// 2^LUX_SCALE
+	private static double TSL2561_LUX_M8T = 0.0;// (0x0000); // 0.000 *
+												// 2^LUX_SCALE
+
 	private double getM(double ratio) {
-		 if ((ratio >= 0) && (ratio <= TSL2561_LUX_K1T))
-			 return TSL2561_LUX_M1T;
-		  else if (ratio <= TSL2561_LUX_K2T)
-			  return TSL2561_LUX_M2T;
-		  else if (ratio <= TSL2561_LUX_K3T)
-			  return TSL2561_LUX_M3T;
-		  else if (ratio <= TSL2561_LUX_K4T)
-			  return TSL2561_LUX_M4T;
-		  else if (ratio <= TSL2561_LUX_K5T)
-			  return TSL2561_LUX_M5T;
-		  else if (ratio <= TSL2561_LUX_K6T)
-			  return TSL2561_LUX_M6T;
-		  else if (ratio <= TSL2561_LUX_K7T)
-			  return TSL2561_LUX_M7T;
-		  else if (ratio > TSL2561_LUX_K8T)
-			  return TSL2561_LUX_M8T;
+		if ((ratio >= 0) && (ratio <= TSL2561_LUX_K1T))
+			return TSL2561_LUX_M1T;
+		else if (ratio <= TSL2561_LUX_K2T)
+			return TSL2561_LUX_M2T;
+		else if (ratio <= TSL2561_LUX_K3T)
+			return TSL2561_LUX_M3T;
+		else if (ratio <= TSL2561_LUX_K4T)
+			return TSL2561_LUX_M4T;
+		else if (ratio <= TSL2561_LUX_K5T)
+			return TSL2561_LUX_M5T;
+		else if (ratio <= TSL2561_LUX_K6T)
+			return TSL2561_LUX_M6T;
+		else if (ratio <= TSL2561_LUX_K7T)
+			return TSL2561_LUX_M7T;
+		else if (ratio > TSL2561_LUX_K8T)
+			return TSL2561_LUX_M8T;
 		return 0;
 	}
 
 	private double getB(double ratio) {
-		 if ((ratio >= 0) && (ratio <= TSL2561_LUX_K1T))
-		    return TSL2561_LUX_B1T;
-		  else if (ratio <= TSL2561_LUX_K2T)
-			  return TSL2561_LUX_B2T; 
-		  else if (ratio <= TSL2561_LUX_K3T)
-			  return TSL2561_LUX_B3T;
-		  else if (ratio <= TSL2561_LUX_K4T)
-			  return TSL2561_LUX_B4T; 
-		  else if (ratio <= TSL2561_LUX_K5T)
-			  return TSL2561_LUX_B5T;
-		  else if (ratio <= TSL2561_LUX_K6T)
-			  return TSL2561_LUX_B6T;
-		  else if (ratio <= TSL2561_LUX_K7T)
-			  return TSL2561_LUX_B7T;
-		  else if (ratio > TSL2561_LUX_K8T)
-			  return TSL2561_LUX_B8T;
+		if ((ratio >= 0) && (ratio <= TSL2561_LUX_K1T))
+			return TSL2561_LUX_B1T;
+		else if (ratio <= TSL2561_LUX_K2T)
+			return TSL2561_LUX_B2T;
+		else if (ratio <= TSL2561_LUX_K3T)
+			return TSL2561_LUX_B3T;
+		else if (ratio <= TSL2561_LUX_K4T)
+			return TSL2561_LUX_B4T;
+		else if (ratio <= TSL2561_LUX_K5T)
+			return TSL2561_LUX_B5T;
+		else if (ratio <= TSL2561_LUX_K6T)
+			return TSL2561_LUX_B6T;
+		else if (ratio <= TSL2561_LUX_K7T)
+			return TSL2561_LUX_B7T;
+		else if (ratio > TSL2561_LUX_K8T)
+			return TSL2561_LUX_B8T;
 		return 0;
 	}
 

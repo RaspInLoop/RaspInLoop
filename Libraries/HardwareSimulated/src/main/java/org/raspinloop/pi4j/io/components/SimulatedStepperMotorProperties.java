@@ -31,6 +31,8 @@ public class SimulatedStepperMotorProperties implements BoardExtentionHardware {
 	protected ArrayList<PinImpl> pins = new ArrayList<PinImpl>();
 	private boolean averageMode;
 	
+	public SimulatedStepperMotorProperties() {
+	}
 	
 	@Override
 	public String getComponentName() {

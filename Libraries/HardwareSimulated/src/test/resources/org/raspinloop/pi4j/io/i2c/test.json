@@ -53,8 +53,10 @@
       {
         "java_type": "org.raspinloop.pi4j.io.i2c.TSL256xProperties",
         "name": "TSL2560 (LIGHT-TO-DIGITAL CONVERTER)",
-        "address": 57,
-        "partNumber_ID": 80,
+        "packageType": "TSL2561_PACKAGE_T_FN_CL",
+        "revNumber": 0,
+        "selectedAddress": "FLOATING",
+        "revNumber": 0,        
         "busId": 0,
         "irBroadbandRatio": 0.75,
         "availablesPins": [

@@ -6,6 +6,11 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.fmi.plugin.Activator;
 
@@ -36,6 +41,14 @@ import org.raspinloop.fmi.plugin.Activator;
  */
 public abstract class AbstractHWConfigPage extends WizardPage {
 	
+	protected Text addText(Composite parent) {
+		Text t = new Text(parent, SWT.SINGLE | SWT.BORDER);
+		t.setFont(parent.getFont());
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		t.setLayoutData(gd);
+		return t;
+	}
+
 	/**
 	 * Name of the original HW being edited, or <code>null</code> if none.
 	 */
@@ -213,6 +226,17 @@ public abstract class AbstractHWConfigPage extends WizardPage {
 		setPageComplete(max.isOK() || max.getSeverity() == IStatus.INFO);
 	}	
 	
+	protected Label addLabel(Composite composite, String text) {
+		Label l = new Label(composite, SWT.NONE);
+		l.setFont(composite.getFont());
+		l.setText(text);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.grabExcessHorizontalSpace = false;
+		gd.verticalAlignment = SWT.BEGINNING;
+		l.setLayoutData(gd);
+		return l;
+	}
+
 	/**
 	 * Returns a collection of status messages pertaining to the current edit
 	 * status of the RIL Hardware on this page. An empty collection or a collection of

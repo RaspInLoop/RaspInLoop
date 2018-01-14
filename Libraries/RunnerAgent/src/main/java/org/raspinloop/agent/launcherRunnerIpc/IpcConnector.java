@@ -62,13 +62,16 @@ public class IpcConnector implements HandlerRunner {
 			System.exit(1);
 		}
 
+		// try to find an available port
+		int runnerServerPort = RUNNER_SERVER_START_PORT;
 		TServerTransport serverTransport = null;
 		int tryNb = 0;
 		while (serverTransport == null) {
 			try {
-				serverTransport = new TServerSocket(RUNNER_SERVER_START_PORT + tryNb);
+				serverTransport = new TServerSocket(runnerServerPort);
 			} catch (Exception e) {
 				tryNb++;
+				runnerServerPort += tryNb;
 				if (tryNb > 20) {
 					logger.error("runner error:" + e.getMessage());
 					return;
@@ -77,30 +80,7 @@ public class IpcConnector implements HandlerRunner {
 		}
 		TServer server = new TSimpleServer(new TSimpleServer.Args(serverTransport).processor(processor));
 
-		server.setServerEventHandler(new TServerEventHandler() {
-
-			@Override
-			public void processContext(ServerContext serverContext, TTransport inputTransport, TTransport outputTransport) {
-			}
-
-			@Override
-			public void preServe() {
-				try {
-					client.ReadyToStart(9092);
-				} catch (TException e) {
-					logger.error("runner cannot be launched:" + e.getMessage());
-				}
-			}
-
-			@Override
-			public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
-			}
-
-			@Override
-			public ServerContext createContext(TProtocol input, TProtocol output) {
-				return null;
-			}
-		});
+		server.setServerEventHandler(new IpcServerEventHandler(runnerServerPort));
 
 		server.serve();
 
@@ -111,4 +91,36 @@ public class IpcConnector implements HandlerRunner {
 		processor = new Processor<Iface>(handler.getCsHandler());
 	}
 
+	
+	class IpcServerEventHandler implements TServerEventHandler {
+
+		
+		public IpcServerEventHandler(int serverPort) {
+			super();
+			this.serverPort = serverPort;
+		}
+
+		final int serverPort ;
+		@Override
+		public void processContext(ServerContext serverContext, TTransport inputTransport, TTransport outputTransport) {
+		}
+
+		@Override
+		public void preServe() {
+			try {
+				client.ReadyToStart(serverPort);
+			} catch (TException e) {
+				logger.error("runner cannot be launched:" + e.getMessage());
+			}
+		}
+
+		@Override
+		public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
+		}
+
+		@Override
+		public ServerContext createContext(TProtocol input, TProtocol output) {
+			return null;
+		}
+	};
 }

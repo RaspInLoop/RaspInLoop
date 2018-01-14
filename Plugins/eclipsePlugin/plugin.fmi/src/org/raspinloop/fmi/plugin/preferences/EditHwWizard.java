@@ -39,7 +39,9 @@ public class EditHwWizard extends HWConfigWizard {
 
 	@Override
 	protected HardwareProperties getResult() {
-		return fEditPage.getSelection();
+		if (fEditPage != null)
+			return fEditPage.getSelection();
+		else return null;
 	}
 
 }

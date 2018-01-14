@@ -26,6 +26,9 @@ public class MCP3008Properties implements SPIComponent {
 	private SpiChannel channel = SpiChannel.CS0;
 	private  Collection<Pin> availablesPins = Collections.emptyList();	
 	
+	public MCP3008Properties() {
+	}
+	
 	@Override
 	public String getComponentName() {
 		return name;

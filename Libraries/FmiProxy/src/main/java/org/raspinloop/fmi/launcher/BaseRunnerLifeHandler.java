@@ -22,7 +22,6 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	private LauncherServerJob launcherServer;
 	private Instance inst;
 	private ProxyRunnerJob fmiProxyRunnerJob;
-
 	private Throwable errorDuringStart;
 
 	public BaseRunnerLifeHandler(ProxyRunnerJob fmiProxyRunnerJob) {
@@ -54,7 +53,9 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	@Override
 	public Client startVMRunner(IProxyMonitor monitor) throws TTransportException, InterruptedException, RunnerLifeException {
 		logger.trace("FmiRunnerLifeHandler.startVMRunner called");
+		monitor.processStatusChanged(ProcessStatus.STARTING);
 
+		
 		launcherServer = fmiProxyRunnerJob.new LauncherServerJob(RUNNER_SERVER_PORT, monitor);
 		CompletableFuture.runAsync(launcherServer).exceptionally(e -> {
 			this.setStartInError(e);
@@ -67,16 +68,18 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 		}
 
 		if (isStartedInError()) {
+			monitor.processStatusChanged(ProcessStatus.CANCELLED);
 			throw new RunnerLifeException(errorDuringStart);
 		}
 
 		if (monitor.isCanceled()) {
-			if (monitor.getCancelCause() == null)
+			monitor.processStatusChanged(ProcessStatus.CANCELLED);
+			if (monitor.getAbortedCause() == null)
 				throw new InterruptedException("VMRunner start canceled");
 			else
-				throw new RunnerLifeException(monitor.getCancelCause());
+				throw new RunnerLifeException(monitor.getAbortedCause());
 		}
-
+		monitor.processStatusChanged(ProcessStatus.STARTED);
 		logger.trace("runner started and listened on port " + fmiProxyRunnerJob.getRunnerPort());
 		TSocket transport = new TSocket("localhost", fmiProxyRunnerJob.getRunnerPort(), 0); // NO
 																							// timeout
@@ -92,7 +95,7 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 	}
 
 	private void setStartInError(Throwable e) {
-		logger.error("Cannot start Application", e);
+		logger.error("Cannot start Application", e);		
 		errorDuringStart = e;
 	}
 
@@ -105,9 +108,11 @@ public class BaseRunnerLifeHandler implements RunnerLifeHandler {
 		logger.trace("FmiRunnerLifeHandler.stopVMRunner called" + fmiProxyRunnerJob.getRunnerPort());
 		try {
 			Status result;
+			launcherServer.canceling();
 			if (client != null) {
 				result = client.terminate();
 				fmiProxyRunnerJob.cancel();
+				
 				return result;
 			} else
 				return org.raspinloop.fmi.launcherRunnerIpc.Status.Discard;

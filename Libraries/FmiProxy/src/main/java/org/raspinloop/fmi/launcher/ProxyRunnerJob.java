@@ -38,10 +38,10 @@ public abstract class ProxyRunnerJob implements  ServerContext {
 	private final String name;
 	
 	private LinkedList<IReportListener> reportListeners = new LinkedList<>();
-	private Runnable runner;
+	private Runner runner;
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-	public ProxyRunnerJob(Proxy proxy, Runnable runner) {
+	public ProxyRunnerJob(Proxy proxy, Runner runner) {
 		this.runner = runner;
 		this.name = proxy.getName() + " running....";
 		this.proxy = proxy;
@@ -143,16 +143,18 @@ public abstract class ProxyRunnerJob implements  ServerContext {
 		@Override
 		public void deleteContext(ServerContext arg0, TProtocol arg1, TProtocol arg2) {
 			logger.trace("deleteContext for runner connection");
-			monitor.done();
+			monitor.processStatusChanged(ProcessStatus.STOPPED);
 		}
 
 		@Override
 		public void preServe() {
 				logger.trace("runner connector server listening on port " + port);
-					 CompletableFuture.runAsync(runner,executor) 
-										.handle((r,e) ->  {  server.stop();
-														if (e != null)
-					 										monitor.aborted(e);													
+					 CompletableFuture.runAsync(runner,executor)
+											.handle((r,e) ->  { 
+														if (e != null) {
+															 server.stop();
+					 										monitor.aborted(e);
+														}
 				                 					    return null;});
 		}
 
@@ -162,10 +164,11 @@ public abstract class ProxyRunnerJob implements  ServerContext {
 		}
 	}
 
-	public void cancel() {
-		// it will force close of running VM.
+	public void cancel() {		
+		// it will force close of running VM (if not run asynch...).
 		if (!executor.isShutdown())
 			executor.shutdownNow();
+		runner.terminate();
 	}
 
 }

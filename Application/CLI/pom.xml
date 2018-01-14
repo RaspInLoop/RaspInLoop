@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.raspinloop</groupId>
     <artifactId>parent</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.1-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
   <groupId>org.raspinloop.fmi</groupId>
@@ -63,7 +63,7 @@
 			<groupId>org.raspinloop.agent</groupId>
 			<artifactId>Pi4jRunnerAgent</artifactId>
 			<classifier>jar-with-dependencies</classifier>
-			<version>2.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
   	</dependencies>
 </project>

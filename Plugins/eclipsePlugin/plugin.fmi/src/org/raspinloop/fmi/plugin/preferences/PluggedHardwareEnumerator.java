@@ -10,30 +10,38 @@ import org.raspinloop.config.HardwareProperties;
 import org.raspinloop.config.HardwareEnumerator;
 import org.raspinloop.fmi.plugin.Activator;
 
-public class PluggedHardwareEnumerator implements HardwareEnumerator{
+public class PluggedHardwareEnumerator implements HardwareEnumerator {
 
-	public static PluggedHardwareEnumerator INSTANCE(){
+	public static PluggedHardwareEnumerator INSTANCE() {
 		if (INSTANCE == null)
 			INSTANCE = new PluggedHardwareEnumerator();
 		return INSTANCE;
 	}
-	
+
 	static private PluggedHardwareEnumerator INSTANCE;
 
-	protected PluggedHardwareEnumerator() {};
+	protected PluggedHardwareEnumerator() {
+	};
+
 	@Override
-	public ArrayList<HardwareProperties> buildListImplementing(Class<? extends HardwareProperties	> class1) {
+	public ArrayList<HardwareProperties> buildListImplementing(Class<? extends HardwareProperties> class1) {
 		ArrayList<HardwareProperties> list = new ArrayList<HardwareProperties>();
 		IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint(PreferenceConstants.HARDWARE_EXTENSION_POINT_ID);
-		IConfigurationElement[] infos= extensionPoint.getConfigurationElements();
+		IConfigurationElement[] infos = extensionPoint.getConfigurationElements();
 		for (int i = 0; i < infos.length; i++) {
 			IConfigurationElement element = infos[i];
 			try {
-					HardwareProperties config = (HardwareProperties) element.createExecutableExtension("configClass"); //$NON-NLS-1$
+				Object execExt = element.createExecutableExtension("configClass"); //$NON-NLS-1$
+				if (execExt instanceof HardwareProperties) {
+					HardwareProperties config = (HardwareProperties) execExt;
 					if (class1.isInstance(config))
 						list.add(config);
-				} catch (CoreException e) {
-					Activator.getDefault().logError("Cannot instanciate "+element.getAttribute("configClass"), e);				}
+				} else {
+					Activator.getDefault().logError("Cannot instanciate " + element.getAttribute("configClass"));
+				}
+			} catch (CoreException e) {
+				Activator.getDefault().logError("Cannot instanciate " + element.getAttribute("configClass"), e);
+			}
 		}
 		return list;
 	}

@@ -2,7 +2,7 @@
 <feature
       id="org.raspinloop.fmi.plugin.feature"
       label="RaspInLoop-Funtional Mockup Interface Simulation"
-      version="1.4.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="raspinloop">
 
    <description url="http://www.raspinloop.org/">
@@ -100,27 +100,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </license>
 
    <plugin
-         id="org.raspinloop.fmi.plugin.config"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.raspinloop.fmi.plugin.fmi"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.raspinloop.fmi.plugin.hardwareSimulated"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.raspinloop.fmi.plugin.pi4j-runner"
          download-size="0"
          install-size="0"
          version="0.0.0"/>

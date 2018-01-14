@@ -8,22 +8,23 @@ import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.transport.TTransport;
-import org.raspinloop.fmi.FmiProxyMonitor;
+import org.raspinloop.fmi.launcher.IProxyMonitor;
 import org.raspinloop.fmi.launcher.Proxy;
 import org.raspinloop.fmi.launcher.ProxyRunnerJob;
+import org.raspinloop.fmi.launcher.Runner;
 
 
 public class FMIListenServerHandler implements TServerEventHandler {
 
 
 	private TServer server;
-	private FmiProxyMonitor monitor;
+	private IProxyMonitor monitor;
 	private Proxy proxy;
-	private Runnable runner;
+	private Runner runner;
 	ExecutorService executor = Executors.newScheduledThreadPool(3);
 	
 
-	public FMIListenServerHandler(TServer server,Proxy proxy,  Runnable runner, FmiProxyMonitor monitor) {
+	public FMIListenServerHandler(TServer server,Proxy proxy,  Runner runner,IProxyMonitor monitor) {
 		this.server = server;
 		this.proxy = proxy;
 		this.runner = runner;
@@ -42,6 +43,8 @@ public class FMIListenServerHandler implements TServerEventHandler {
 			ProxyRunnerJob fmiProxyRunnerFMIJob = (ProxyRunnerJob)arg0;
 				fmiProxyRunnerFMIJob.cancel(); // ensure no more runner for this FMI-Proxy context
 		}
+		//simple server, so stop the server
+		server.stop();
 	}
 
 	@Override

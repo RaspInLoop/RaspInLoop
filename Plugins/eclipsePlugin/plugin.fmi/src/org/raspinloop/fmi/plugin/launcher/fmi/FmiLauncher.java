@@ -1,5 +1,8 @@
 package org.raspinloop.fmi.plugin.launcher.fmi;
 
+
+import javax.inject.Inject;
+
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -8,18 +11,31 @@ import org.apache.thrift.transport.TTransportException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IStreamsProxy;
+import org.eclipse.equinox.log.Logger;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.raspinloop.fmi.CoSimulation;
 import org.raspinloop.fmi.CoSimulation.Iface;
+import org.raspinloop.fmi.VMRunnerUncheckedException;
+import org.raspinloop.fmi.launcher.IProxyMonitor;
+import org.raspinloop.fmi.launcher.Runner;
+import org.raspinloop.fmi.launcher.SimulationToolStatus;
+import org.raspinloop.fmi.launcher.fmi.FMIListenServerHandler;
+import org.raspinloop.fmi.launcher.fmi.FmiProxy;
+import org.raspinloop.fmi.launcher.fmi.FmiProxyServer;
 import org.raspinloop.fmi.plugin.launcher.Launcher;
+import org.raspinloop.fmi.plugin.launcher.RaspinloopProgressMonitor;
 
 public class FmiLauncher extends Launcher {
 
+	@Inject Logger logger;
+	
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
@@ -36,7 +52,7 @@ public class FmiLauncher extends Launcher {
 			monitor.subTask("Verify launch attribute");
 
 			IVMRunner runner = getVMRunner(configuration, mode);
-			VMRunnerConfiguration runConfig = getVMRunnerConfig(configuration);
+			VMRunnerConfiguration runConfig = getVMRunnerConfig(configuration, mode);
 
 			// check for cancellation
 			if (monitor.isCanceled()) {
@@ -53,25 +69,40 @@ public class FmiLauncher extends Launcher {
 		}
 	}
 
-	private void fmiLaunch(ILaunch launch, IProgressMonitor monitor, IVMRunner runner, VMRunnerConfiguration runConfig) throws CoreException {
-		
-		FmiProxy fmiProxy = new FmiProxy(monitor);
-		CoSimulation.Processor<Iface> processor = new CoSimulation.Processor<Iface>(fmiProxy);
 
-		
-		TServerTransport serverTransport;
-		try {
-			serverTransport = new TServerSocket(9090);
-			TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
+	private void fmiLaunch(final ILaunch launch, final IProgressMonitor monitor, final IVMRunner runner, final VMRunnerConfiguration runConfig) throws CoreException {
+		
+			// will be responsible to start subtask and animate eclipse progress bar regarding FMIServer events
+			IProxyMonitor proxyMonitor = RaspinloopProgressMonitor.wrap(monitor);
 	
-			server.setServerEventHandler(new FMIListenServerHandler(server, fmiProxy, runner, runConfig, launch, monitor));
+			Runner vmRunner = new Runner(){
 
-			monitor.subTask("Starting the FMI-Proxy server...");
+				@Override
+				public void run() {
+					try {
+						runner.run(runConfig, launch, monitor);
+					} catch (CoreException e) {
+						throw new VMRunnerUncheckedException(e);
+					}
+					
+				}
 
-			server.serve();
-		} catch (TTransportException e) {
-			abort("Communication with the simulation tool interrupted.", e, IJavaLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
-		}
+				@Override
+				public void terminate() {
+					try {
+						launch.terminate();
+					} catch (DebugException e) {
+						throw new VMRunnerUncheckedException(e);
+					}
+				}};
+				
+				
+				FmiProxyServer server = new FmiProxyServer(vmRunner, proxyMonitor);
+				try {
+					server.start();
+				} catch (Exception e) {
+					abort("Communication with the simulation tool interrupted.", e, IJavaLaunchConfigurationConstants.ERR_INTERNAL_ERROR);
+				}
 	}
 }

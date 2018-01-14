@@ -44,12 +44,15 @@ public class CSHandler implements Iface {
 	@Override
 	public Status setupExperiment(boolean toleranceDefined, double tolerance, double startTime, boolean stopTimeDefined, double stopTime) throws TException {				
 		
+		
 		if (stopTimeDefined)
 			SimulatedTime.INST.setup(startTime, stopTime);
 		else
 			SimulatedTime.INST.setup(startTime);
 
+		logger.debug("Ready to start");
 		for (ExperimentListener listener : experimentListenerList) {
+			
 			listener.notifyStart(SimulatedTime.INST, hwEmulationFactory.get());
 		}
 		// An FMU for Co-Simulation might ignore this argument.
