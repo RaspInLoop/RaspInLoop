@@ -1,1 +1,16 @@
+<!--
+  Copyright 2018 RaspInLoop
+  
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  use this file except in compliance with the License.  You may obtain a copy
+  of the License at
+  
+    http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  License for the specific language governing permissions and limitations under
+  the License.
+-->
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?><fmiModelDescription fmiVersion="2.0" modelName="raspberryPiGpioSimulator" guid="{5571c639-6438-4eee-839e-ff8442e3bbbc}" author="RaspInLoop" copyright="Copyright(c) 2015 Frédéric Mahiant RaspInLoop.org" license="Eclipse Public License" generationTool="RaspInLoop-fmi-launcher" generationDateAndTime="2017-03-07T07:54:31.628+01:00" numberOfEventIndicators="1"><CoSimulation modelIdentifier="ril_fmi" canHandleVariableCommunicationStepSize="true"/><LogCategories><Category name="logAll"/><Category name="logError"/><Category name="logFmiCall"/><Category name="logEvent"/></LogCategories><ModelVariables><ScalarVariable name="GPIO 2" valueReference="23" description="Input signal related to pin GPIO 2" causality="input" variability="continuous"><Boolean/></ScalarVariable><ScalarVariable name="GPIO 1" valueReference="1" description="Output signal related to pin GPIO 1" causality="output" variability="continuous"><Boolean/></ScalarVariable><ScalarVariable name="GPIO 3" valueReference="3" description="Output signal related to pin GPIO 3" causality="output" variability="continuous"><Boolean/></ScalarVariable></ModelVariables><ModelStructure><Outputs/></ModelStructure></fmiModelDescription>

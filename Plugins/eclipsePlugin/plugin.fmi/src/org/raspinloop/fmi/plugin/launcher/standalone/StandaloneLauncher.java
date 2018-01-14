@@ -1,3 +1,12 @@
+/*******************************************************************************
+ * Copyright (C) 2018 RaspInLoop
+ * 
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * 
+ * SPDX-License-Identifier: EPL-2.0
+ ******************************************************************************/
 package org.raspinloop.fmi.plugin.launcher.standalone;
 
 import java.util.Collection;
@@ -64,6 +73,7 @@ public class StandaloneLauncher extends Launcher {
 		}
 
 	}
+
 	private void standaloneLaunch(ILaunch launch, ILaunchConfiguration configuration, IProgressMonitor monitor, IVMRunner runner,
 			VMRunnerConfiguration runConfig) throws NumberFormatException, CoreException {
 		
@@ -95,6 +105,7 @@ public class StandaloneLauncher extends Launcher {
 			}};
 			
 			TimeSequencerProxy proxy = new TimeSequencerProxy(guid, stepIncrement, timeRatio, duration, proxyMonitor);
+			@SuppressWarnings("unused")
 			StandaloneProxyRunnerJob standaloneProxyRunnerFMIJob = new StandaloneProxyRunnerJob(proxy, vmRunner);
 			Job job = Job.create("Standalone FMI", new ICoreRunnable() {
 				

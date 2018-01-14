@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright 2018 RaspInLoop
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.  You may obtain a copy
+ * of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ ******************************************************************************/
 package org.raspinloop.timeemulation;
 
 import java.util.Date;
@@ -30,7 +45,7 @@ public enum SimulatedTime {
         @Override protected Long initialValue() { return 0L; }
 	};
 
-	final static Logger logger = LoggerFactory.getLogger(SimulatedTime.class);
+	//final static Logger logger = LoggerFactory.getLogger(SimulatedTime.class);
 
 	/**
 	 * The computation of a time step is started.
@@ -46,7 +61,7 @@ public enum SimulatedTime {
 	 * @return
 	 */
 	public synchronized void doStep(double time) {		
-		logger.trace("Do a step of  {} ms ",time*1000);
+		//logger.trace("Do a step of  {} ms ",time*1000);
 		long incrementInNano = sectoNano(time);
 		currentTimeNano += incrementInNano;
 		if (INST.getWaitingThreshold() >= incrementInNano)
@@ -90,7 +105,7 @@ public enum SimulatedTime {
 	}
 
 	public synchronized void setup(double startTime, double stoptime) {
-		logger.debug("setup simulation with startTime {} and stopTime {}",startTime, stoptime );
+		//logger.debug("setup simulation with startTime {} and stopTime {}",startTime, stoptime );
 		this.stoptimeNano = sectoNano(stoptime);
 		startDate = new Date().getTime();
 		currentTimeNano = sectoNano(startTime);
@@ -99,7 +114,7 @@ public enum SimulatedTime {
 	}
 
 	public synchronized void setup(double startTime) {
-		logger.debug("setup simulation with startTime {}",startTime);
+		//logger.debug("setup simulation with startTime {}",startTime);
 		startDate = new Date().getTime();
 		currentTimeNano = sectoNano(startTime);
 		isStarted = false;
@@ -148,7 +163,7 @@ public enum SimulatedTime {
 	}
 
 	public static void sleep(long millis, int nano) throws InterruptedException {
-		logger.debug("Simulation sleep called for {} ms and {} ns",millis, nano);
+		//logger.debug("Simulation sleep called for {} ms and {} ns",millis, nano);
 		long nanos = millis * 1000000L + nano;
 		for (SimulatedTimeListerner listener : INST.listeners) {
 			listener.onRequestingSleep(nanos);
@@ -184,13 +199,13 @@ public enum SimulatedTime {
 
 	public static long nanotime() {
 		long nano = INST.getCurrentTimeNano();
-		logger.trace("Simulation nanotime called at {} ms", nano/1000000.0);
+		//logger.trace("Simulation nanotime called at {} ms", nano/1000000.0);
 		return nano;
 	}
 
 	public static long awaitNanos(long nanos, Condition target)
 			throws InterruptedException {
-		logger.trace("Simulation awaitNanos called for {} ms", nanos/1000000.0);
+		//logger.trace("Simulation awaitNanos called for {} ms", nanos/1000000.0);
 		// we have to wait for do step and wait for target condition
 		INST.lock.lock();
 		try {
