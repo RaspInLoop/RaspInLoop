@@ -1,0 +1,58 @@
+{
+  "java_type": "org.raspinloop.pi4j.io.gpio.RaspiGpioSimulatorProperties",
+  "boardHardwareDelegate": {
+    "java_type": "org.raspinloop.config.BoardHardwareDelegate",
+    "guid": "{5571c639-6438-4eee-839e-ff8442e3bbbc}",
+    "outputPins": [
+      {
+        "provider": "RaspberryPi GPIO Provider",
+        "address": 1,
+        "name": "GPIO 1"
+      },
+      {
+        "provider": "RaspberryPi GPIO Provider",
+        "address": 3,
+        "name": "GPIO 3"
+      },
+      {
+        "provider": "RaspberryPi GPIO Provider",
+        "address": 17,
+        "name": "GPIO 17"
+      }
+    ],
+    "inputPins": [
+      {
+        "provider": "RaspberryPi GPIO Provider",
+        "address": 2,
+        "name": "GPIO 2"
+      }
+    ],
+    "extentionComponents": [],
+    "uartComponents": [],
+    "spiComponents": [],
+    "i2cComponents": [
+      {
+        "java_type": "org.raspinloop.pi4j.io.i2c.TSL256xProperties",
+        "name": "TSL2560 (LIGHT-TO-DIGITAL CONVERTER)",
+        "address": 57,
+        "partNumber_ID": 80,
+        "busId": 0,
+        "irBroadbandRatio": 0.12,
+        "availablesPins": [
+          {
+            "provider": "RaspberryPi GPIO Provider",
+            "address": 8,
+            "name": "SDA"
+          },
+          {
+            "provider": "RaspberryPi GPIO Provider",
+            "address": 9,
+            "name": "SCL"
+          }
+        ],
+        "packageType": "TSL2561_PACKAGE_T_FN_CL"
+      }
+    ]
+  },
+  "componentName": "RaspberryPi GPIO SimulatorI2C"
+}

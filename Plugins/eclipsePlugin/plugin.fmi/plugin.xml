@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.raspinloop.fmi.Hardware" name="RIL Hardware Configuration" schema="schema/org.raspinloop.fmi.Hardware.exsd"/>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.raspinloop.fmi.plugin.launcher.fmi.FmiLauncher"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi"
+            modes="run, debug"
+            name="RIL-Remote simulation"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.raspinloop.fmi.plugin.launcher.standalone.StandaloneLauncher"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTypeSA"
+            modes="run, debug"
+            name="RIL-Standalone simulation"
+            sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+      </launchConfigurationType>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    	<launchConfigurationTypeImage
+        icon="icons/rilfmi-16.png"
+        configTypeID="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi"
+        id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage">
+    	</launchConfigurationTypeImage>
+     <launchConfigurationTypeImage
+           configTypeID="org.raspinloop.fmi.plugin.launchConfigurationTypeSA"
+           icon="icons/ril-sa-16.png"
+           id="org.raspinloop.fmi.plugin.launchConfigurationTypeImage2">
+     </launchConfigurationTypeImage>
+	</extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.raspinloop.fmi.plugin.launcher.fmi.LaunchConfigTabGroup"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroupFmi"
+            type="org.raspinloop.fmi.plugin.launchConfigurationTypeFmi">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="org.raspinloop.fmi.plugin.launcher.standalone.LaunchConfigTabGroup"
+            id="org.raspinloop.fmi.plugin.launchConfigurationTabGroupSA"
+            type="org.raspinloop.fmi.plugin.launchConfigurationTypeSA">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.raspinloop.fmi.plugin.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.raspinloop.fmi.plugin.preferences.RilManageHardwarePage"
+            id="org.raspinloop.fmi.plugin.launcher.RilManageHardwarePage"
+            name="Ril Manage Hardware">
+      </page>
+   </extension>   
+    <extension
+         point="org.raspinloop.fmi.Hardware">
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulatorPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.DefaultConfigPage"
+            simulatorClass="org.raspinloop.pi4j.io.gpio.RaspiGpioSimulator">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotorPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotorPropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.components.SimulatedStepperMotor">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.spi.MCP3008PropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.spi.MCP3008PropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.spi.MCP3008">
+      </Hardware>
+      <Hardware
+            configClass="org.raspinloop.pi4j.io.i2c.TSL256xPropertiesFactory"
+            editorClass="org.raspinloop.pi4j.io.i2c.TSL256xPropertiesPage"
+            simulatorClass="org.raspinloop.pi4j.io.i2c.TSL256x">
+      </Hardware>
+   </extension>
+</plugin>

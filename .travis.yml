@@ -3,4 +3,6 @@ install: true
 cache:
   directories: 
   - $HOME/.m2
-script: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B
+script: 
+- mvn install -B
+- cd ./Plugins/eclipsePlugin &&  mvn install -B
