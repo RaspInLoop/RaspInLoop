@@ -3,4 +3,6 @@ install: true
 cache:
   directories: 
   - $HOME/.m2
-script: mvn install -B
+script: 
+- mvn install -B
+- cd ./Plugins/eclipsePlugin &&  mvn install -B
