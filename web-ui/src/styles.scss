@@ -1,0 +1,15 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+}
+
+app-root {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-content: flex-end;
+  font-family: Cambria, Georgia;
+  color:  #4b6369;
+  background-color: #232e31;
+}

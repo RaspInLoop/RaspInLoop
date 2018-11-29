@@ -1,0 +1,17 @@
+div {
+    display: flex;
+  //  border: 1px solid #232e31;;
+  border: 1px solid #4b6369;
+}
+
+app-blocktree {
+  flex: 10%;
+}
+
+app-hardware-editor {
+  flex: 80%;
+}
+
+app-properties{
+  flex: 10%;
+}

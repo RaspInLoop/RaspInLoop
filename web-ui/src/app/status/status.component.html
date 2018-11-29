@@ -1,0 +1,10 @@
+<footer>
+  <section class="message" *ngIf="messageService.messages.length">
+    <span class="statusTitle" >Messages:</span>
+
+    <span *ngFor='let message of messageService.messages'> {{message}} /</span>
+    <button class="clear"
+            (click)="messageService.clear()">X</button>
+  </section>
+  <button class="status" (click)="graphService.save()">Saved!</button>
+</footer>

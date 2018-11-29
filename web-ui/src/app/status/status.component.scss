@@ -1,0 +1,36 @@
+footer {
+//  background: #eaeaea;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+section {
+  margin-right: 5px;
+  margin-left: 20px;
+  font-family: Cambria, Georgia;
+  color:  #4b6369;
+}
+
+body {
+  margin: 2em;
+}
+
+
+button {
+  font-family: Arial;
+  border: 1px solid #4b6369;
+  color:  #4b6369;
+  border-radius: 4px;
+  cursor: pointer;
+  cursor: hand;
+}
+button:hover {
+  background-color: #8ea7ae;
+}
+button:disabled {
+  background-color: #eee;
+  color: #aaa;
+  cursor: auto;
+}
