@@ -2,6 +2,15 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.0.6.
 
+Setup for joinjs (as explained in https://stackoverflow.com/questions/42328292/how-can-i-use-jointjs-with-an-application-built-with-angular-cli/42548726)
+
+npm install jquery --save npm install @types/jquery --save-dev
+npm install backbone --save npm install @types/backbone --save-dev
+npm install jointjs --save npm install @types/jointjs --save-dev
+npm install lodash@3.10.1 --save npm install @types/lodash@3.10.1 --save-dev
+
+
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
