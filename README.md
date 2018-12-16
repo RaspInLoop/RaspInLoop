@@ -1,4 +1,4 @@
-# RaspInLoop-fmi-plugin
+# RaspInLoop
 [![Build Status](https://travis-ci.org/RaspInLoop/RaspInLoop.svg?branch=master)](https://travis-ci.org/RaspInLoop/RaspInLoop)
 
 Source code of eclipse plugin available for install here : www.raspinloop.org/data/updates/4.4
