@@ -22,7 +22,8 @@ import { HardwareEditorComponent } from './hardware-editor/hardware-editor.compo
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

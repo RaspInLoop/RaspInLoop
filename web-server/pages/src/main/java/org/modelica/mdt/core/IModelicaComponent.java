@@ -51,4 +51,5 @@ public interface IModelicaComponent extends IModelicaElement {
 	public boolean isConnector();
 	String getDirection();
 	void lookUpTypeName();
+	String getComponentAnnotation();
 }

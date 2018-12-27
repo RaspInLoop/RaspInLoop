@@ -3,7 +3,7 @@
  * Copyright (c) 2002-2006, Adrian Pop [adrpo@ida.liu.se],
  * Programming Environments Laboratory (PELAB),
  * Department of Computer and Information Science (IDA), 
- * Linköpings University (LiU). 
+ * Linkï¿½pings University (LiU). 
  * All rights reserved.
  *
  * http://www.ida.liu.se/~adrpo/license/
@@ -35,10 +35,12 @@
  *****************************************************************************/
 package org.modelica.mdt.core;
 
+import java.io.Serializable;
+
 /**
  * @author Adrian Pop
  */
-public interface ISourceRegion 
+public interface ISourceRegion extends Serializable
 {
 	/** 
 	 * @author Adrian Pop

@@ -1,40 +1,40 @@
 package org.modelica.mdt.internal.core;
 
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.modelica.mdt.core.IDefinitionLocation;
+import org.apache.commons.lang3.StringUtils;
 import org.modelica.mdt.core.IMoClassLoader;
 import org.modelica.mdt.core.IModelicaClass;
-import org.modelica.mdt.core.IModelicaClass.Restriction;
 import org.modelica.mdt.core.IModelicaElement;
 import org.modelica.mdt.core.IModelicaImport;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
 import org.openmodelica.corba.ConnectException;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
-import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Service
+@Scope(value = "prototype")
 public class MoClassLoader implements IMoClassLoader {
+		
+	private IModelicaClass ownerClass;	
 
-	private IModelicaClass ownerClass;
-	private IMoClassLoader parentClassLoader;
-	private Map<String, IModelicaClass> cache = new HashMap<>();
-
+//	@Resource 
+//	public CacheManager cacheManager;
+	
 	@Override
 	public String toString() {
-		return "MoClassLoader of " + ownerClass.getFullName() + " cache size[" + cache.size() + "]";
+		return "MoClassLoader of " + ownerClass.getFullName();
 	}
 
 	public MoClassLoader(IModelicaClass ownerClass) {
 		this.ownerClass = ownerClass;
-		if (ownerClass.getParentNamespace() != null)
-			this.parentClassLoader = ownerClass.getParentNamespace().getMoClassLoader();
+		
 	}
 
 	private IModelicaClass getInSubPackage(IModelicaClass basePackage, String packageName)
@@ -88,6 +88,7 @@ public class MoClassLoader implements IMoClassLoader {
 	}
 
 	@Override
+//	@Cacheable("moPackage")
 	public IModelicaClass getPackage(String packageName) {
 		log.debug("--> getPackage {} from {}", packageName, this);
 
@@ -99,17 +100,11 @@ public class MoClassLoader implements IMoClassLoader {
 		if (this.ownerClass.getFullName().equals(packageName)) {
 			return this.ownerClass;
 		}
-
-		IModelicaClass cached = cache.get(packageName);
-		if (cached != null) {
-			log.debug("<-- getPackage {} found in cache", packageName);
-			return cached;
-		}
+		
 
 		try {
 			IModelicaClass found = getInSubPackage(this.ownerClass, packageName);
 			if (found != null) {
-				cache.put(packageName, found);
 				log.debug("<-- getPackage {} found in subPackage", packageName);
 				return found;
 			}
@@ -147,27 +142,23 @@ public class MoClassLoader implements IMoClassLoader {
 				}
 			}
 			// ask to the parent
-			if (parentClassLoader != null) {
+			if (ownerClass.getParentNamespace() != null) {
 				log.debug("<-- getPackage {} returned from Parent CL", packageName);
-				return parentClassLoader.getPackage(packageName);
+				return ownerClass.getParentNamespace().getMoClassLoader().getPackage(packageName);
 			}
 		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException e) {
-			// TODO logger
+			log.error("Cannot load package for {}:{}", packageName, e.getMessage());
 		}
 		return null;
 	}
 
 	@Override
+//	@Cacheable("moClasses")
 	public IModelicaClass getClass(String className) {
 		log.debug("--> getClass {} from {}", className, this);
 		if (className.equals(ownerClass.getFullName()))
 			return ownerClass;
-		
-		IModelicaClass cached = cache.get(className);
-		if (cached != null) {
-			log.debug("<-- getClass {}: returned from cache", className);
-			return cached;
-		}
+				
 		try {
 			IModelicaClass moPackage;
 			String pkgName = Packages.getPackage(className);
@@ -202,13 +193,17 @@ public class MoClassLoader implements IMoClassLoader {
 			IModelicaClass result = moPackage.getChildren().stream().filter(IModelicaClass.class::isInstance).map(IModelicaClass.class::cast).filter(e -> {
 				return Packages.isSamePackage(e.getFullName(), finalClassName);
 			}).findFirst().orElse(null);
-			cache.put("className", result);
 			log.debug("<-- getClass {} returned with {} ", className, result);
 			return result;
 		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException e) {
 			log.error("cannot get class {} :", className, e.getMessage());
 			return null;
 		}
+	}
+
+	@Override
+	public void classCreated(IModelicaClass moclass) {
+//		cacheManager.getCache("moClasses").put(moclass.getFullName(), moclass);
 	}
 
 }

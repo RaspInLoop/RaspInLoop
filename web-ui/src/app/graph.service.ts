@@ -4,6 +4,8 @@ import { Observable, of } from 'rxjs';
 import { MessageService } from './message.service';
 import {Model, Component, Link, PortGroupDefinition, PortGroup, Port } from './model/model';
 import { ModelDescription } from './model/modelDescription';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, map, tap } from 'rxjs/operators';
 
 export const MODEL_DESCRITPION: ModelDescription[] = [
   { id: 11, name: 'Mr. Nice', creationDate: "12/06/2018", description: "le model 11" },
@@ -48,6 +50,13 @@ export const MODEL: Model[] = [
 ];
 
 
+export const EMPTY_MODEL: Model = {
+    id: 0,
+    components: [],
+    links:[]
+  };
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -55,11 +64,13 @@ export class GraphService {
 
   currentGraphId: number;
   graph: joint.dia.Graph;
+  componentCtor: joint.dia.Cell.Constructor<joint.dia.Element>;
+  private graphsUrl = 'api/graphs';  // URL to web api
 
-  constructor(private messageService: MessageService) {
+  constructor( private http: HttpClient, private messageService: MessageService) {
     this.currentGraphId = 0;
     this.graph = new joint.dia.Graph;
-
+    this.componentCtor = 
     joint.dia.Element.define('Mo.Component', {
       attrs: {
         rect: { width: 100, height: 100 },
@@ -88,7 +99,7 @@ export class GraphService {
 
   drawComponent(component: Component) {
 
-    var rect = new joint.shapes.Mo.Component();
+    var rect = new this.componentCtor();
     rect.attr({
       image: {
         'xlink:href': 'data:image/svg+xml;utf8,' + component.svgContent
@@ -127,9 +138,9 @@ export class GraphService {
 
   drawLink(link: Link) {
 
-  }
+  } 
 
-  addPort(rect: joint.shapes.Mo.Component, port: Port, groupdef: PortGroupDefinition){
+  addPort(rect: joint.dia.Element, port: Port, groupdef: PortGroupDefinition){
     let portdef = Object.assign({},  {
       "id": port.id,
       "group": groupdef.name,
@@ -147,19 +158,53 @@ export class GraphService {
     rect.addPort(portdef);
   }
 
-  getCurrentGraph(): Observable<joint.dia.Graph> {
-    this.messageService.add('GraphService: return current graph.');
+
+   /**
+ * Handle Http operation that failed.
+ * Let the app continue.
+ * @param operation - name of the operation that failed
+ * @param result - optional value to return as the observable result
+ */
+private handleError<T>(operation = 'operation', result?: T) {
+  return (error: any): Observable<T> => {
+
+    // TODO: send the error to remote logging infrastructure
+    console.error(error); // log to console instead
+
+    this.messageService.add(`${operation} failed: ${error.message}`);
+
+    // Let the app keep running by returning an empty result.
+    return of(result as T);
+  };
+}
+
+  getJointJSGraph(): Observable<joint.dia.Graph> {
     return of(this.graph);
   }
 
   getGraphModel(id: number): Observable<Model> {
     this.messageService.add('GraphService: fetched Model#' + id + ".");
-    return of(MODEL[id]);
+    const url = `${this.graphsUrl}/model/${id}`;
+    return this.http.get<Model>(url)
+      .pipe(
+        catchError(this.handleError<Model>('getGraphModel', EMPTY_MODEL))
+      );
   }
 
-  save(): void {
+  getGraphModelDescription(id: number): Observable<ModelDescription[]> {
+    this.messageService.add('GraphService: fetched Model description.');
+    const url = `${this.graphsUrl}/modeldescriptions}`;
+    return this.http.get<ModelDescription[]>(url)
+    .pipe(
+      catchError(this.handleError<ModelDescription[]>('getGraphModel'))
+    );
+  }
+
+  saveGraphModel(): void {
     var jsonString = JSON.stringify(this.graph.toJSON());
     console.log(jsonString);
     this.messageService.add('GraphService: current graph saved.');
   }
+
+ 
 }

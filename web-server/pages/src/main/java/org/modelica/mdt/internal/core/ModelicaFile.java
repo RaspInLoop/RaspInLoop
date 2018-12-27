@@ -80,5 +80,11 @@ public class ModelicaFile extends ModelicaElement implements IModelicaFile
 	public IMoClassLoader getMoClassLoader() {
 		return getParent().getMoClassLoader();
 	}
+
+	@Override
+	public String getIconAnnotation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

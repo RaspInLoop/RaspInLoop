@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.modelica.mdt.core.IModelicaClass;
+import org.modelica.mdt.core.IModelicaProject;
 import org.modelica.mdt.core.IStandardLibrary;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
@@ -16,11 +17,11 @@ import org.raspinloop.web.pages.model.IModel;
 public class ModelAdapter implements IModel {
 
 	private IModelicaClass moClass;
-	private IStandardLibrary std;
+	private IModelicaProject std;
 
 
-	public ModelAdapter(IStandardLibrary std, IModelicaClass moClass2) {
-		this.std = std;
+	public ModelAdapter(IModelicaProject std2, IModelicaClass moClass2) {
+		this.std = std2;
 		moClass = moClass2;
 	}
 

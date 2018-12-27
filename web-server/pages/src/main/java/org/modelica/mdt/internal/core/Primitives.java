@@ -125,7 +125,7 @@ public class Primitives {
 		}
 
 		@Override
-		public boolean isConnector() throws ConnectException, UnexpectedReplyException, CompilerInstantiationException {
+		public boolean isConnector(){
 			return false;
 		}
 
@@ -133,6 +133,12 @@ public class Primitives {
 		public Collection<IModelicaClass> getInheritedClasses()
 				throws ConnectException, UnexpectedReplyException, InvocationError, CompilerInstantiationException {
 			return Collections.emptyList();
+		}
+
+		@Override
+		public String getIconAnnotation() {
+			// TODO generate Icon based on Type
+			return "";
 		}
 		
 	}

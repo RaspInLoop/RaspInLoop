@@ -41,6 +41,7 @@
 
 package org.modelica.mdt.internal.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -69,6 +70,7 @@ import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.ModelicaParser;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
 import org.openmodelica.corba.ConnectException;
+import org.springframework.data.annotation.Transient;
 
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -118,24 +120,40 @@ public class InnerClass extends ModelicaClass {
 	/* the extends statements */
 	private Collection<IModelicaExtends> extendsStmt;
 	private Collection<IModelicaClass> components;
+	private int componentIdx =0;
 
 	/* input and output parameters found in the signature */
 	private LinkedList<IParameter> inputParams = null;
 	private LinkedList<IParameter> outputParams = null;
+	
+	private ArrayList<String> componentAnnotations =  new ArrayList<>();
+	
+	@Transient
 	private IMoClassLoader classLoader;
+	
+	@Transient
+	private InnerClassFactory innerClassFactory;
 
-	public InnerClass(IModelicaProject project, String name, Restriction restriction, IDefinitionLocation location)  {
-		this(project, null, name, restriction,location);
+
+	public InnerClassFactory getInnerClassFactory() {
+		if (innerClassFactory == null){
+			
+		}
+		return innerClassFactory;
 	}
 
-	public InnerClass(IModelicaClass parent, String name, Restriction restriction, IDefinitionLocation location)  {
-		this(parent, parent, name, restriction,location);
+	public InnerClass(InnerClassFactory innerClassFactory, IModelicaProject project, String name, Restriction restriction, IDefinitionLocation location)  {
+		this(innerClassFactory, project, null, name, restriction,location);
 	}
 
-	public InnerClass(IModelicaElement parent, IModelicaClass parentNamespace, String name, Restriction restriction, IDefinitionLocation location)  {
-		super(parent, restriction, location);			
-		this.parentNamespace = parentNamespace;
-		classLoader = new MoClassLoader(this);
+	public InnerClass(InnerClassFactory innerClassFactory, IModelicaClass parent, String name, Restriction restriction, IDefinitionLocation location)  {
+		this(innerClassFactory, parent, parent, name, restriction,location);
+	}
+
+	public InnerClass(InnerClassFactory innerClassFactory, IModelicaElement parent, IModelicaClass parentNamespace, String name, Restriction restriction, IDefinitionLocation location)  {
+		super(parent, restriction, location);
+		this.innerClassFactory = innerClassFactory;			
+		this.parentNamespace = parentNamespace;		
 		this.name = name;
 		setFullName();
 		fLocation = location;
@@ -148,7 +166,7 @@ public class InnerClass extends ModelicaClass {
 				log.error("Cannot LoadElement of {}: {}",name, e.getMessage() );				
 			}				
 		}
-		lookUpComponentType();
+		lookUpComponentType();	
 		log.trace("<-- InnerClass {} created",this.getFullName());
 	}
 
@@ -159,7 +177,7 @@ public class InnerClass extends ModelicaClass {
 				  .forEach(c -> c.lookUpTypeName());
 		
 	}
-
+	
 	/**
 	 * @see org.modelica.mdt.core.IParent#getChildren()
 	 */
@@ -167,10 +185,7 @@ public class InnerClass extends ModelicaClass {
 	public Collection<IModelicaElement> getChildren() throws ConnectException, UnexpectedReplyException, InvocationError, CompilerInstantiationException {
 		if (children == null) {
 			children = loadElements();
-			/* load attributes also */
-			// getAttributes();			
 		}
-
 		return children.values();
 	}
 
@@ -202,7 +217,7 @@ public class InnerClass extends ModelicaClass {
 				}
 			}
 		}
-
+		// used to parser Import, extends, comonents etc...
 		Collection<ElementInfo> fullNameElements = CompilerProxy.getElements(fullName);
 
 		log.trace("   load Extends Elements");
@@ -228,6 +243,8 @@ public class InnerClass extends ModelicaClass {
 		// need to have import and extends processed before processing
 		// components.
 		log.trace("   load Components Elements");
+		componentIdx = 0;
+		componentAnnotations=getComponentAnnotations();
 		fullNameElements.stream()
 						.filter(e -> "component".equals(e.getElementType()))
 						.map(this::toComponent)
@@ -260,10 +277,21 @@ public class InnerClass extends ModelicaClass {
 						.forEach(i -> {
 							components.add(i);
 							elements.put(i.getElementName(), i);
+							getMoClassLoader().classCreated(i);
 							});
 		
 		log.trace("<--loadElements done for {}, {} found",this.getFullName(), elements.size() );
 		return elements;
+	}
+
+	private ArrayList<String> getComponentAnnotations() {
+		try {
+			return CompilerProxy.getComponentAnnotations(this.getFullName());
+		} catch (ConnectException | CompilerInstantiationException | ModelicaParserException e) {
+			log.warn("Cannot getAnnotation for components of {}: {}", this, e.getMessage());
+			return new ArrayList<>();
+		}
+		
 	}
 
 	private IModelicaExtends toExtendsElement(ElementInfo info) {
@@ -310,9 +338,10 @@ public class InnerClass extends ModelicaClass {
 			IDefinitionLocation location = new DefinitionLocation(elementFile, startLine, startCol, endLine, endCol);
 
 			String componentName = comp.elementAt(0).toString();
-			String typeName = info.getTypeName();			
-
-			ModelicaComponent modelicaComponent = new ModelicaComponent(this, componentName, typeName,  vis, location, direction);
+			String typeName = info.getTypeName();	
+			String annotation = componentAnnotations.get(componentIdx++);			
+			
+			ModelicaComponent modelicaComponent = new ModelicaComponent(this, componentName, typeName,  vis, location, direction, annotation);
 			return modelicaComponent;
 		} catch (ModelicaParserException | IllegalVisibilityException e) {
 			// TODO Logger new UnexpectedReplyException("Unable to parse
@@ -375,8 +404,8 @@ public class InnerClass extends ModelicaClass {
 			restr = null;
 		}
 
-		InnerClass innerClass = new InnerClass(this, className, restr, location);
-
+		InnerClass innerClass = getInnerClassFactory().build(this, className, restr, location);
+		
 		return innerClass;
 	}	
 
@@ -425,7 +454,7 @@ public class InnerClass extends ModelicaClass {
 		}).map(cr -> {
 			return cr.getFirstResult();
 		})
-		.map(classLoader::getClass)
+		.map(getMoClassLoader()::getClass)
 		.filter(Objects::nonNull)
 		.collect(Collectors.toList());
 	}
@@ -461,8 +490,13 @@ public class InnerClass extends ModelicaClass {
 	}
 
 	@Override
-	public boolean isConnector() throws ConnectException, UnexpectedReplyException, CompilerInstantiationException {
-		return CompilerProxy.isConnector(fullName);
+	public boolean isConnector(){
+		try {
+			return CompilerProxy.isConnector(fullName);
+		} catch (ConnectException | UnexpectedReplyException | CompilerInstantiationException e) {
+			log.warn("Cannot determine connector for {}: {}", fullName, e.getMessage());
+			return false;
+		}
 	}
 
 	@Override
@@ -478,6 +512,18 @@ public class InnerClass extends ModelicaClass {
 
 	@Override
 	public IMoClassLoader getMoClassLoader() {	
+		if (classLoader == null)
+			classLoader = getInnerClassFactory().getMoClassLoaderInstance(this);
 		return classLoader;
+	}
+
+	@Override
+	public String getIconAnnotation() {
+		try {
+			return CompilerProxy.getIconAnnotation(fullName);
+		} catch (ConnectException | UnexpectedReplyException | CompilerInstantiationException e) {
+			log.warn("Cannot load icon of {}: {}", fullName, e.getMessage());
+			return "";
+		}		
 	}
 }

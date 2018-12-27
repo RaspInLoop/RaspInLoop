@@ -42,12 +42,14 @@
 package org.modelica.mdt.core.compiler;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.modelica.mdt.core.ICompilerResult;
 import org.modelica.mdt.core.IDefinitionLocation;
 import org.modelica.mdt.core.IModelicaClass.Restriction;
 import org.modelica.mdt.core.List;
+import org.modelica.mdt.core.ModelicaParserException;
 import org.openmodelica.corba.ConnectException;
 
 /**
@@ -339,6 +341,10 @@ public interface IModelicaCompiler
 	public ICompilerResult searchClassNames(String className) throws ConnectException;
 
 	public boolean isPrimitive(String className) throws ConnectException;
+
+	public String getIconAnnotation(String className) throws ConnectException;
+
+	public ArrayList<String> getComponentAnnotations(String className) throws ConnectException, ModelicaParserException;
 
 
 }

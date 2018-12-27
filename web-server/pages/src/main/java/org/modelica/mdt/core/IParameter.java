@@ -41,6 +41,8 @@
 
 package org.modelica.mdt.core;
 
+import java.io.Serializable;
+
 /**
  * A parameter is either an argument to a function or a return
  * value from a function.
@@ -50,7 +52,7 @@ package org.modelica.mdt.core;
  * 
  * @author Andreas Remar
  */
-public interface IParameter
+public interface IParameter  extends Serializable
 {
 	/**
 	 * @return the name of this parameter

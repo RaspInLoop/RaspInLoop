@@ -134,7 +134,11 @@ public class ModelicaExtends extends ModelicaElement implements IModelicaExtends
 
 	@Override
 	public IMoClassLoader getMoClassLoader() {
-		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String getIconAnnotation() {
+		return "";
 	}
 }

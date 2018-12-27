@@ -234,4 +234,9 @@ public class ModelicaImport extends ModelicaElement implements IModelicaImport
 			parent = parent.getParent();
 		return parent.getMoClassLoader();
 	}
+
+	@Override
+	public String getIconAnnotation() {
+		return "";
+	}
 }

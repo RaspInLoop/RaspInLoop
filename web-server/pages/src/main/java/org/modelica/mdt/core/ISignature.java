@@ -41,6 +41,8 @@
 
 package org.modelica.mdt.core;
 
+import java.io.Serializable;
+
 /**
  * A signature is a functions input and output parameters
  * 
@@ -48,7 +50,7 @@ package org.modelica.mdt.core;
  *
  * @author Andreas Remar
  */
-public interface ISignature
+public interface ISignature  extends Serializable
 {
 	/**
 	 * @return the input parameters

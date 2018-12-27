@@ -3,6 +3,8 @@ package org.modelica.mdt.internal.core;
 import java.nio.file.Path;
 import java.util.Collection;
 
+import javax.annotation.Resource;
+
 import org.modelica.mdt.core.IDefinitionLocation;
 import org.modelica.mdt.core.IMoClassLoader;
 import org.modelica.mdt.core.IModelicaClass;
@@ -16,11 +18,11 @@ import org.openmodelica.corba.ConnectException;
 
 public class StdLibModelicaProject implements IModelicaProject {
 
+	@Resource
 	IStandardLibrary std;
 	
-	public StdLibModelicaProject() throws ConnectException, CompilerInstantiationException {
-		super();
-		std = new StandardLibrary(this);
+	public StdLibModelicaProject(){
+		super();		
 	}
 
 	@Override
@@ -84,6 +86,12 @@ public class StdLibModelicaProject implements IModelicaProject {
 
 	@Override
 	public IModelicaElement findElement(Path resourcePath) throws ConnectException, UnexpectedReplyException, CompilerInstantiationException, InvocationError {
+		return null;
+	}
+
+	@Override
+	public String getIconAnnotation() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

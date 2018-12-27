@@ -41,6 +41,8 @@
 
 package org.modelica.mdt.core;
 
+import java.io.Serializable;
+
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
@@ -55,7 +57,7 @@ import org.openmodelica.corba.ConnectException;
  * @author Elmir Jagudin
  *
  */
-public interface IModelicaElement
+public interface IModelicaElement  extends Serializable
 {
 	enum Visibility 
 	{
@@ -133,4 +135,6 @@ public interface IModelicaElement
 	CompilerInstantiationException;
 	
 	public IMoClassLoader getMoClassLoader();
+	
+	public String getIconAnnotation(); 
 }

@@ -21,10 +21,10 @@ export class HardwareEditorComponent implements OnInit {
 
 
    paper: joint.dia.Paper;
+   linkCtor:  joint.dia.Cell.Constructor<joint.dia.Link>;
 
   ngOnInit() {
-
-     this.graphService.getCurrentGraph().subscribe(graph => this.initialisePaper(graph) );
+     this.graphService.getJointJSGraph().subscribe(graph => this.initialisePaper(graph) );
    }
 
 
@@ -51,9 +51,8 @@ export class HardwareEditorComponent implements OnInit {
          args: {  radius: 20  }
      }
 
-     var Link = joint.dia.Link;
 
-     Link.define('Mo.Link', {
+     this.linkCtor = joint.dia.Link.define('Mo.Link', {
          attrs: {
              line: {
                  connection: true,
@@ -86,8 +85,7 @@ export class HardwareEditorComponent implements OnInit {
          }]
      });
 
-    // this.paper.options.defaultLink = new  joint.shapes.devs.Link();
-     this.paper.options.defaultLink = new  joint.shapes.Mo.Link();
+     this.paper.options.defaultLink = new  this.linkCtor();
      this.paper.on('link:mouseenter', function(linkView) {
         var removeTool = new joint.linkTools.Remove();
         

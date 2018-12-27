@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 
+import javax.annotation.Resource;
+
 import org.modelica.mdt.core.IDefinitionLocation;
 import org.modelica.mdt.core.IMoClassLoader;
 import org.modelica.mdt.core.IModelicaClass;
@@ -56,19 +58,23 @@ import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
 import org.openmodelica.corba.ConnectException;
+import org.springframework.stereotype.Component;
+
 
 public class StandardLibrary  extends ModelicaElement implements IStandardLibrary, IParent
 {
-	LinkedList<IModelicaClass> packages = null;
-	IMoClassLoader classLoader;
-	private IModelicaProject project;
+	@Resource
+	private InnerClassFactory innerClassFactory;
+	
+	@Resource
 	private IMoClassLoader libClassLoader;
 	
-	public StandardLibrary(IModelicaProject project) throws ConnectException, CompilerInstantiationException
-	{
-		super(project);
-		this.project = project;
-		libClassLoader = new LibClassLoader(this);
+	private IModelicaProject project;
+	
+	LinkedList<IModelicaClass> packages = null;
+		
+	public StandardLibrary( IModelicaProject project){
+		super(project);	
 	}
 
 	public Collection<IModelicaClass> getPackages() throws ConnectException, CompilerInstantiationException
@@ -79,7 +85,7 @@ public class StandardLibrary  extends ModelicaElement implements IStandardLibrar
 
 			for (String packageName : CompilerProxy.getStandardLibrary())
 			{
-				packages.add(new InnerClass(project, packageName, IModelicaClass.Restriction.PACKAGE, null));
+				packages.add(innerClassFactory.build(project, packageName,  IModelicaClass.Restriction.PACKAGE, null));
 			}
 		}
 
@@ -208,6 +214,12 @@ public class StandardLibrary  extends ModelicaElement implements IStandardLibrar
 	@Override
 	public IMoClassLoader getMoClassLoader() {
 		return libClassLoader;
+	}
+
+	@Override
+	public String getIconAnnotation() {
+		// TODO Auto-generated method stub
+		return "";
 	}
 
 

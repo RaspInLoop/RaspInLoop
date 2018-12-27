@@ -42,12 +42,14 @@
 package org.modelica.mdt.internal.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.modelica.mdt.core.ICompilerResult;
 import org.modelica.mdt.core.IDefinitionLocation;
 import org.modelica.mdt.core.IModelicaClass;
 import org.modelica.mdt.core.List;
+import org.modelica.mdt.core.ModelicaParserException;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.ElementInfo;
 import org.modelica.mdt.core.compiler.IClassInfo;
@@ -434,6 +436,18 @@ public class CompilerProxy {
 	IModelicaCompiler compiler = getCompiler();
 	boolean exist = compiler.isPrimitive(className);
 	return exist;
+	}
+	public static String getIconAnnotation(String className) 
+		throws ConnectException, UnexpectedReplyException, CompilerInstantiationException {
+	IModelicaCompiler compiler = getCompiler();
+	String res = compiler.getIconAnnotation(className);		
+	return res;
+	}
+	public static ArrayList<String> getComponentAnnotations(String className)
+			throws ConnectException, CompilerInstantiationException, ModelicaParserException {
+		IModelicaCompiler compiler = getCompiler();
+		ArrayList<String> res = compiler.getComponentAnnotations(className);		
+		return res;
 	}
 	
 	

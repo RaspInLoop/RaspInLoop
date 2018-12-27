@@ -7,9 +7,8 @@ import java.util.stream.Collectors;
 
 import org.modelica.mdt.core.IModelicaClass;
 import org.modelica.mdt.core.IModelicaComponent;
-import org.modelica.mdt.core.IStandardLibrary;
+import org.modelica.mdt.core.IModelicaProject;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
-import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
 import org.openmodelica.corba.ConnectException;
 import org.raspinloop.web.pages.model.IPort;
@@ -21,19 +20,19 @@ public class PortGroupAdapter implements IPortGroup {
 	private IModelicaClass moClass;
 	private List<IModelicaComponent> connectors;
 
-	public static Set<IPortGroup> createSet(IStandardLibrary std, List<IModelicaComponent> connectors) {
+	public static Set<IPortGroup> createSet(IModelicaProject std, List<IModelicaComponent> connectors) {
 		Set<IModelicaClass> uniquConnectorType = connectors.stream()
 											.map(c -> c.getTypeName())
 											.distinct()
 											.map(type -> {
 											
 													try {
-														return std.getPackages()
+														return std.getRootClasses()
 																.stream()
 																.map(p -> p.getMoClassLoader().getClass(type))
 																.findFirst()
 																.get();
-													} catch (ConnectException | CompilerInstantiationException  e) {
+													} catch (ConnectException | CompilerInstantiationException | UnexpectedReplyException  e) {
 														// TODO Auto-generated catch block
 														return null;
 													}})

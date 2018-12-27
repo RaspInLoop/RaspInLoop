@@ -40,6 +40,7 @@
  */
 package org.modelica.mdt.core;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
@@ -168,8 +169,10 @@ public interface IModelicaClass extends IModelicaElement, IParent
 		throws CompilerInstantiationException, ConnectException,
 			UnexpectedReplyException, InvocationError;
 
-	public boolean isConnector() 
-			throws ConnectException, UnexpectedReplyException, CompilerInstantiationException;
+	public boolean isConnector(); 
+		
 
 	Collection<IModelicaClass> getInheritedClasses() throws ConnectException, UnexpectedReplyException, InvocationError, CompilerInstantiationException;
+
+	public String getIconAnnotation();
 }

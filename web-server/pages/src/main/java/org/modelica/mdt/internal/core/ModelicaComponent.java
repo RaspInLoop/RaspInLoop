@@ -61,8 +61,9 @@ public class ModelicaComponent extends ModelicaElement implements IModelicaCompo
 	private Visibility visibility;
 	private IDefinitionLocation location;
 	private String direction;
-	private IModelicaClass type;
-	private String typeName;
+	private IModelicaClass type; //lazy evaluation
+	private String typeName;	
+	private String componentAnnotation; 
 
 	/**
 	 * Create class component
@@ -73,8 +74,9 @@ public class ModelicaComponent extends ModelicaElement implements IModelicaCompo
 	 * @param visibility whatever this component is public or protected
 	 * @param location location in the source code file
 	 * @param direction 
+	 * @param componentIdx 
 	 */
-	public ModelicaComponent(IModelicaClass parent, String name, String typeName, Visibility visibility, IDefinitionLocation location, String direction) {
+	public ModelicaComponent(IModelicaClass parent, String name, String typeName, Visibility visibility, IDefinitionLocation location, String direction,  String annotation) {
 		
 		super(parent);
 		this.name = name;
@@ -82,9 +84,11 @@ public class ModelicaComponent extends ModelicaElement implements IModelicaCompo
 		this.direction = direction;
 		this.visibility = visibility;
 		this.location = location;
+		this.componentAnnotation = annotation;
+		
 		log.trace("ModelicaComponent {} created", name);
 	}
-	
+
 	@Override
 	public void lookUpTypeName(){
 		log.trace("lookup {}", typeName);
@@ -127,7 +131,12 @@ public class ModelicaComponent extends ModelicaElement implements IModelicaCompo
 
 	@Override
 	public String getTypeName() {
-		return typeName;
+		if (type == null)
+			lookUpTypeName();
+		if (type == null)
+			return typeName;
+		else
+			return type.getFullName();
 	}
 
 	
@@ -141,19 +150,32 @@ public class ModelicaComponent extends ModelicaElement implements IModelicaCompo
 
 	@Override
 	public boolean isConnector() {
-		try {
-			if (type == null)
-				lookUpTypeName();
-			return type != null && type.isConnector();
-		} catch (ConnectException | UnexpectedReplyException | CompilerInstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
+		if (type == null)
+			lookUpTypeName();
+		return type != null && type.isConnector();	
 	}
+	
+	@Override
+	public String getIconAnnotation() {
+			if (type == null) {
+				lookUpTypeName();
+			}
+			if (type != null) {
+				return type.getIconAnnotation();
+			}
+			else return "";
+	}
+
 
 	@Override
 	public IMoClassLoader getMoClassLoader() {
 		return getParent().getMoClassLoader();
 	}
+
+	@Override
+	public String getComponentAnnotation() {
+		
+		return componentAnnotation;
+	}
+
 }

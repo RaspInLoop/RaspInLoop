@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.modelica.mdt.core.IModelicaClass;
 import org.modelica.mdt.core.IModelicaComponent;
+import org.modelica.mdt.core.IModelicaProject;
 import org.modelica.mdt.core.IStandardLibrary;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
@@ -27,11 +28,11 @@ public class ComponentAdapter implements IComponent {
 	private String documentation;
 	
 	private List<IModelicaComponent> connectors = new ArrayList<>();
-	private IStandardLibrary std;
+	private IModelicaProject std;
 
-	public ComponentAdapter(IStandardLibrary std, IModelicaClass moClass)
+	public ComponentAdapter(IModelicaProject std2, IModelicaClass moClass)
 			throws ConnectException, UnexpectedReplyException, InvocationError, CompilerInstantiationException {
-		this.std = std;
+		this.std = std2;
 		this.moClass = moClass;
 		this.documentation = moClass.getDocumentation();		
 		buildConnectors();

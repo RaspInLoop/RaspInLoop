@@ -7,17 +7,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.modelica.mdt.core.IModelicaClass;
 import org.modelica.mdt.core.IModelicaClass.Restriction;
 import org.modelica.mdt.core.IModelicaComponent;
 import org.modelica.mdt.core.IModelicaElement;
 import org.modelica.mdt.core.IModelicaProject;
-import org.modelica.mdt.core.IStandardLibrary;
 import org.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.modelica.mdt.core.compiler.InvocationError;
 import org.modelica.mdt.core.compiler.UnexpectedReplyException;
 import org.openmodelica.corba.ConnectException;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * 
@@ -25,14 +30,20 @@ import org.openmodelica.corba.ConnectException;
  *Those test need omc installed on system and OPENMODELICAHOME environment variable defined. 
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes={org.modelica.mdt.Modelica.class})
+@EnableCaching
 public class StandardLibraryTest {
 
+	@Resource
+	IModelicaProject modelicaProject;
+	
 	@Test
 	public void test() throws ConnectException, CompilerInstantiationException, InterruptedException, UnexpectedReplyException, InvocationError {
-		IStandardLibrary std = new StandardLibrary(null);
-		Collection<IModelicaClass> packages;
+		
+		Collection<? extends IModelicaClass> packages;
 		do {
-			packages = std.getPackages();
+			packages = modelicaProject.getRootClasses();
 			Thread.sleep(100);
 		} while (packages == null); // hack before having started flag
 
@@ -43,11 +54,10 @@ public class StandardLibraryTest {
 	}
 	
 	@Test
-	public void testCache() throws ConnectException, CompilerInstantiationException, InterruptedException, UnexpectedReplyException, InvocationError {
-		IStandardLibrary std = new StandardLibrary(null);
-		Collection<IModelicaClass> packages;
+	public void testCache() throws ConnectException, CompilerInstantiationException, InterruptedException, UnexpectedReplyException, InvocationError {		
+		Collection<? extends IModelicaClass> packages;
 		do {
-			packages = std.getPackages();
+			packages = modelicaProject.getRootClasses();
 			Thread.sleep(100);
 		} while (packages == null); // hack before having started flag
 
@@ -56,7 +66,7 @@ public class StandardLibraryTest {
 		assertTrue(models.size() > 0);
 		
 		do {
-			packages = std.getPackages();
+			packages = modelicaProject.getRootClasses();
 			Thread.sleep(100);
 		} while (packages == null); // hack before having started flag
 
@@ -102,9 +112,8 @@ public class StandardLibraryTest {
 	
 	@Test
 	public void loadOneClassTest() throws ConnectException, CompilerInstantiationException, UnexpectedReplyException{
-		
-		IModelicaProject project = new StdLibModelicaProject();		
-		IModelicaClass moClass = project.getRootClasses()
+				
+		IModelicaClass moClass = modelicaProject.getRootClasses()
 				.stream()
 				.map(p -> p.getMoClassLoader().getClass("Modelica.Thermal.FluidHeatFlow.Sources.VolumeFlow"))
 				.findFirst()
@@ -115,7 +124,13 @@ public class StandardLibraryTest {
 		addConnectors(connectors, moClass);
 		assertEquals(3, connectors.size());
 		
-		moClass = project.getRootClasses()
+		IModelicaComponent comp1 = connectors.iterator().next();
+		String icon1 = comp1.getIconAnnotation();
+		String annotation1 = comp1.getComponentAnnotation();
+		
+
+
+		moClass = modelicaProject.getRootClasses()
 				.stream()
 				.map(p -> p.getMoClassLoader().getClass("Modelica.Mechanics.Rotational.Components.Clutch"))
 				.findFirst()
@@ -126,7 +141,7 @@ public class StandardLibraryTest {
 		addConnectors(connectors, moClass);
 		assertEquals(4, connectors.size());
 		
-		moClass = project.getRootClasses()
+		moClass = modelicaProject.getRootClasses()
 				.stream()
 				.map(p -> p.getMoClassLoader().getClass("Modelica.Electrical.Machines.Thermal.DCMachines.ThermalAmbientDCPM"))
 				.findFirst()
@@ -137,7 +152,7 @@ public class StandardLibraryTest {
 		addConnectors(connectors, moClass);
 		assertEquals(3, connectors.size());
 		
-		moClass = project.getRootClasses()
+		moClass = modelicaProject.getRootClasses()
 				.stream()
 				.map(p -> p.getMoClassLoader().getClass("Modelica.Electrical.Analog.Semiconductors.HeatingPMOS"))
 				.findFirst()
