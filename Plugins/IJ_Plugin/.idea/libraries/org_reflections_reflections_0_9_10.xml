@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.reflections:reflections:0.9.10" type="repository">
+    <properties maven-id="org.reflections:reflections:0.9.10" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/reflections-0.9.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guava-15.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javassist-3.19.0-GA.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/annotations-2.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

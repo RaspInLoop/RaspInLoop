@@ -1,0 +1,27 @@
+<idea-plugin>
+  <id>org.raspinloop.fmi.plugin.intellij</id>
+  <name>RaspInLoop-Funtional Mockup Interface Simulation</name>
+  <version>1.0</version>
+  <vendor email="admin@raspinloop.org" url="http://www.raspinloop.org">RaspInLoop</vendor>
+  <description><![CDATA[
+       Simulate and debug java applications witten with Pi4J Project on Raspberry Pi.<br>
+       RaspInLoop allows debugger to interact with computer simulation software.
+    ]]></description>
+
+  <change-notes><![CDATA[
+    ]]>
+  </change-notes>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Initialises the UI when the user selects the plugin from the menu -->
+    <configurationType implementation="org.raspinloop.fmi.plugin.configuration.fmiRunnerConfigurationType"/>
+    <!-- Run - It reads the values written by the UI and spawns a new process that runs Jetty -->
+    <programRunner id="Run" implementation="org.raspinloop.fmi.plugin.fmiRunner.Runner" order="first"/>
+    <!-- Debug - same as run but stops on breakpoints, you get the idea -->
+    <programRunner id="Debug" implementation="org.raspinloop.fmi.plugin.fmiRunner.Debugger" order="last"/>
+  </extensions>
+
+</idea-plugin>
