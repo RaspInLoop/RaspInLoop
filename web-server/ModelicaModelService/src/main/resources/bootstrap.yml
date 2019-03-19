@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: modelicaModelService
+  profiles:
+    active: development
+  cloud:
+    config:
+     uri: http://raspinloop-config-server:8888

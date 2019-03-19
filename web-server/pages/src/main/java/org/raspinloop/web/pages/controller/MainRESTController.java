@@ -2,9 +2,9 @@ package org.raspinloop.web.pages.controller;
 
 import java.util.List;
 
+import org.raspinloop.server.model.IModel;
 import org.raspinloop.web.pages.dao.GraphModelDao;
-import org.raspinloop.web.pages.model.IModel;
-import org.raspinloop.web.pages.model.mock.Model;
+import org.raspinloop.web.pages.model.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
