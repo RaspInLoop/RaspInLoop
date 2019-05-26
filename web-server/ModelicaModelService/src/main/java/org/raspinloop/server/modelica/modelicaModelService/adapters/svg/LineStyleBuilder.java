@@ -39,26 +39,26 @@ public class LineStyleBuilder implements StyleBuilder {
 		switch (patern) {
 		case Dash:
 			style.append("stroke-dasharray:5;");
-			style.append("stroke-width:" + duc.convertX(thickness) + ";");
+			style.append("stroke-width:" + duc.convertThickness(thickness) + ";");
 			break;
 		case DashDot:
 			style.append("stroke-dasharray:5 3 2 3;");
-			style.append("stroke-width:" + duc.convertX(thickness) + ";");
+			style.append("stroke-width:" + duc.convertThickness(thickness) + ";");
 			break;
 		case DashDotDot:
 			style.append("stroke-dasharray:5 3 2 3 2 3;");
-			style.append("stroke-width:" + duc.convertX(thickness) + ";");
+			style.append("stroke-width:" + duc.convertThickness(thickness) + ";");
 			break;
 		case Dot:
 			style.append("stroke-dasharray: 2 2;");
-			style.append("stroke-width:" + duc.convertX(thickness) + ";");
+			style.append("stroke-width:" + duc.convertThickness(thickness) + ";");
 			break;
 		case None:
 			style.append("stroke-width:0;");
 			break;
 		case Solid:
 		default:
-			style.append("stroke-width:" + duc.convertX(thickness) + ";");
+			style.append("stroke-width:" + duc.convertThickness(thickness) + ";");
 			break;
 		}
 

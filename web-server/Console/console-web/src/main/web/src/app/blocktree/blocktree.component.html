@@ -1,0 +1,28 @@
+
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding draggable="true" (dragstart)="drag($event)" class="leaf-node" id="{{node.id}}" >
+    <button mat-icon-button disabled></button>
+    <svg height="20px" width="30px" viewBox="-10 -10 24 20" >      
+        <rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>
+        <g [innerHtml]="node.icon"/>
+      </svg>
+    {{node.item}}
+  </mat-tree-node>
+  <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+    <button mat-icon-button
+            [attr.aria-label]="'toggle ' + node.filename" matTreeNodeToggle>
+      <mat-icon class="mat-icon-rtl-mirror">
+        {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+      </mat-icon>
+    </button>
+    <svg height="20px" width="30px" viewBox="-10 -10 24 20" >      
+      <rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>
+      <g [innerHtml]="node.icon"/>
+    </svg>  
+    {{node.item}}
+    <mat-progress-bar *ngIf="node.isLoading"
+                      mode="indeterminate"
+                      class="example-tree-progress-bar"></mat-progress-bar>
+  </mat-tree-node>
+</mat-tree>
+

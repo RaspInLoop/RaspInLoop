@@ -41,6 +41,10 @@ public class DrawinUnitConverter {
 	
 	public String convert(Point p) {
 		return convertX(p.getX()) + " " + convertY(p.getY());
+	}
+
+	public String convertThickness(double t) {
+		return convert(t*20);	
 	}	
 	
 	

@@ -86,25 +86,48 @@ public class ComponentAdapter implements IComponent {
 
 	@Override 
 	public String getSvgIcon() {
-		String annotation = moClass.getIconAnnotation();
-		StringReader sr = new StringReader(annotation);
+		List<Icon> icons = new ArrayList<>();
+		addClassIconContent(icons, moClass);		
 		try {
-			Icon i = Icon.build(sr);
-			return svgFactory.build(i,"icon");
-		} catch (IOException | ParseException | XMLStreamException e) {
-			log.error("unable to decode icon for {}, annotation[{}] :{}",moClass.getFullName(), annotation ,e);
+			return svgFactory.build(icons, "icon");
+		} catch (IOException | XMLStreamException e) {
+			log.error("unable to converts icon for {}, to svg :{}", moClass.getFullName(), e.getMessage());
 			return "";
+		}		
+	}
+	
+	private void addClassIconContent(List<Icon> icons, IModelicaClass inheritedClass) {
+		String annotation = "";
+		try {
+			inheritedClass.getInheritedClasses().forEach(c -> addClassIconContent(icons, c));
+			annotation = inheritedClass.getIconAnnotation();
+			StringReader sr = new StringReader(annotation);
+			icons.add(Icon.build(sr));			
+		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException | IOException | ParseException e) {
+			log.error("unable to decode icon for {}, annotation[{}] :{}", inheritedClass.getFullName(), annotation, e.getMessage());
 		}
 	}
+	
+	private void addClassDiagramContent(List<Icon> icons, IModelicaClass inheritedClass) {
+		String annotation = "";
+		try {
+			inheritedClass.getInheritedClasses().forEach(c -> addClassDiagramContent(icons, c));
+			annotation = inheritedClass.getDiagramAnnotation();
+			StringReader sr = new StringReader(annotation);
+			icons.add(Icon.build(sr));			
+		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException | IOException | ParseException e) {
+			log.error("unable to decode diagram for {}, annotation[{}] :{}", inheritedClass.getFullName(), annotation, e.getMessage());
+		}
+	}
+	
 	@Override
 	public String getSvgContent() {
-		String annotation = moClass.getDiagramAnnotation();
-		StringReader sr = new StringReader(annotation);
+		List<Icon> icons = new ArrayList<>();
+		addClassDiagramContent(icons, moClass);		
 		try {
-			Icon i = Icon.build(sr);
-			return svgFactory.build(i,"diagram");
-		} catch (IOException | ParseException | XMLStreamException e) {
-			log.error("unable to decode diagram for {}, annotation[{}] :{}",moClass.getFullName(), annotation ,e);
+			return svgFactory.build(icons, "diagram");
+		} catch (IOException | XMLStreamException e) {
+			log.error("unable to converts diagram for {}, to svg :{}", moClass.getFullName(), e.getMessage());
 			return "";
 		}
 	}

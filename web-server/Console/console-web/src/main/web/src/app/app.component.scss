@@ -1,0 +1,51 @@
+
+.title {
+  text-align: center;
+  flex: 1 0 0;
+  min-height: 5vh;
+//  background-color: #37484d;
+  background-color: #232e31;
+  color: #d45500;
+}
+
+.example-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+ .example-sidenav-container {
+  flex: 1;
+}
+
+.example-sidenav{
+  color: #d36423;
+}
+
+.mat-list-item{
+  color: black; 
+  opacity: 0.8;
+}
+
+.mat-drawer{
+  opacity: 0.9;
+}
+
+
+.app-hardware-editor {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background-color: #232e31;
+  opacity: 0.9;
+}
+
+.example-toolbar {
+    z-index: 2;
+}
+

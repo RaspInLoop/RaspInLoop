@@ -2,6 +2,7 @@ package org.raspinloop.server.modelica.modelicaModelService.adapters;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -35,7 +36,7 @@ public class PortGroupDefinitionAdapter implements IPortGroupDefinition {
 		StringReader sr = new StringReader(annotation);
 		try {
 			Icon i = Icon.build(sr);
-			return svgFactory.build(i, "port-body"); 
+			return svgFactory.build(Collections.singletonList(i), "port-body"); 
 		} catch (IOException | ParseException | XMLStreamException e) {
 			log.error("unable to decode icon for {}, annotation[{}] :{}",moClass.getFullName(), annotation ,e);
 			return "";

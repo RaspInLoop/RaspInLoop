@@ -32,26 +32,26 @@ public class FilledShapeStyleBuilder  implements StyleBuilder{
         switch (f.getLinePattern()) {
 		case Dash:
 			 style.append("stroke-dasharray:5;");
-			 style.append("stroke-width:"+duc.convertX(f.getLineThickness())+";");
+			 style.append("stroke-width:"+duc.convertThickness(f.getLineThickness())+";");
 			break;
 		case DashDot:
 			style.append("stroke-dasharray:5 3 2 3;");
-			style.append("stroke-width:"+duc.convertX(f.getLineThickness())+";");
+			style.append("stroke-width:"+duc.convertThickness(f.getLineThickness())+";");
 			break;
 		case DashDotDot:
 			style.append("stroke-dasharray:5 3 2 3 2 3;");
-			style.append("stroke-width:"+duc.convertX(f.getLineThickness())+";");
+			style.append("stroke-width:"+duc.convertThickness(f.getLineThickness())+";");
 			break;
 		case Dot:
 			style.append("stroke-dasharray: 2 2;");
-			style.append("stroke-width:"+duc.convertX(f.getLineThickness())+";");
+			style.append("stroke-width:"+duc.convertThickness(f.getLineThickness())+";");
 			break;
 		case None:		
 			style.append("stroke-width:0;");
 			break;
 		case Solid:			
 		default:
-			style.append("stroke-width:"+duc.convertX(f.getLineThickness())+";");
+			style.append("stroke-width:"+duc.convertThickness(f.getLineThickness())+";");
 			break;        
         }	
 		

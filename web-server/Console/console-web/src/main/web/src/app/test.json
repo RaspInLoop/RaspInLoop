@@ -1,0 +1,189 @@
+{
+    "cells": [
+        {
+            "type": "Mo.Box",
+            "size": {
+                "width": 80,
+                "height": 80
+            },
+            "ports": {
+                "groups": {
+                    "connector": {
+                        "position": {
+                            "name": "absolute"
+                        },
+                        "attrs": {
+                            ".port-body": {
+                                "fill": "#d45500",
+                                "magnet": true
+                            }
+                        },
+                        "label": {
+                            "position": {
+                                "name": "left",
+                                "args": {
+                                    "y": 10
+                                }
+                            },
+                            "markup": "<text class=\"port-label-text\" fill=\"#8ea7aeff\"/>"
+                        },
+                        "markup": "<path d=\"M -10,-5 0,0 -10,5 z\" class=\"port-body\"/><title />"
+                    }
+                },
+                "items": [
+                    {
+                        "id": "abc1",
+                        "group": "connector",
+                        "args": {
+                            "x": 0,
+                            "y": 0
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port1"
+                            }
+                        }
+                    },
+                    {
+                        "id": "abc2",
+                        "group": "connector",
+                        "args": {
+                            "x": 5,
+                            "y": 20
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port2"
+                            }
+                        }
+                    },
+                    {
+                        "id": "abc3",
+                        "group": "connector",
+                        "args": {
+                            "x": 80,
+                            "y": 25
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port3"
+                            }
+                        }
+                    },
+                    {
+                        "id": "abc4",
+                        "group": "connector",
+                        "args": {
+                            "x": 85,
+                            "y": 75,
+                            "angle": 45
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port4"
+                            }
+                        }
+                    }
+                ]
+            },
+            "position": {
+                "x": 66,
+                "y": 90
+            },
+            "angle": 0,
+            "id": "49cfee7b-0995-4f83-a205-b3384792bdd1",
+            "z": 1,
+            "attrs": {
+                "text": {
+                    "text": "my box"
+                }
+            }
+        },
+        {
+            "type": "Mo.Box",
+            "size": {
+                "width": 80,
+                "height": 80
+            },
+            "ports": {
+                "groups": {
+                    "connector": {
+                        "position": {
+                            "name": "absolute"
+                        },
+                        "attrs": {
+                            ".port-body": {
+                                "fill": "#d45500",
+                                "magnet": true
+                            }
+                        },
+                        "label": {
+                            "position": {
+                                "name": "left",
+                                "args": {
+                                    "y": 10
+                                }
+                            },
+                            "markup": "<text class=\"port-label-text\" fill=\"#8ea7aeff\"/>"
+                        },
+                        "markup": "<path d=\"M -10,-5 0,0 -10,5 z\" class=\"port-body\"/><title />"
+                    }
+                },
+                "items": [
+                    {
+                        "id": "abc2",
+                        "group": "connector",
+                        "args": {
+                            "x": 5,
+                            "y": 20
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port2"
+                            }
+                        }
+                    },
+                    {
+                        "id": "abc3",
+                        "group": "connector",
+                        "args": {
+                            "x": 80,
+                            "y": 25
+                        },
+                        "attrs": {
+                            "title": {
+                                "text": "port3"
+                            }
+                        }
+                    }
+                ]
+            },
+            "position": {
+                "x": 611,
+                "y": 64
+            },
+            "angle": 0,
+            "id": "55270c8d-ac61-4fd7-aa45-837bda793dfa",
+            "z": 2,
+            "attrs": {
+                "text": {
+                    "text": "my box 2"
+                }
+            }
+        },
+        {
+            "type": "Mo.Link",
+            "source": {
+                "id": "49cfee7b-0995-4f83-a205-b3384792bdd1",
+                "port": "abc3"
+            },
+            "target": {
+                "id": "55270c8d-ac61-4fd7-aa45-837bda793dfa",
+                "port": "abc2"
+            },
+            "id": "aa4ec6e6-4f4a-4d4f-88c0-535c80c317e8",
+            "z": 3,
+            "attrs": {}
+        }
+    ]
+}

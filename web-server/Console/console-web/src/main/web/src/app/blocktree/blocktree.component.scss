@@ -1,0 +1,29 @@
+.example-tree-progress-bar {
+  margin-left: 30px;
+}
+
+.mat-icon-button {
+  height: 24px;
+  width: 24px;
+  line-height: 24px;
+}
+
+
+.icon-background {
+  stroke-width: 1;
+  stroke: dark;
+  fill: whitesmoke; 
+}
+
+.mat-tree-node {
+  min-height: 24px;
+ }
+
+.leaf-node{
+  cursor: grab;
+ }
+
+ .mat-tree-node svg{
+  min-height: 20px;
+  flex: none;
+ }

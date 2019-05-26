@@ -24,4 +24,8 @@ public class Point {
 
 		return new Point(x, y);
 	}
+
+	public boolean isValid() {
+		return ! Double.isNaN(x) && ! Double.isNaN(y);
+	}
 }

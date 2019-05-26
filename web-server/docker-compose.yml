@@ -1,0 +1,15 @@
+version: '2'
+services:
+  raspinloop-config-server:
+    image: raspinloop/configuration
+    environment:
+      GIT_PASSWORD: yQGV7hE643Gx7NN
+      GIT_URL: https://github.com/fmahiant/raspinloop-service-configs.git
+      GIT_USER: raspinloopConfigReader
+  raspinloop-redis:
+    image: redis
+  modelicamodelservice:
+    image:  raspinloop/modelicamodelservice
+    ports:
+    - "8080:8080"    
+  

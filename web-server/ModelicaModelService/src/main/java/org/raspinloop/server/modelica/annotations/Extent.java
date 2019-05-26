@@ -39,4 +39,8 @@ public class Extent {
 		double y =Math.min(p1.getY(),p2.getY()); 
 		return new Point(x, y);
 	}
+
+	public boolean isValid() {		
+		return p1.isValid() && p2.isValid();
+	}
 }

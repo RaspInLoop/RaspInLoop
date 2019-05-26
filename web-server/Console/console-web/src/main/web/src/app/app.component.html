@@ -1,0 +1,48 @@
+  <div class="example-container">
+    <app-menu></app-menu>
+     
+    <mat-sidenav-container  class="example-sidenav-container" autosize>
+      <mat-sidenav #sidenav class="example-sidenav" mode="side" opened="true">
+        <mat-nav-list class="dashboard">
+
+            <mat-accordion>
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <mat-icon mat-list-icon >memory</mat-icon>
+                    </mat-panel-title>
+                    <mat-panel-description>
+                      Board & Hardware
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+              
+                  <mat-form-field>
+                    <input matInput placeholder="First name">
+                  </mat-form-field>
+              
+                  <mat-form-field>
+                    <input matInput placeholder="Age">
+                  </mat-form-field>
+                </mat-expansion-panel>
+                <mat-expansion-panel (opened)="panelOpenState = true"
+                                     (closed)="panelOpenState = false">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <mat-icon mat-list-icon>device_hub</mat-icon>
+                    </mat-panel-title>
+                    <mat-panel-description>
+                      World Modelisation
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+                  <app-blocktree  ></app-blocktree>
+                </mat-expansion-panel>
+              </mat-accordion>         
+        </mat-nav-list>
+      </mat-sidenav>
+  
+      <app-hardware-editor></app-hardware-editor>  
+      
+  
+    </mat-sidenav-container>    
+    <app-status></app-status>
+  </div>

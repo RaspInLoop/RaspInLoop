@@ -2,8 +2,10 @@ package org.raspinloop.server.modelica.modelicaModelService.adapters;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -56,20 +58,30 @@ public class PackageAdapter implements IPackage {
 	public String getHtmlDocumentation() {
 		return "";
 	}
-
+	
 	@Override 
 	public String getSvgIcon() {
-		String annotation = moClass.getIconAnnotation();
-		StringReader sr = new StringReader(annotation);
+		List<Icon> icons = new ArrayList<>();
+		addClassIconContent(icons, moClass);		
 		try {
-			Icon i = Icon.build(sr);
-			return svgFactory.build(i,"icon");
-		} catch (IOException | ParseException | XMLStreamException e) {
-			log.error("unable to decode icon for {}, annotation[{}] :{}",moClass.getFullName(), annotation ,e);
+			return svgFactory.build(icons, "icon");
+		} catch (IOException | XMLStreamException e) {
+			log.error("unable to converts icon for {}, to svg :{}", moClass.getFullName(), e.getMessage());
 			return "";
-		}
+		}		
 	}
-		
+	
+	private void addClassIconContent(List<Icon> icons, IModelicaClass inheritedClass) {
+		String annotation = "";
+		try {
+			inheritedClass.getInheritedClasses().forEach(c -> addClassIconContent(icons, c));
+			annotation = inheritedClass.getIconAnnotation();
+			StringReader sr = new StringReader(annotation);
+			icons.add(Icon.build(sr));			
+		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException | IOException | ParseException e) {
+			log.error("unable to decode icon for {}, annotation[{}] :{}", inheritedClass.getFullName(), annotation, e.getMessage());
+		}
+	}		
 
 	@Override
 	public Collection<String> getComponentsName() {

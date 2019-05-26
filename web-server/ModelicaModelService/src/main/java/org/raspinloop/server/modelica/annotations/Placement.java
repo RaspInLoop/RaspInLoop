@@ -52,7 +52,10 @@ public class Placement {
 		
 		if (cBraceOpen )
 			ParserUtils.isClosingBrace(reader);
-		return new Placement(visible, diagOrigin, diagTransformation, diagRotation, iconOrigin, iconTransformation, iconRotation) ;
+		Placement p = new Placement(visible, diagOrigin, diagTransformation, diagRotation, iconOrigin, iconTransformation, iconRotation) ;
+		log.trace("new placement built:" + p.toString());
+		return p;
+		
 	}
 	
 	boolean visible;
