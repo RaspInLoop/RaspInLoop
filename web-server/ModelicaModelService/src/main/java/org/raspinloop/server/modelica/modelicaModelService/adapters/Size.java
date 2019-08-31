@@ -11,6 +11,6 @@ public class Size implements ISize {
 	private double width;
 	static ISize buildDefault() 
 	{
-		return new Size(100,100);
+		return new Size(50,50);
 	}
 }

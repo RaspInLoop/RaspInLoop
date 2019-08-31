@@ -30,40 +30,28 @@ public class Placement {
 		if (!s.equalsIgnoreCase(ANNOTATION_NAME+"(")) {
 			reader.reset();
 			return null;
-		}
+		}		
 		
 		boolean visible = ParserUtils.parseBooleanToken(reader, ',');	
-		Point diagOrigin = Point.build(reader);
-		Extent diagTransformation = Extent.build(reader);
-		double diagRotation = ParserUtils.parseRealToken(reader, ',');
-		
-		
-		Point iconOrigin = null;
-		Extent iconTransformation = null;
-		double iconRotation =0.0;
+		Transformation transformation = Transformation.build(reader);
+		Transformation iconTransformation = transformation;
 		try {
-			 iconOrigin = Point.build(reader);
-			 iconTransformation = Extent.build(reader);
-			 iconRotation = ParserUtils.parseRealToken(reader);
-		} catch (Exception e) {
-			// optional fields, may thrown an exception if doesn't exist
-			log.trace("Cannot decode further Placement information {}", e.getMessage());
+			iconTransformation = Transformation.build(reader);
+		} catch (IOException | ParseException e ) {
+			log.debug("No icon transformation found, using diag transformation");
+			log.trace("stacktrace:", e);
 		}
 		
+			
 		if (cBraceOpen )
 			ParserUtils.isClosingBrace(reader);
-		Placement p = new Placement(visible, diagOrigin, diagTransformation, diagRotation, iconOrigin, iconTransformation, iconRotation) ;
+		Placement p = new Placement(visible, transformation, iconTransformation) ;
 		log.trace("new placement built:" + p.toString());
 		return p;
 		
 	}
 	
 	boolean visible;
-	Point diagOrigin;
-	Extent diagTransformation;
-	double diagRotation;
-	Point iconOrigin;
-	Extent iconTransformation;
-	double iconRotation;
-	
+	Transformation transformation;
+	Transformation iconTransformation;			
 }

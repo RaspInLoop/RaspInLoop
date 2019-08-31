@@ -3,7 +3,7 @@
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding draggable="true" (dragstart)="drag($event)" class="leaf-node" id="{{node.id}}" >
     <button mat-icon-button disabled></button>
     <svg height="20px" width="30px" viewBox="-10 -10 24 20" >      
-        <rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>
+        <!--<rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>-->
         <g [innerHtml]="node.icon"/>
       </svg>
     {{node.item}}
@@ -16,7 +16,7 @@
       </mat-icon>
     </button>
     <svg height="20px" width="30px" viewBox="-10 -10 24 20" >      
-      <rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>
+      <!--<rect class="icon-background" height="20" width="20" ry="5" x="-10" y="-10" ></rect>-->
       <g [innerHtml]="node.icon"/>
     </svg>  
     {{node.item}}

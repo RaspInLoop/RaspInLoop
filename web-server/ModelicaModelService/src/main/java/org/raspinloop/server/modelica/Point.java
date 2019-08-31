@@ -1,9 +1,10 @@
-package org.raspinloop.server.modelica.annotations;
+package org.raspinloop.server.modelica;
 
 import java.io.IOException;
 import java.io.Reader;
 
 import org.openmodelica.corba.parser.ParseException;
+import org.raspinloop.server.modelica.annotations.ParserUtils;
 
 import lombok.Value;
 

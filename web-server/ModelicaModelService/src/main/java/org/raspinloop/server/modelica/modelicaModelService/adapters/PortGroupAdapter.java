@@ -11,6 +11,7 @@ import org.raspinloop.server.model.IPortGroup;
 import org.raspinloop.server.model.IPortGroupDefinition;
 import org.raspinloop.server.modelica.mdt.core.IModelicaClass;
 import org.raspinloop.server.modelica.mdt.core.IModelicaComponent;
+import org.raspinloop.server.modelica.mdt.core.IModelicaElement;
 import org.raspinloop.server.modelica.mdt.core.IModelicaProject;
 import org.raspinloop.server.modelica.mdt.core.compiler.CompilerInstantiationException;
 import org.raspinloop.server.modelica.mdt.core.compiler.UnexpectedReplyException;
@@ -38,7 +39,7 @@ public class PortGroupAdapter implements IPortGroup {
 														// TODO Auto-generated catch block
 														return null;
 													}})
-											.filter(Objects::nonNull)	
+											.filter(Objects::nonNull)											
 											.collect(Collectors.toSet());
 		 
 		 
@@ -47,6 +48,7 @@ public class PortGroupAdapter implements IPortGroup {
 										.stream()
 										.map(type -> {return new PortGroupAdapter(svgFactory, type, connectors.stream()
 																							.filter(con -> con.getTypeName().equals(type.getFullName()))
+																							.filter(con -> con.getVisibility()==IModelicaElement.Visibility.PUBLIC)
 																							.collect(Collectors.toList()));})
 										.collect(Collectors.toSet());
 		return portAdapters;

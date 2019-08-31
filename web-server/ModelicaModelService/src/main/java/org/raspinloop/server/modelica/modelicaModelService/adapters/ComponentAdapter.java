@@ -108,29 +108,29 @@ public class ComponentAdapter implements IComponent {
 		}
 	}
 	
-	private void addClassDiagramContent(List<Icon> icons, IModelicaClass inheritedClass) {
-		String annotation = "";
-		try {
-			inheritedClass.getInheritedClasses().forEach(c -> addClassDiagramContent(icons, c));
-			annotation = inheritedClass.getDiagramAnnotation();
-			StringReader sr = new StringReader(annotation);
-			icons.add(Icon.build(sr));			
-		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException | IOException | ParseException e) {
-			log.error("unable to decode diagram for {}, annotation[{}] :{}", inheritedClass.getFullName(), annotation, e.getMessage());
-		}
-	}
+//	private void addClassDiagramContent(List<Icon> icons, IModelicaClass inheritedClass) {
+//		String annotation = "";
+//		try {
+//			inheritedClass.getInheritedClasses().forEach(c -> addClassDiagramContent(icons, c));
+//			annotation = inheritedClass.getDiagramAnnotation();
+//			StringReader sr = new StringReader(annotation);
+//			icons.add(Icon.build(sr));			
+//		} catch (ConnectException | UnexpectedReplyException | InvocationError | CompilerInstantiationException | IOException | ParseException e) {
+//			log.error("unable to decode diagram for {}, annotation[{}] :{}", inheritedClass.getFullName(), annotation, e.getMessage());
+//		}
+//	}
 	
-	@Override
-	public String getSvgContent() {
-		List<Icon> icons = new ArrayList<>();
-		addClassDiagramContent(icons, moClass);		
-		try {
-			return svgFactory.build(icons, "diagram");
-		} catch (IOException | XMLStreamException e) {
-			log.error("unable to converts diagram for {}, to svg :{}", moClass.getFullName(), e.getMessage());
-			return "";
-		}
-	}
+//	@Override
+//	public String getSvgContent() {
+//		List<Icon> icons = new ArrayList<>();
+//		addClassDiagramContent(icons, moClass);		
+//		try {
+//			return svgFactory.build(icons, "diagram");
+//		} catch (IOException | XMLStreamException e) {
+//			log.error("unable to converts diagram for {}, to svg :{}", moClass.getFullName(), e.getMessage());
+//			return "";
+//		}
+//	}
 
 	@Override
 	public IPoint getPosition() {

@@ -15,8 +15,7 @@ public interface IComponent {
 	String getDescription();
 	
 	String getHtmlDocumentation();
-
-	String getSvgContent();
+	
 
 	IPoint getPosition();
 

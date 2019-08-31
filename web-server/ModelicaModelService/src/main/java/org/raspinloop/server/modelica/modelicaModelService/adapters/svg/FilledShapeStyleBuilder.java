@@ -152,8 +152,8 @@ public class FilledShapeStyleBuilder  implements StyleBuilder{
 		writer.writeAttribute("r", "50%");
 		writer.writeAttribute("fx", "50%");	
 		writer.writeAttribute("fy", "50%");	
-		addstop(writer, "0%", lineColor.toRgbString());
-		addstop(writer, "100%", fillColor.toRgbString());			
+		addstop(writer, "0%",  fillColor.toRgbString());
+		addstop(writer, "100%",lineColor.toRgbString());			
 		writer.writeEndElement();
 		return name;
 	}

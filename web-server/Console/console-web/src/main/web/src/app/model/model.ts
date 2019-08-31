@@ -50,6 +50,7 @@ export interface Port {
   id: string;
   position: Point;
   description: string;
+  orientation: number;
 }
 
 

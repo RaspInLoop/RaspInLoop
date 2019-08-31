@@ -15,7 +15,7 @@ import * as joint from 'jointjs';
 export const EMPTY_MODEL: Model = {
     id: 0,
     components: [],
-    links:[]
+    links: []
   };
 
 
@@ -40,7 +40,7 @@ export class GraphService {
     this.messageService.add('GraphService: graph Ctor done.');
   }
 
-  addComponenent(compId: string){
+  addComponenent(compId: string) {
     this.componentService.getComponent(compId).subscribe(comp => this.updateComponent(comp));
   }
 
@@ -66,7 +66,6 @@ export class GraphService {
     if (! this.componentCtorMap.has(component.id)) {
       const ctor = joint.dia.Element.define(component.id, {
         attrs: {
-          rect: { width: 100, height: 100 },
           '.body': {
               fill: '#232e31ff', stroke: '#8ea7aeff', 'stroke-width': 2,
               'pointer-events': 'visiblePainted', rx: 10, ry: 10 }
@@ -115,13 +114,15 @@ export class GraphService {
 
   }
 
-  addPort(rect: joint.dia.Element, port: Port, groupdef: PortGroupDefinition){
+  addPort(rect: joint.dia.Element, port: Port, groupdef: PortGroupDefinition) {
     const portdef = Object.assign({},  {
       'id': port.id,
       'group': groupdef.name,
+      // by default port are extends from -100 to 100 (200)
       'args': {
-          'x': port.position.x,
-          'y': port.position.y
+          'x': (port.position.x / 200.0) * rect.size().width ,
+          'y': (port.position.y / 200.0) * rect.size().height,
+          'angle': port.orientation
       },
       'attrs': {
           'title': {
@@ -232,7 +233,7 @@ export class GraphService {
      });
 
      this.paper.on('link:mouseleave', function(linkView) {
-       if (!linkView.hasTools('onhover')){
+       if (!linkView.hasTools('onhover')) {
           return;
        }
        linkView.removeTools();

@@ -21,6 +21,7 @@ import org.openmodelica.corba.parser.ParseException;
 import org.raspinloop.server.modelica.annotations.Icon;
 import org.xml.sax.SAXException;
 
+// those test are incomplete, we should check the svg content with an xml validator.
 public class SvgIconTest {
 
 	private SvgFactory factory = new SvgFactory();
@@ -102,5 +103,12 @@ public class SvgIconTest {
 		assertTrue(svg.length() > 0);
 	}
 
-
+	@Test
+	public void testIconBasePackage() throws IOException, XMLStreamException, ParseException, SAXException {
+		StringReader sr1 = new StringReader("{-100.0,-100.0,100.0,100.0,false,0.1,2.0,2.0,{Rectangle(true, {0.0, 0.0}, 0, {200, 200, 200}, {248, 248, 248}, LinePattern.Solid, FillPattern.HorizontalCylinder, 0.25, BorderPattern.None, {{-100.0, -100.0}, {100.0, 100.0}}, 25.0), Rectangle(true, {0.0, 0.0}, 0, {128, 128, 128}, {0, 0, 0}, LinePattern.Solid, FillPattern.None, 0.25, BorderPattern.None, {{-100.0, -100.0}, {100.0, 100.0}}, 25.0)}}");
+		StringReader sr2 = new StringReader("{-100.0,-100.0,100.0,100.0,false,0.1,2.0,2.0,{Ellipse(true, {0.0, 0.0}, 0, {128, 128, 128}, {255, 255, 255}, LinePattern.Solid, FillPattern.Solid, 0.25, {{-30.0, -30.0}, {30.0, 30.0}}, 0, 360)}}");
+		String svg = factory.build(Arrays.asList(Icon.build(sr1), Icon.build(sr2)),"");
+		assertTrue(svg.length() > 0);
+	}
+	
 }
